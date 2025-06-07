@@ -1,11 +1,16 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, Button } from 'react-native';
+import './src/i18n/i18n'; // i18n dosyasını içeri aktar
+import { useTranslation } from 'react-i18next';
 
 export default function App() {
+  const { t, i18n } = useTranslation();
+
   return (
     <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
+      <Text style={styles.text}>{t('hello')}</Text>
+      <Button title="TR" onPress={() => i18n.changeLanguage('tr')} />
+      <Button title="EN" onPress={() => i18n.changeLanguage('en')} />
     </View>
   );
 }
@@ -13,8 +18,15 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f2f2f2',
+    gap: 12,
+  },
+  text: {
+    fontSize: 24,
+    color: '#333',
+    fontWeight: 'bold',
+    marginBottom: 16,
   },
 });
