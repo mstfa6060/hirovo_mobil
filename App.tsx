@@ -1,10 +1,27 @@
-import React from 'react';
-import { View, Text, StyleSheet, Button } from 'react-native';
-import './src/i18n/i18n'; // i18n dosyasını içeri aktar
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Button, ActivityIndicator } from 'react-native';
+import '@config/i18n'; // i18n'i config alias üzerinden çağır
 import { useTranslation } from 'react-i18next';
+import i18n from 'i18next';
 
 export default function App() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    // i18n init olduktan sonra "isReady" true yapılır
+    i18n.on('initialized', () => {
+      setIsReady(true);
+    });
+  }, []);
+
+  if (!isReady) {
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" color="#000" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -16,6 +33,11 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  loading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
