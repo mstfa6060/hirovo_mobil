@@ -1,6 +1,6 @@
-import backendCommon from './backend/common/en.js';
-import backendHirovo from './backend/hirovo/en.js';
-import { uiEn } from './ui/en.js';
+import backendCommon from './backend/common/en';
+import backendHirovo from './backend/hirovo/en';
+import { uiEn } from './ui/en';
 
 export default {
   translation: {

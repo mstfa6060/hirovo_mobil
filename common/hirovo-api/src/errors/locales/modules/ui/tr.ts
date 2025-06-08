@@ -2,9 +2,14 @@ export const uiTr = {
   translation: {
     ui: {
       login: {
-        welcome: "Hoşgeldiniz",
+        welcome: "Hirovo Hoşgeldiniz",
+        subtitle: "Lütfen e-posta ve şifrenizi giriniz",
+        emailPlaceholder: "E-posta adresiniz",
+        usernamePlaceholder: "Kullanıcı adınız",
+        passwordPlaceholder: "Şifreniz",
         submit: "Giriş Yap",
-        forgotPassword: "Şifremi Unuttum"
+        forgotPassword: "Şifremi Unuttum",
+        register: "Kayıt Ol"
       },
       signup: {
         title: "Hesap Oluştur",
@@ -33,10 +38,10 @@ export const uiTr = {
       jobs: {
         createTitle: "İş İlanı Oluştur",
         jobTitle: "İlan Başlığı",
-        jobTitlePlaceholder: "e.g. Senior Software Engineer",
+        jobTitlePlaceholder: "Örn: Senior Software Engineer",
         jobTitleRequired: "İlan başlığı zorunludur.",
         jobType: "İş Türü",
-        jobTypePlaceholder: "Full-time, Part-time, Contract",
+        jobTypePlaceholder: "Tam zamanlı, Yarı zamanlı, Serbest",
         jobTypeRequired: "İş türü zorunludur.",
         location: "Konum",
         locationPlaceholder: "Adres girin veya konumunuzu kullanın",
@@ -65,15 +70,30 @@ export const uiTr = {
         loadError: "İlanlar yüklenirken hata oluştu.",
         noJobs: "Gösterilecek ilan bulunamadı.",
         type: "Tür",
-        status: "Durum", deleteTitle: "İş İlanını Sil",
+        status: "Durum",
+        deleteTitle: "İş İlanını Sil",
         deleteButton: "Sil",
         deleteSuccessTitle: "Silme Başarılı",
         deleteSuccessMessage: "İş ilanı başarıyla silindi.",
         updateTitle: "İş İlanını Güncelle",
         updateButton: "Güncelle",
         updateSuccessTitle: "Güncelleme Başarılı",
-        updateSuccessMessage: "İş ilanı başarıyla güncellendi."
+        updateSuccessMessage: "İş ilanı başarıyla güncellendi.",
+        detailLoadError: "İlan detayları yüklenemedi.",
+        notFound: "İlan bulunamadı.",
+        description: "Açıklama",
+        employerId: "İşveren ID"
       },
+   jobType: {
+  FullTime: "Tam Zamanlı",
+  PartTime: "Yarı Zamanlı",
+  Freelance: "Serbest"
+},
+  jobStatus: {
+  Active: "Aktif",
+  Closed: "Kapalı",
+  Filled: "Dolu"
+},
       common: {
         loading: "Yükleniyor...",
         cancel: "İptal"

@@ -1,54 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button, ActivityIndicator } from 'react-native';
-import '@config/i18n'; // i18n'i config alias üzerinden çağır
-import { useTranslation } from 'react-i18next';
+import { View, ActivityIndicator } from 'react-native';
+import './common/hirovo-api/src/config/i18n';
+import { NavigationContainer } from '@react-navigation/native';
+import MainStack from './navigation/RootNavigator';
 import i18n from 'i18next';
 
 export default function App() {
-  const { t } = useTranslation();
-  const [isReady, setIsReady] = useState(false);
+  const [ready, setReady] = useState(i18n.isInitialized);
 
   useEffect(() => {
-    // i18n init olduktan sonra "isReady" true yapılır
-    i18n.on('initialized', () => {
-      setIsReady(true);
-    });
+    if (!i18n.isInitialized) {
+      i18n.on('initialized', () => setReady(true));
+    }
   }, []);
 
-  if (!isReady) {
+  if (!ready) {
     return (
-      <View style={styles.loading}>
-        <ActivityIndicator size="large" color="#000" />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>{t('hello')}</Text>
-      <Button title="TR" onPress={() => i18n.changeLanguage('tr')} />
-      <Button title="EN" onPress={() => i18n.changeLanguage('en')} />
-    </View>
+    <NavigationContainer>
+      <MainStack />
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  loading: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f2f2f2',
-    gap: 12,
-  },
-  text: {
-    fontSize: 24,
-    color: '#333',
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
-});

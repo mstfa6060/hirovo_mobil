@@ -1,14 +1,87 @@
 export const uiEn = {
-  translation: {
+translation: {
     ui: {
-      login: {
-        welcome: "Welcome",
-        submit: "Login",
-        forgotPassword: "Forgot Password?"
+    login: {
+  welcome: "Hirovo Login",
+  subtitle: "Welcome back! Please enter your credentials to continue.",
+  emailPlaceholder: "Email Address",
+  usernamePlaceholder: "Username",
+  passwordPlaceholder: "Password",
+  submit: "Login",
+  forgotPassword: "Forgot Password?",
+  register: "Register Now"
+},    
+  signup: {
+        title: "Hesap Oluştur",
+        name: "Ad",
+        surname: "Soyad",
+        phone: "Telefon",
+        password: "Şifre",
+        enterName: "Adınızı giriniz",
+        enterSurname: "Soyadınızı giriniz",
+        enterPhone: "Telefon numaranızı giriniz",
+        enterPassword: "Şifrenizi giriniz",
+        iAmA: "Ben bir...",
+        worker: "İşçi",
+        employer: "İşveren",
+        submit: "Kayıt Ol",
+        nameRequired: "Ad zorunludur",
+        surnameRequired: "Soyad zorunludur",
+        phoneInvalid: "Telefon geçerli değil",
+        passwordMin: "Şifre en az 6 karakter",
+        userInfoNotFound: "Kullanıcı bilgileri bulunamadı.",
+        successTitle: "Kayıt Başarılı",
+        successMessage: "Hesabınız oluşturuldu!",
+        errorTitle: "Hata",
+        errorMessage: "Kayıt oluşturulamadı. Lütfen tekrar deneyin."
+      },
+      jobs: {
+        createTitle: "İş İlanı Oluştur",
+        jobTitle: "İlan Başlığı",
+        jobTitlePlaceholder: "e.g. Senior Software Engineer",
+        jobTitleRequired: "İlan başlığı zorunludur.",
+        jobType: "İş Türü",
+        jobTypePlaceholder: "Full-time, Part-time, Contract",
+        jobTypeRequired: "İş türü zorunludur.",
+        location: "Konum",
+        locationPlaceholder: "Adres girin veya konumunuzu kullanın",
+        locationRequired: "Konum zorunludur.",
+        locationError: "Konum alınamadı. Lütfen manuel girin.",
+        getLocation: "Konumu Al",
+        salary: "Maaş",
+        salaryPlaceholder: "Örn: 75000",
+        salaryRequired: "Maaş zorunludur ve pozitif olmalıdır.",
+        jobDescription: "İş Açıklaması",
+        jobDescriptionPlaceholder: "İş sorumlulukları, gereklilikler vs.",
+        jobDescriptionRequired: "İş açıklaması zorunludur.",
+        requiredSkills: "Gerekli Beceriler",
+        requiredSkillsPlaceholder: "Örn: JavaScript, React",
+        deadline: "Son Başvuru Tarihi",
+        deadlinePlaceholder: "Tarih seçiniz",
+        notificationRadius: "Bildirim Mesafesi (km)",
+        notificationRadiusPlaceholder: "1-100",
+        notificationRadiusRequired: "Bildirim mesafesi zorunludur.",
+        notificationRadiusMax: "Bildirim mesafesi maksimum 100 km olabilir.",
+        submit: "Gönder",
+        successTitle: "İlan Oluşturuldu",
+        successMessage: "İş ilanı başarıyla oluşturuldu!",
+        errorTitle: "Hata",
+        errorMessage: "İlan oluşturulamadı. Lütfen tekrar deneyin.",
+        loadError: "İlanlar yüklenirken hata oluştu.",
+        noJobs: "Gösterilecek ilan bulunamadı.",
+        type: "Tür",
+        status: "Durum", deleteTitle: "İş İlanını Sil",
+        deleteButton: "Sil",
+        deleteSuccessTitle: "Silme Başarılı",
+        deleteSuccessMessage: "İş ilanı başarıyla silindi.",
+        updateTitle: "İş İlanını Güncelle",
+        updateButton: "Güncelle",
+        updateSuccessTitle: "Güncelleme Başarılı",
+        updateSuccessMessage: "İş ilanı başarıyla güncellendi."
       },
       common: {
-        loading: "Loading...",
-        cancel: "Cancel"
+        loading: "Yükleniyor...",
+        cancel: "İptal"
       }
     }
   }

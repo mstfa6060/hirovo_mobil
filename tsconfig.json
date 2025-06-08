@@ -9,20 +9,31 @@
       "@config/*": [
         "common/hirovo-api/src/config/*"
       ],
-      "@locales/*": [
-        "common/hirovo-api/src/errors/locales/modules/*"
-      ],
       "@services/*": [
         "common/hirovo-api/src/services/*"
       ],
       "@api/*": [
         "common/hirovo-api/src/api/*"
+      ],
+      "@errors/*": [
+        "common/hirovo-api/src/errors/*"
       ]
     },
     "strict": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": []
   },
+  "include": [
+    "src",
+    "screens",
+    "common"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/__tests__/*",
+    "**/__mocks__/*"
+  ],
   "extends": "expo/tsconfig.base"
 }
