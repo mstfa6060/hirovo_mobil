@@ -1,88 +1,108 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import { useRoute, RouteProp } from '@react-navigation/native';
+import {
+    View,
+    Text,
+    ScrollView,
+    ActivityIndicator,
+    StyleSheet,
+    TouchableOpacity
+} from 'react-native';
+import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { HirovoAPI } from '@api/business_modules/hirovo';
 import { useTranslation } from 'react-i18next';
-import { RootStackParamList } from '../navigation/RootNavigator'; // doğru path
+import { RootStackParamList } from '../navigation/RootNavigator';
 
+// Tip tanımı
 type JobsDetailRouteProp = RouteProp<RootStackParamList, 'JobsDetail'>;
 
 export default function JobsDetailScreen() {
-  const { t } = useTranslation();
-  const route = useRoute<JobsDetailRouteProp>();
-  const { id } = route.params; // ← id gönderiyorduk
+    const { t } = useTranslation();
+    const navigation = useNavigation();
+    const route = useRoute<JobsDetailRouteProp>();
+    const { id } = route.params;
 
-  const [job, setJob] = useState<HirovoAPI.Jobs.Detail.IResponseModel | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+    const [job, setJob] = useState<HirovoAPI.Jobs.Detail.IResponseModel | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchJobDetail = async () => {
-      try {
-        const response = await HirovoAPI.Jobs.Detail.Request({ jobId: id });
-        setJob(response);
-      } catch (err) {
-        console.error(err);
-        setError(t('ui.jobs.detailLoadError'));
-      } finally {
-        setLoading(false);
-      }
-    };
+    useEffect(() => {
+        const fetchJobDetail = async () => {
+            try {
+                const response = await HirovoAPI.Jobs.Detail.Request({ jobId: id });
+                setJob(response);
+            } catch (err) {
+                console.error(err);
+                setError(t('ui.jobs.detailLoadError'));
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    fetchJobDetail();
-  }, [id]);
+        fetchJobDetail();
+    }, [id]);
 
-  if (loading) {
+    if (loading) {
+        return (
+            <View style={styles.center}>
+                <ActivityIndicator size="large" color="#007bff" />
+                <Text>{t('common.loading')}</Text>
+            </View>
+        );
+    }
+
+    if (error || !job) {
+        return (
+            <View style={styles.center}>
+                <Text style={styles.error}>{error || t('ui.jobs.notFound')}</Text>
+            </View>
+        );
+    }
+
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#007bff" />
-        <Text>{t('common.loading')}</Text>
-      </View>
-    );
-  }
+        <ScrollView style={styles.container}>
+            <View style={styles.card}>
+                <Text style={styles.jobTitle}>{job.title}</Text>
+                <Text style={styles.subInfo}>{job.employerDisplayName}</Text>
+                <Text style={styles.description}>{job.description}</Text>
 
-  if (error) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.error}>{error}</Text>
-      </View>
-    );
-  }
+                <View style={styles.infoBox}>
+                    <Text style={styles.label}>{t('ui.jobs.salary')}:</Text>
+                    <Text style={styles.value}>{job.salary.toLocaleString()} ₺</Text>
+                </View>
 
-  if (!job) {
-    return (
-      <View style={styles.center}>
-        <Text>{t('ui.jobs.notFound')}</Text>
-      </View>
-    );
-  }
+                <View style={styles.infoBox}>
+                    <Text style={styles.label}>{t('ui.jobs.type')}:</Text>
+                    <Text style={styles.value}>{t(`jobType.${HirovoAPI.Enums.HirovoJobType[job.type]}`)}</Text>
+                </View>
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{job.title}</Text>
-      <Text style={styles.label}>
-        {t('ui.jobs.description')}: {job.description}
-      </Text>
-      <Text style={styles.label}>
-        {t('ui.jobs.salary')}: {job.salary}
-      </Text>
-      <Text style={styles.label}>
-        {t('ui.jobs.type')}: {t(`jobType.${HirovoAPI.Enums.HirovoJobType[job.type]}`)}
-      </Text>
-      <Text style={styles.label}>
-        {t('ui.jobs.status')}: {t(`jobStatus.${HirovoAPI.Enums.HirovoJobStatus[job.status]}`)}
-      </Text>
-      <Text style={styles.label}>
-        {t('ui.jobs.employerId')}: {job.employerId}
-      </Text>
-    </View>
-  );
+                <View style={styles.infoBox}>
+                    <Text style={styles.label}>{t('ui.jobs.status')}:</Text>
+                    <Text style={styles.value}>{t(`jobStatus.${HirovoAPI.Enums.HirovoJobStatus[job.status]}`)}</Text>
+                </View>
+            </View>
+        </ScrollView>
+    );
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  error: { color: 'red', fontSize: 16 },
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 12 },
-  label: { fontSize: 16, marginBottom: 6 }
+    container: { flex: 1, backgroundColor: '#f9f9f9' },
+    center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    error: { color: 'red', fontSize: 16 },
+    card: {
+        backgroundColor: 'white',
+        margin: 16,
+        padding: 16,
+        borderRadius: 12,
+        shadowColor: '#000',
+        shadowOpacity: 0.05,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    jobTitle: { fontSize: 24, fontWeight: 'bold', color: '#111827' },
+    subInfo: { fontSize: 14, color: '#6b7280', marginTop: 4 },
+    description: { fontSize: 16, color: '#374151', marginVertical: 12 },
+    infoBox: { flexDirection: 'row', justifyContent: 'space-between', marginVertical: 4 },
+    label: { fontSize: 14, color: '#6b7280' },
+    value: { fontSize: 14, fontWeight: '600', color: '#1f2937' },
 });

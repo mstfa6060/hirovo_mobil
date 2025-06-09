@@ -82,22 +82,26 @@ export const uiTr = {
         detailLoadError: "İlan detayları yüklenemedi.",
         notFound: "İlan bulunamadı.",
         description: "Açıklama",
-        employerId: "İşveren ID"
+        employerId: "İşveren ID",
+        feedTitle: "İş İlanları",
+        feedSubtitle: "Çevrenizdeki ilanlara göz atın",
+        viewDetails: "Detayları Gör",
+        applyNow: "Şimdi Başvur",
       },
-   jobType: {
-  FullTime: "Tam Zamanlı",
-  PartTime: "Yarı Zamanlı",
-  Freelance: "Serbest"
-},
-  jobStatus: {
-  Active: "Aktif",
-  Closed: "Kapalı",
-  Filled: "Dolu"
-},
+    },
+      jobType: {
+        FullTime: "Tam Zamanlı",
+        PartTime: "Yarı Zamanlı",
+        Freelance: "Serbest"
+      },
+      jobStatus: {
+        Active: "Aktif",
+        Closed: "Kapalı",
+        Filled: "Dolu"
+      },
       common: {
         loading: "Yükleniyor...",
         cancel: "İptal"
       }
-    }
   }
 };
