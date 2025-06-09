@@ -1,17 +1,17 @@
 export const uiEn = {
-translation: {
+  translation: {
     ui: {
-    login: {
-  welcome: "Hirovo Login",
-  subtitle: "Welcome back! Please enter your credentials to continue.",
-  emailPlaceholder: "Email Address",
-  usernamePlaceholder: "Username",
-  passwordPlaceholder: "Password",
-  submit: "Login",
-  forgotPassword: "Forgot Password?",
-  register: "Register Now"
-},    
-  signup: {
+      login: {
+        welcome: "Hirovo Login",
+        subtitle: "Welcome back! Please enter your credentials to continue.",
+        emailPlaceholder: "Email Address",
+        usernamePlaceholder: "Username",
+        passwordPlaceholder: "Password",
+        submit: "Login",
+        forgotPassword: "Forgot Password?",
+        register: "Register Now"
+      },
+      signup: {
         title: "Hesap Oluştur",
         name: "Ad",
         surname: "Soyad",

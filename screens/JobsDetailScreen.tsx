@@ -5,19 +5,22 @@ import {
     ScrollView,
     ActivityIndicator,
     StyleSheet,
-    TouchableOpacity
+    TouchableOpacity,
+    Share,
+    Platform
 } from 'react-native';
-import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
+import { useRoute, RouteProp } from '@react-navigation/native';
 import { HirovoAPI } from '@api/business_modules/hirovo';
 import { useTranslation } from 'react-i18next';
 import { RootStackParamList } from '../navigation/RootNavigator';
+import TopBar from '../components/TopBar';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { MaterialIcons } from '@expo/vector-icons';
 
-// Tip tanımı
 type JobsDetailRouteProp = RouteProp<RootStackParamList, 'JobsDetail'>;
 
 export default function JobsDetailScreen() {
     const { t } = useTranslation();
-    const navigation = useNavigation();
     const route = useRoute<JobsDetailRouteProp>();
     const { id } = route.params;
 
@@ -41,6 +44,17 @@ export default function JobsDetailScreen() {
         fetchJobDetail();
     }, [id]);
 
+    const handleShare = async () => {
+        try {
+            const shareMessage = `${job?.title} - ${job?.employerDisplayName}\n\n${t('ui.jobs.salary')}: ${job?.salary.toLocaleString()} ₺`;
+            await Share.share({
+                message: shareMessage
+            });
+        } catch (err) {
+            console.error('Paylaşım hatası:', err);
+        }
+    };
+
     if (loading) {
         return (
             <View style={styles.center}>
@@ -59,28 +73,45 @@ export default function JobsDetailScreen() {
     }
 
     return (
-        <ScrollView style={styles.container}>
-            <View style={styles.card}>
-                <Text style={styles.jobTitle}>{job.title}</Text>
-                <Text style={styles.subInfo}>{job.employerDisplayName}</Text>
-                <Text style={styles.description}>{job.description}</Text>
+        <SafeAreaView style={styles.container}>
+            <TopBar title={t('ui.jobs.detailTitle')} showBackButton />
 
-                <View style={styles.infoBox}>
-                    <Text style={styles.label}>{t('ui.jobs.salary')}:</Text>
-                    <Text style={styles.value}>{job.salary.toLocaleString()} ₺</Text>
-                </View>
+            <ScrollView contentContainerStyle={{ paddingBottom: 140 }}>
+                <View style={styles.card}>
+                    <Text style={styles.jobTitle}>{job.title}</Text>
+                    <Text style={styles.subInfo}>{job.employerDisplayName}</Text>
+                    <Text style={styles.description}>{job.description}</Text>
 
-                <View style={styles.infoBox}>
-                    <Text style={styles.label}>{t('ui.jobs.type')}:</Text>
-                    <Text style={styles.value}>{t(`jobType.${HirovoAPI.Enums.HirovoJobType[job.type]}`)}</Text>
-                </View>
+                    <View style={styles.infoBox}>
+                        <Text style={styles.label}>{t('ui.jobs.salary')}:</Text>
+                        <Text style={styles.value}>{job.salary.toLocaleString()} ₺</Text>
+                    </View>
 
-                <View style={styles.infoBox}>
-                    <Text style={styles.label}>{t('ui.jobs.status')}:</Text>
-                    <Text style={styles.value}>{t(`jobStatus.${HirovoAPI.Enums.HirovoJobStatus[job.status]}`)}</Text>
+                    <View style={styles.infoBox}>
+                        <Text style={styles.label}>{t('ui.jobs.type')}:</Text>
+                        <Text style={styles.value}>{t(`jobType.${HirovoAPI.Enums.HirovoJobType[job.type]}`)}</Text>
+                    </View>
+
+                    <View style={styles.infoBox}>
+                        <Text style={styles.label}>{t('ui.jobs.status')}:</Text>
+                        <Text style={styles.value}>{t(`jobStatus.${HirovoAPI.Enums.HirovoJobStatus[job.status]}`)}</Text>
+                    </View>
                 </View>
+            </ScrollView>
+
+            {/* Alt sabit butonlar */}
+            <View style={styles.footer}>
+                <TouchableOpacity style={styles.iconButton}>
+                    <MaterialIcons name="favorite-border" size={24} color="#6b7280" />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.iconButton} onPress={handleShare}>
+                    <MaterialIcons name="share" size={24} color="#6b7280" />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.primaryButton}>
+                    <Text style={styles.primaryButtonText}>{t('ui.jobs.applyNow')}</Text>
+                </TouchableOpacity>
             </View>
-        </ScrollView>
+        </SafeAreaView>
     );
 }
 
@@ -105,4 +136,42 @@ const styles = StyleSheet.create({
     infoBox: { flexDirection: 'row', justifyContent: 'space-between', marginVertical: 4 },
     label: { fontSize: 14, color: '#6b7280' },
     value: { fontSize: 14, fontWeight: '600', color: '#1f2937' },
+
+    footer: {
+        position: 'absolute',
+        bottom: Platform.OS === 'ios' ? 20 : 12, // yukarı alındı
+        left: 16,
+        right: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#ffffff',
+        padding: 10,
+        borderRadius: 16,
+        gap: 12,
+        shadowColor: '#000',
+        shadowOpacity: 0.06,
+        shadowOffset: { width: 0, height: -2 },
+        shadowRadius: 8,
+        elevation: 8,
+    },
+    iconButton: {
+        padding: 10,
+        borderRadius: 9999,
+        borderWidth: 1,
+        borderColor: '#d1d5db',
+        backgroundColor: '#f9fafb',
+    },
+    primaryButton: {
+        flex: 1,
+        height: 48,
+        borderRadius: 9999,
+        backgroundColor: '#007bff',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    primaryButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 16,
+    },
 });

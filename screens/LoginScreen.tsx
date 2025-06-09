@@ -37,9 +37,9 @@ type FormData = z.infer<typeof schema>;
 
 
 const LoginScreen = () => {
-    const { t } = useTranslation();
-    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const { t } = useTranslation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const {
     control,
@@ -71,7 +71,7 @@ const LoginScreen = () => {
         .then(async res => {
           await AsyncStorage.setItem('jwt', res.jwt);
           await AsyncStorage.setItem('refreshToken', res.refreshToken);
-          navigation.reset({ index: 0, routes: [{ name: 'HomeTabs' }] });
+          navigation.reset({ index: 0, routes: [{ name: 'Drawer' }] });
         })
         .catch(err => {
           Alert.alert(t('error.LOGIN_FAILED_TITLE'), err?.message ?? t('error.DEFAULT_ERROR'));
@@ -100,7 +100,7 @@ const LoginScreen = () => {
 
       await AsyncStorage.setItem('jwt', res.jwt);
       await AsyncStorage.setItem('refreshToken', res.refreshToken);
-      navigation.reset({ index: 0, routes: [{ name: 'HomeTabs' }] });
+      navigation.reset({ index: 0, routes: [{ name: 'Drawer' }] });
     } catch (err: any) {
       Alert.alert('Apple Login Failed', err?.message ?? 'Error');
     }
@@ -109,19 +109,19 @@ const LoginScreen = () => {
   const onSubmit = async (data: FormData) => {
     try {
 
- const response = await IAMAPI.Auth.Login.Request({
-  provider: 'native', // ← bu aslında backendde "native" olarak karşılanıyor olabilir, gerekirse 'native' yap
-  userName: data.username, // ← kullanıcı inputundan geliyor
-  password: data.password, // ← kullanıcı inputundan geliyor
-  token: '', // ← sadece Google/Apple için dolu olur
-  platform: IAMAPI.Enums.ClientPlatforms.Mobile, // ← Mobile için 1
-  isCompanyHolding: false, // ← eğer holding şirketse true olur (senin örneğinde false)
-  companyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd', // ← sabit ID
-});
+      const response = await IAMAPI.Auth.Login.Request({
+        provider: 'native', // ← bu aslında backendde "native" olarak karşılanıyor olabilir, gerekirse 'native' yap
+        userName: data.username, // ← kullanıcı inputundan geliyor
+        password: data.password, // ← kullanıcı inputundan geliyor
+        token: '', // ← sadece Google/Apple için dolu olur
+        platform: IAMAPI.Enums.ClientPlatforms.Mobile, // ← Mobile için 1
+        isCompanyHolding: false, // ← eğer holding şirketse true olur (senin örneğinde false)
+        companyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd', // ← sabit ID
+      });
 
       await AsyncStorage.setItem('jwt', response.jwt);
       await AsyncStorage.setItem('refreshToken', response.refreshToken);
-      navigation.reset({ index: 0, routes: [{ name: 'HomeTabs' }] });
+      navigation.reset({ index: 0, routes: [{ name: 'Drawer' }] });
     } catch (err: any) {
       Alert.alert(t('error.LOGIN_FAILED_TITLE'), err?.message ?? t('error.DEFAULT_ERROR'));
     }
@@ -132,54 +132,54 @@ const LoginScreen = () => {
       <Text style={styles.title}>{t('ui.login.welcome')}</Text>
       <Text style={styles.subtitle}>{t('ui.login.subtitle')}</Text>
 
-<Controller
-  control={control}
-  name="username"
-  render={({ field: { onChange, onBlur, value } }) => (
-    <>
-      <TextInput
-        placeholder={t('ui.login.usernamePlaceholder')}
-        autoCapitalize="none"
-        value={value}
-        onChangeText={onChange}
-        onBlur={onBlur}
-        style={styles.input}
+      <Controller
+        control={control}
+        name="username"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <>
+            <TextInput
+              placeholder={t('ui.login.usernamePlaceholder')}
+              autoCapitalize="none"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              style={styles.input}
+            />
+            {errors.username && <Text style={styles.error}>{errors.username.message}</Text>}
+          </>
+        )}
       />
-      {errors.username && <Text style={styles.error}>{errors.username.message}</Text>}
-    </>
-  )}
-/>
 
 
-   <Controller
-  control={control}
-  name="password"
-  render={({ field: { onChange, onBlur, value } }) => (
-    <>
-      <View style={styles.passwordContainer}>
-        <TextInput
-          placeholder={t('ui.login.passwordPlaceholder')}
-          secureTextEntry={!isPasswordVisible}
-          value={value}
-          onChangeText={onChange}
-          onBlur={onBlur}
-          style={styles.passwordInput}
-        />
-        <TouchableOpacity
-          onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-          style={styles.eyeButton}
-        >
-          <Ionicons
-            name={isPasswordVisible ? 'eye' : 'eye-off'}
-            size={20}
-            color="#888"
-          />
-        </TouchableOpacity>
-      </View>
-      {errors.password && <Text style={styles.error}>{errors.password.message}</Text>}
-    </>
-  )}
-/>
+      <Controller
+        control={control}
+        name="password"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <>
+            <View style={styles.passwordContainer}>
+              <TextInput
+                placeholder={t('ui.login.passwordPlaceholder')}
+                secureTextEntry={!isPasswordVisible}
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                style={styles.passwordInput}
+              />
+              <TouchableOpacity
+                onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                style={styles.eyeButton}
+              >
+                <Ionicons
+                  name={isPasswordVisible ? 'eye' : 'eye-off'}
+                  size={20}
+                  color="#888"
+                />
+              </TouchableOpacity>
+            </View>
+            {errors.password && <Text style={styles.error}>{errors.password.message}</Text>}
+          </>
+        )}
+      />
 
       <TouchableOpacity style={styles.link} onPress={() => navigation.navigate('ForgotPassword')}>
         <Text style={styles.linkText}>{t('ui.login.forgotPassword')}</Text>
@@ -226,20 +226,20 @@ const styles = StyleSheet.create({
   googleButton: { backgroundColor: '#db4437', padding: 14, borderRadius: 8, alignItems: 'center', marginTop: 12 },
   appleButton: { backgroundColor: '#000', padding: 14, borderRadius: 8, alignItems: 'center', marginTop: 12 },
   passwordContainer: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  borderWidth: 1,
-  borderColor: '#ccc',
-  borderRadius: 8,
-  paddingHorizontal: 12,
-  marginBottom: 8,
-},
-passwordInput: {
-  flex: 1,
-  paddingVertical: 12,
-},
-eyeButton: {
-  padding: 4,
-},
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: 12,
+  },
+  eyeButton: {
+    padding: 4,
+  },
 
 });

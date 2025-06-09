@@ -1,31 +1,43 @@
+// navigation/HomeTabs.tsx
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import JobsAllScreen from '../screens/JobsAllScreen';
-// import WorkersScreen from '../screens/WorkersScreen'; // varsa
-// import ApplicationsScreen from '../screens/ApplicationsScreen'; // varsa
-import { View, Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { TouchableOpacity } from 'react-native';
+import { DrawerActions, useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
+import WorkersScreen from '../screens/WorkersScreen';
+import ApplicationsScreen from '../screens/ApplicationsScreen';
+
 
 const Tab = createBottomTabNavigator();
 
-// Eğer bu iki ekran henüz yazılmadıysa geçici içerik:
-const WorkersPlaceholder = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Workers Screen</Text>
-  </View>
-);
+const MenuButton = () => {
+  const navigation = useNavigation();
 
-const ApplicationsPlaceholder = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Applications Screen</Text>
-  </View>
-);
+  return (
+    <TouchableOpacity
+      onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+      style={{ paddingLeft: 16 }}
+    >
+      <Ionicons name="menu" size={24} color="black" />
+    </TouchableOpacity>
+  );
+};
 
 const HomeTabs = () => {
+  const { t } = useTranslation();
+
   return (
-    <Tab.Navigator>
-      <Tab.Screen name="Jobs" component={JobsAllScreen} />
-      <Tab.Screen name="Workers" component={WorkersPlaceholder} />
-      <Tab.Screen name="Applications" component={ApplicationsPlaceholder} />
+    <Tab.Navigator
+      screenOptions={{
+        headerLeft: () => <MenuButton />,
+        headerShown: true,
+      }}
+    >
+      <Tab.Screen name="Jobs" component={JobsAllScreen} options={{ title: t('tabs.jobs') }} />
+      <Tab.Screen name="Workers" component={WorkersScreen} options={{ title: t('tabs.workers') }} />
+      <Tab.Screen name="Applications" component={ApplicationsScreen} options={{ title: t('tabs.applications') }} />
     </Tab.Navigator>
   );
 };

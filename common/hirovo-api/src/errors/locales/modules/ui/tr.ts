@@ -1,6 +1,12 @@
 export const uiTr = {
   translation: {
     ui: {
+
+      home: "Ana Sayfa",
+      editProfile: "Profilimi Düzenle",
+      notifications: "Bildirimler",
+      settings: "Ayarlar",
+      logout: "Çıkış Yap",
       login: {
         welcome: "Hirovo Hoşgeldiniz",
         subtitle: "Lütfen e-posta ve şifrenizi giriniz",
@@ -87,21 +93,54 @@ export const uiTr = {
         feedSubtitle: "Çevrenizdeki ilanlara göz atın",
         viewDetails: "Detayları Gör",
         applyNow: "Şimdi Başvur",
+        detailTitle: "İlan Detayı",
+      },
+      profile: {
+        title: "Profil Düzenle",
+        phoneNumber: "Telefon Numarası",
+        birthDate: "Doğum Tarihi",
+        city: "Şehir",
+        district: "İlçe",
+        description: "Açıklama",
+        isAvailable: "Müsaitim",
+        save: "Kaydet",
+        updated: "Profil başarıyla güncellendi"
+      },
+      form: {
+        phoneNumber: "Telefon Numarası",
+        city: "Şehir",
+        district: "İlçe",
+        submit: "Kaydet",
+        success: "Profil başarıyla güncellendi",
+      },
+      validation: {
+        required: "Bu alan zorunludur",
+        phoneNumber: "Geçerli bir telefon numarası giriniz",
+        invalidDate: "Tarih formatı geçersiz",
       },
     },
-      jobType: {
-        FullTime: "Tam Zamanlı",
-        PartTime: "Yarı Zamanlı",
-        Freelance: "Serbest"
-      },
-      jobStatus: {
-        Active: "Aktif",
-        Closed: "Kapalı",
-        Filled: "Dolu"
-      },
-      common: {
-        loading: "Yükleniyor...",
-        cancel: "İptal"
-      }
+    error: {
+      DEFAULT_ERROR: "Bir hata oluştu. Lütfen tekrar deneyin.",
+      TITLE: "Hata",
+    },
+    jobType: {
+      FullTime: "Tam Zamanlı",
+      PartTime: "Yarı Zamanlı",
+      Freelance: "Serbest"
+    },
+    jobStatus: {
+      Active: "Aktif",
+      Closed: "Kapalı",
+      Filled: "Dolu"
+    },
+    common: {
+      loading: "Yükleniyor...",
+      cancel: "İptal"
+    },
+    tabs: {
+      jobs: 'İş İlanları',
+      workers: 'İşçiler',
+      applications: 'Başvurular',
+    },
   }
 };
