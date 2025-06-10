@@ -5,6 +5,8 @@ import HomeTabs from '../navigation/HomeTabs';
 import JobsDetailScreen from '../screens/JobsDetailScreen';
 import ProfileEditScreen from '../screens/Profile/ProfileEditScreen';
 import DrawerNavigator from './DrawerNavigator';
+import { DrawerParamList } from './DrawerNavigator';
+
 
 export type RootStackParamList = {
     Login: undefined;
@@ -13,8 +15,12 @@ export type RootStackParamList = {
     Register: undefined;
     JobsDetail: { id: string };
     ProfileEdit: undefined;
-    Drawer: undefined;
+    Drawer: {
+        screen?: keyof DrawerParamList;
+        params?: object;
+    };
 };
+
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 

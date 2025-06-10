@@ -154,5 +154,10 @@ export const uiTr = {
       workers: 'İşçiler',
       applications: 'Başvurular',
     },
+    validation: {
+      required: "Bu alan zorunludur",
+      phoneNumber: "Geçerli bir telefon numarası giriniz",
+      invalidDate: "Tarih formatı geçersiz"
+    }
   }
 };

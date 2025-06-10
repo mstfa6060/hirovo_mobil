@@ -3,7 +3,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import HomeTabs from './HomeTabs';
 import ProfileEditScreen from '../screens/Profile/ProfileEditScreen';
 import { useTranslation } from 'react-i18next';
-import CustomDrawerContent from '../components/CustomDrawerContent'; // 👈 burası önemli
+import CustomDrawerContent from '../components/CustomDrawerContent';
 
 export type DrawerParamList = {
     HomeTabs: undefined;
@@ -18,7 +18,7 @@ const DrawerNavigator = () => {
     return (
         <Drawer.Navigator
             screenOptions={{ headerShown: false }}
-            drawerContent={(props) => <CustomDrawerContent {...props} />} // 👈 özel içerik burada tanımlanıyor
+            drawerContent={(props) => <CustomDrawerContent {...props} />}
         >
             <Drawer.Screen
                 name="HomeTabs"

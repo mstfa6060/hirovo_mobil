@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
     View,
     Text,
@@ -9,13 +9,15 @@ import {
     ActivityIndicator,
     StyleSheet,
     Platform,
+    Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
-import TopBar from '../../components/TopBar'; // 👈 JobsDetail'deki gibi üst bar
+import TopBar from '../../components/TopBar';
+import { HirovoAPI } from '@api/business_modules/hirovo';
 
 const schema = z.object({
     phoneNumber: z.string().min(10, 'formErrors.phoneInvalid'),
@@ -30,10 +32,10 @@ type FormData = z.infer<typeof schema>;
 
 export default function WorkerProfileForm({ userId }: { userId: string }) {
     const { t } = useTranslation();
-
     const {
         control,
         handleSubmit,
+        reset,
         formState: { errors, isSubmitting },
     } = useForm<FormData>({
         resolver: zodResolver(schema),
@@ -47,15 +49,49 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
         },
     });
 
+    useEffect(() => {
+        if (!userId) return;
+
+        const fetchProfile = async () => {
+            try {
+                const response = await HirovoAPI.Workers.Detail.Request({ userId });
+                const data = response;
+
+                reset({
+                    phoneNumber: data.phoneNumber ?? '',
+                    birthDate: data.birthDate?.toString().substring(0, 10) ?? '',
+                    city: data.city ?? '',
+                    district: data.district ?? '',
+                    description: data.description ?? '',
+                    isAvailable: data.isAvailable ?? true,
+                });
+            } catch (err) {
+                Alert.alert(t('ui.error'), t('ui.profile.fetchError'));
+            }
+        };
+
+        fetchProfile();
+    }, [userId]);
+
     const onSubmit = async (data: FormData) => {
-        console.log(data);
-        // API çağrısı yapılabilir.
+        try {
+            console.log("Submitting form data:", data);
+            await HirovoAPI.Workers.UpdateProfile.Request({
+                userId,
+                ...data,
+                birthDate: new Date(data.birthDate),
+                description: data.description ?? "",
+            });
+
+            Alert.alert(t('ui.success'), t('ui.profile.updated'));
+        } catch (error) {
+            Alert.alert(t('ui.error'), t('ui.profile.updateError'));
+        }
     };
 
     return (
         <SafeAreaView style={styles.container}>
             <TopBar title={t('ui.editProfile')} showBackButton />
-
             <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
                 <View style={styles.card}>
                     <Text style={styles.label}>{t('ui.profile.description')}</Text>
@@ -66,14 +102,13 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
                             <TextInput
                                 multiline
                                 style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
-                                placeholder={t('ui.form.descriptionPlaceholder') || 'Tell us about yourself...'}
+                                placeholder={t('ui.form.descriptionPlaceholder') || ''}
                                 value={value}
                                 onChangeText={onChange}
                             />
                         )}
                     />
                 </View>
-
                 <View style={styles.card}>
                     <Text style={styles.label}>{t('ui.profile.phoneNumber')}</Text>
                     <Controller
@@ -82,7 +117,7 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
                         render={({ field: { onChange, value } }) => (
                             <TextInput
                                 style={styles.input}
-                                placeholder={t('ui.form.phoneNumberPlaceholder') || 'e.g., +905...'}
+                                placeholder={t('ui.form.phoneNumberPlaceholder') || ''}
                                 keyboardType="phone-pad"
                                 value={value}
                                 onChangeText={onChange}
@@ -90,7 +125,6 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
                         )}
                     />
                 </View>
-
                 <View style={styles.card}>
                     <Text style={styles.label}>{t('ui.profile.birthDate')}</Text>
                     <Controller
@@ -106,7 +140,6 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
                         )}
                     />
                 </View>
-
                 <View style={[styles.card, { flexDirection: 'row', gap: 12 }]}>
                     <View style={{ flex: 1 }}>
                         <Text style={styles.label}>{t('ui.profile.city')}</Text>
@@ -116,7 +149,7 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
                             render={({ field: { onChange, value } }) => (
                                 <TextInput
                                     style={styles.input}
-                                    placeholder={t('ui.form.cityPlaceholder') || 'e.g., İstanbul'}
+                                    placeholder={t('ui.form.cityPlaceholder') || ''}
                                     value={value}
                                     onChangeText={onChange}
                                 />
@@ -131,7 +164,7 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
                             render={({ field: { onChange, value } }) => (
                                 <TextInput
                                     style={styles.input}
-                                    placeholder={t('ui.form.districtPlaceholder') || 'e.g., Kadıköy'}
+                                    placeholder={t('ui.form.districtPlaceholder') || ''}
                                     value={value}
                                     onChangeText={onChange}
                                 />
@@ -139,7 +172,6 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
                         />
                     </View>
                 </View>
-
                 <View style={styles.switchCard}>
                     <Text style={styles.label}>{t('ui.profile.isAvailable')}</Text>
                     <Controller
@@ -151,11 +183,19 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
                     />
                 </View>
             </ScrollView>
-
             <View style={styles.footer}>
+                {Object.keys(errors).length > 0 && (
+                    <Text style={{ color: 'red', textAlign: 'center', marginBottom: 8 }}>
+                        {t('ui.form.validationError') || 'Lütfen zorunlu alanları doldurun'}
+                    </Text>
+                )}
+
                 <TouchableOpacity
                     style={styles.primaryButton}
-                    onPress={handleSubmit(onSubmit)}
+                    onPress={() => {
+                        console.log('🟢 Kaydet butonuna basıldı');
+                        handleSubmit(onSubmit)();
+                    }}
                     disabled={isSubmitting}
                 >
                     {isSubmitting ? (
@@ -165,6 +205,7 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
                     )}
                 </TouchableOpacity>
             </View>
+
         </SafeAreaView>
     );
 }

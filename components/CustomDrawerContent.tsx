@@ -4,24 +4,42 @@ import {
     Text,
     Image,
     TouchableOpacity,
-    StyleSheet
+    StyleSheet,
 } from 'react-native';
 import { DrawerContentScrollView } from '@react-navigation/drawer';
-import { useNavigation, CommonActions } from '@react-navigation/native';
+import {
+    useNavigation,
+    CommonActions,
+    CompositeNavigationProp,
+} from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { DrawerNavigationProp } from '@react-navigation/drawer';
-import { DrawerParamList } from '../navigation/DrawerNavigator';
-import { useTranslation } from 'react-i18next';
-import { useAuth } from '../src/hooks/useAuth'; // 👈 token'dan kullanıcı verisi
+import {
+    DrawerNavigationProp,
+} from '@react-navigation/drawer';
+import {
+    NativeStackNavigationProp,
+} from '@react-navigation/native-stack';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '../src/hooks/useAuth';
+import { DrawerParamList } from '../navigation/DrawerNavigator';
+import { RootStackParamList } from '../navigation/RootNavigator'; // bu dosya senin stack tanımını içermeli
+
+type NavigationProp = CompositeNavigationProp<
+    DrawerNavigationProp<DrawerParamList>,
+    NativeStackNavigationProp<RootStackParamList>
+>;
 
 const CustomDrawerContent = (props: any) => {
-    const navigation = useNavigation<DrawerNavigationProp<DrawerParamList>>();
+    const navigation = useNavigation<NavigationProp>();
     const { t } = useTranslation();
     const { user } = useAuth();
 
     const handleLogout = async () => {
-        await AsyncStorage.removeItem('access_token');
+        await AsyncStorage.removeItem('jwt');
+        await AsyncStorage.removeItem('refreshToken');
+
         navigation.dispatch(
             CommonActions.reset({
                 index: 0,
@@ -30,19 +48,23 @@ const CustomDrawerContent = (props: any) => {
         );
     };
 
+    const handleProfileEdit = () => {
+        navigation.navigate('Drawer', { screen: 'ProfileEdit' });
+    };
+
     return (
         <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1, paddingTop: 60 }}>
             <View style={styles.profile}>
                 <Image
-                    source={{ uri: user.avatar || 'https://via.placeholder.com/150' }}
+                    source={{ uri: user?.avatar || 'https://via.placeholder.com/150' }}
                     style={styles.avatar}
                 />
-                <Text style={styles.name}>{user.fullName || 'Kullanıcı'}</Text>
-                <Text style={styles.email}>{user.email}</Text>
+                <Text style={styles.name}>{user?.fullName || 'Kullanıcı'}</Text>
+                <Text style={styles.email}>{user?.email || ''}</Text>
             </View>
 
             <View style={styles.menu}>
-                <MenuItem icon="person" label={t('ui.editProfile')} onPress={() => navigation.navigate('ProfileEdit')} />
+                <MenuItem icon="person" label={t('ui.editProfile')} onPress={handleProfileEdit} />
                 <MenuItem icon="notifications" label={t('ui.notifications')} badge={3} onPress={() => { }} />
                 <MenuItem icon="settings" label={t('ui.settings')} onPress={() => { }} />
             </View>
