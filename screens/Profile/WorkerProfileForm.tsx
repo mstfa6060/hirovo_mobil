@@ -77,17 +77,19 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
         try {
             console.log("Submitting form data:", data);
             await HirovoAPI.Workers.UpdateProfile.Request({
-                userId,
                 ...data,
+                userId,
                 birthDate: new Date(data.birthDate),
-                description: data.description ?? "",
+                description: data.description ?? '', // garanti altına al
             });
+
 
             Alert.alert(t('ui.success'), t('ui.profile.updated'));
         } catch (error) {
             Alert.alert(t('ui.error'), t('ui.profile.updateError'));
         }
     };
+
 
     return (
         <SafeAreaView style={styles.container}>
