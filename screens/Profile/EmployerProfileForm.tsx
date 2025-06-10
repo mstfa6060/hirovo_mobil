@@ -1,120 +1,237 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Button, Switch, StyleSheet, Alert } from 'react-native';
+import React from 'react';
+import {
+    View,
+    Text,
+    TextInput,
+    Switch,
+    TouchableOpacity,
+    ScrollView,
+    ActivityIndicator,
+    StyleSheet,
+    Platform,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { HirovoAPI } from '@api/business_modules/hirovo';
 import { useTranslation } from 'react-i18next';
+import TopBar from '../../components/TopBar'; // 👈 JobsDetail'deki gibi üst bar
+
+const schema = z.object({
+    phoneNumber: z.string().min(10, 'formErrors.phoneInvalid'),
+    birthDate: z.string().min(1, 'formErrors.required'),
+    city: z.string().min(1, 'formErrors.required'),
+    district: z.string().min(1, 'formErrors.required'),
+    description: z.string().optional(),
+    isAvailable: z.boolean(),
+});
 
 type FormData = z.infer<typeof schema>;
 
-const schema = z.object({
-    phoneNumber: z.string().min(10, 'formErrors.phoneInvalid').optional(),
-    city: z.string().min(1, 'formErrors.required').optional(),
-    district: z.string().min(1, 'formErrors.required').optional(),
-});
-
-type Props = {
-    userId: string;
-};
-
-const EmployerProfileForm = ({ userId }: Props) => {
+export default function WorkerProfileForm({ userId }: { userId: string }) {
     const { t } = useTranslation();
-    const [loading, setLoading] = useState(false);
 
     const {
         control,
         handleSubmit,
-        reset,
-        formState: { errors },
+        formState: { errors, isSubmitting },
     } = useForm<FormData>({
         resolver: zodResolver(schema),
+        defaultValues: {
+            phoneNumber: '',
+            birthDate: '',
+            city: '',
+            district: '',
+            description: '',
+            isAvailable: true,
+        },
     });
 
-    useEffect(() => {
-        const fetchProfile = async () => {
-            setLoading(true);
-            try {
-                const response = await HirovoAPI.Employers.Detail.Request({ userId });
-                reset({
-                    phoneNumber: response.phoneNumber,
-                    city: response.city,
-                    district: response.district,
-                });
-            } catch (error: any) {
-                Alert.alert(t('error.TITLE'), error.message || t('error.DEFAULT_ERROR'));
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchProfile();
-    }, [userId]);
-
     const onSubmit = async (data: FormData) => {
-        setLoading(true);
-        try {
-            await HirovoAPI.Employers.UpdateProfile.Request({
-                userId,
-                phoneNumber: data.phoneNumber || '',
-                city: data.city || '',
-                district: data.district || '',
-            });
-            Alert.alert(t('form.success'));
-        } catch (error: any) {
-            Alert.alert(t('error.TITLE'), error.message || t('error.DEFAULT_ERROR'));
-        } finally {
-            setLoading(false);
-        }
+        console.log(data);
+        // API çağrısı yapılabilir.
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.label}>{t('form.phoneNumber')}</Text>
-            <Controller
-                control={control}
-                name="phoneNumber"
-                render={({ field: { onChange, value } }) => (
-                    <TextInput style={styles.input} value={value} onChangeText={onChange} />
-                )}
-            />
-            {errors.phoneNumber && <Text style={styles.error}>{t(errors.phoneNumber?.message || '')}</Text>}
+        <SafeAreaView style={styles.container}>
+            <TopBar title={t('ui.editProfile')} showBackButton />
 
-            <Text style={styles.label}>{t('form.city')}</Text>
-            <Controller
-                control={control}
-                name="city"
-                render={({ field: { onChange, value } }) => (
-                    <TextInput style={styles.input} value={value} onChangeText={onChange} />
-                )}
-            />
-            {errors.city && <Text style={styles.error}>{t(errors.city?.message || '')}</Text>}
+            <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+                <View style={styles.card}>
+                    <Text style={styles.label}>{t('profile.description')}</Text>
+                    <Controller
+                        control={control}
+                        name="description"
+                        render={({ field: { onChange, value } }) => (
+                            <TextInput
+                                multiline
+                                style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
+                                placeholder={t('form.descriptionPlaceholdersssssss') || 'Tell us about yourself...'}
+                                value={value}
+                                onChangeText={onChange}
+                            />
+                        )}
+                    />
+                </View>
 
-            <Text style={styles.label}>{t('form.district')}</Text>
-            <Controller
-                control={control}
-                name="district"
-                render={({ field: { onChange, value } }) => (
-                    <TextInput style={styles.input} value={value} onChangeText={onChange} />
-                )}
-            />
-            {errors.district && <Text style={styles.error}>{t(errors.district?.message || '')}</Text>}
+                <View style={styles.card}>
+                    <Text style={styles.label}>{t('profile.phoneNumber')}</Text>
+                    <Controller
+                        control={control}
+                        name="phoneNumber"
+                        render={({ field: { onChange, value } }) => (
+                            <TextInput
+                                style={styles.input}
+                                placeholder={t('form.phoneNumberPlaceholder') || 'e.g., +905...'}
+                                keyboardType="phone-pad"
+                                value={value}
+                                onChangeText={onChange}
+                            />
+                        )}
+                    />
+                </View>
 
-            <Button title={t('form.submit')} onPress={handleSubmit(onSubmit)} disabled={loading} />
-        </View>
+                <View style={styles.card}>
+                    <Text style={styles.label}>{t('profile.birthDate')}</Text>
+                    <Controller
+                        control={control}
+                        name="birthDate"
+                        render={({ field: { onChange, value } }) => (
+                            <TextInput
+                                style={styles.input}
+                                placeholder={t('form.birthDatePlaceholder') || 'YYYY-MM-DD'}
+                                value={value}
+                                onChangeText={onChange}
+                            />
+                        )}
+                    />
+                </View>
+
+                <View style={[styles.card, { flexDirection: 'row', gap: 12 }]}>
+                    <View style={{ flex: 1 }}>
+                        <Text style={styles.label}>{t('profile.city')}</Text>
+                        <Controller
+                            control={control}
+                            name="city"
+                            render={({ field: { onChange, value } }) => (
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder={t('form.cityPlaceholder') || 'e.g., İstanbul'}
+                                    value={value}
+                                    onChangeText={onChange}
+                                />
+                            )}
+                        />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                        <Text style={styles.label}>{t('profile.district')}</Text>
+                        <Controller
+                            control={control}
+                            name="district"
+                            render={({ field: { onChange, value } }) => (
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder={t('form.districtPlaceholder') || 'e.g., Kadıköy'}
+                                    value={value}
+                                    onChangeText={onChange}
+                                />
+                            )}
+                        />
+                    </View>
+                </View>
+
+                <View style={styles.switchCard}>
+                    <Text style={styles.label}>{t('profile.isAvailable')}</Text>
+                    <Controller
+                        control={control}
+                        name="isAvailable"
+                        render={({ field: { value, onChange } }) => (
+                            <Switch value={value} onValueChange={onChange} />
+                        )}
+                    />
+                </View>
+            </ScrollView>
+
+            <View style={styles.footer}>
+                <TouchableOpacity
+                    style={styles.primaryButton}
+                    onPress={handleSubmit(onSubmit)}
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? (
+                        <ActivityIndicator color="#fff" />
+                    ) : (
+                        <Text style={styles.primaryButtonText}>{t('form.save')}</Text>
+                    )}
+                </TouchableOpacity>
+            </View>
+        </SafeAreaView>
     );
-};
-
-export default EmployerProfileForm;
+}
 
 const styles = StyleSheet.create({
-    container: { padding: 16 },
-    label: { fontWeight: 'bold', marginBottom: 4 },
+    container: { flex: 1, backgroundColor: '#f9fafb' },
+    card: {
+        marginHorizontal: 16,
+        marginTop: 16,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: '#e5e7eb',
+    },
+    label: {
+        fontSize: 14,
+        color: '#374151',
+        fontWeight: '500',
+        marginBottom: 6,
+    },
     input: {
         borderWidth: 1,
-        borderColor: '#ccc',
-        padding: 8,
-        marginBottom: 12,
-        borderRadius: 4,
+        borderColor: '#d1d5db',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        fontSize: 16,
+        backgroundColor: '#fff',
+        color: '#111827',
     },
-    error: { color: 'red', marginBottom: 8 },
+    switchCard: {
+        marginHorizontal: 16,
+        marginTop: 16,
+        backgroundColor: '#fff',
+        padding: 16,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#e5e7eb',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    footer: {
+        position: 'absolute',
+        bottom: Platform.OS === 'ios' ? 20 : 12,
+        left: 16,
+        right: 16,
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 12,
+        shadowColor: '#000',
+        shadowOpacity: 0.06,
+        shadowOffset: { width: 0, height: -2 },
+        shadowRadius: 8,
+        elevation: 8,
+    },
+    primaryButton: {
+        backgroundColor: '#0b80ee',
+        height: 48,
+        borderRadius: 9999,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    primaryButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
 });

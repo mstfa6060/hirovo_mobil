@@ -112,6 +112,15 @@ export const uiTr = {
         district: "İlçe",
         submit: "Kaydet",
         success: "Profil başarıyla güncellendi",
+        phoneNumberPlaceholder: "e.g., +905...",
+        birthDate: "Doğum Tarihi",
+        birthDatePlaceholder: "YYYY-MM-DD",
+        cityPlaceholder: "e.g., İstanbul",
+        districtPlaceholder: "e.g., Kadıköy",
+        description: "Açıklama",
+        descriptionPlaceholder: "Kendinizden bahsedin...",
+        isAvailable: "Müsaitim",
+        save: "Kaydet"
       },
       validation: {
         required: "Bu alan zorunludur",
@@ -135,7 +144,10 @@ export const uiTr = {
     },
     common: {
       loading: "Yükleniyor...",
-      cancel: "İptal"
+      cancel: "İptal",
+      save: "Kaydet",
+      editProfile: "Profilimi Düzenle",
+      logout: "Çıkış Yap"
     },
     tabs: {
       jobs: 'İş İlanları',

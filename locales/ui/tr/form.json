@@ -1,0 +1,15 @@
+{
+    "phoneNumber": "Telefon Numarası",
+    "phoneNumberPlaceholder": "e.g., +905...",
+    "birthDate": "Doğum Tarihi",
+    "birthDatePlaceholder": "YYYY-MM-DD",
+    "city": "Şehir",
+    "cityPlaceholder": "e.g., İstanbul",
+    "district": "İlçe",
+    "districtPlaceholder": "e.g., Kadıköy",
+    "description": "Açıklama",
+    "descriptionPlaceholder": "Kendinizden bahsedin...",
+    "isAvailable": "Müsaitim",
+    "submit": "Kaydet",
+    "success": "Profil başarıyla güncellendi"
+}

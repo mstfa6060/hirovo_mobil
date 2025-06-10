@@ -1,0 +1,5 @@
+{
+    "required": "Bu alan zorunludur",
+    "phoneNumber": "Geçerli bir telefon numarası giriniz",
+    "invalidDate": "Tarih formatı geçersiz"
+}
