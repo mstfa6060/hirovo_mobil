@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -15,18 +15,14 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppConfig } from '@config/hirovo-config';
-import { ApiService } from '@services/ApiService';
 import { IAMAPI } from '@api/base_modules/iam';
 import { RootStackParamList } from '../navigation/RootNavigator';
 
 import * as Google from 'expo-auth-session/providers/google';
 import * as AppleAuthentication from 'expo-apple-authentication';
 
-import '@config/i18n';
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
-import { Ionicons } from '@expo/vector-icons'; // simge için
-
+import { Ionicons } from '@expo/vector-icons';
 
 const schema = z.object({
   username: z.string().min(3, 'Kullanıcı adı en az 3 karakter olmalı'),
@@ -34,7 +30,6 @@ const schema = z.object({
 });
 
 type FormData = z.infer<typeof schema>;
-
 
 const LoginScreen = () => {
   const { t } = useTranslation();
@@ -53,7 +48,7 @@ const LoginScreen = () => {
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId: AppConfig.GoogleClientId,
     iosClientId: AppConfig.GoogleIosClientId,
-    androidClientId: AppConfig.GoogleAndroidClientId
+    androidClientId: AppConfig.GoogleAndroidClientId,
   });
 
   useEffect(() => {
@@ -74,7 +69,7 @@ const LoginScreen = () => {
           navigation.reset({ index: 0, routes: [{ name: 'Drawer' }] });
         })
         .catch(err => {
-          Alert.alert(t('error.LOGIN_FAILED_TITLE'), err?.message ?? t('error.DEFAULT_ERROR'));
+          Alert.alert(t('error.LOGIN_FAILED_TITLE') || 'Hata', err?.message ?? t('error.DEFAULT_ERROR'));
         });
     }
   }, [response]);
@@ -108,57 +103,57 @@ const LoginScreen = () => {
 
   const onSubmit = async (data: FormData) => {
     try {
-
       const response = await IAMAPI.Auth.Login.Request({
-        provider: 'native', // ← bu aslında backendde "native" olarak karşılanıyor olabilir, gerekirse 'native' yap
-        userName: data.username, // ← kullanıcı inputundan geliyor
-        password: data.password, // ← kullanıcı inputundan geliyor
-        token: '', // ← sadece Google/Apple için dolu olur
-        platform: IAMAPI.Enums.ClientPlatforms.Mobile, // ← Mobile için 1
-        isCompanyHolding: false, // ← eğer holding şirketse true olur (senin örneğinde false)
-        companyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd', // ← sabit ID
+        provider: 'native',
+        userName: data.username,
+        password: data.password,
+        token: '',
+        platform: IAMAPI.Enums.ClientPlatforms.Mobile,
+        isCompanyHolding: false,
+        companyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd',
       });
 
       await AsyncStorage.setItem('jwt', response.jwt);
       await AsyncStorage.setItem('refreshToken', response.refreshToken);
       navigation.reset({ index: 0, routes: [{ name: 'Drawer' }] });
     } catch (err: any) {
-      Alert.alert(t('error.LOGIN_FAILED_TITLE'), err?.message ?? t('error.DEFAULT_ERROR'));
+      Alert.alert(t('error.LOGIN_FAILED_TITLE') || 'Hata', err?.message ?? t('error.DEFAULT_ERROR'));
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t('ui.login.welcome')}</Text>
-      <Text style={styles.subtitle}>{t('ui.login.subtitle')}</Text>
+      <Text style={styles.title}>{t('ui.login.welcome') || 'Hoşgeldiniz'}</Text>
+      <Text style={styles.subtitle}>{t('ui.login.subtitle') || 'Giriş yapınız'}</Text>
 
       <Controller
         control={control}
         name="username"
         render={({ field: { onChange, onBlur, value } }) => (
-          <>
+          <View>
             <TextInput
-              placeholder={t('ui.login.usernamePlaceholder')}
+              placeholder={t('ui.login.usernamePlaceholder') || 'Kullanıcı Adı'}
               autoCapitalize="none"
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
               style={styles.input}
             />
-            {errors.username && <Text style={styles.error}>{errors.username.message}</Text>}
-          </>
+            {errors.username?.message ? (
+              <Text style={styles.error}>{errors.username.message}</Text>
+            ) : null}
+          </View>
         )}
       />
-
 
       <Controller
         control={control}
         name="password"
         render={({ field: { onChange, onBlur, value } }) => (
-          <>
+          <View>
             <View style={styles.passwordContainer}>
               <TextInput
-                placeholder={t('ui.login.passwordPlaceholder')}
+                placeholder={t('ui.login.passwordPlaceholder') || 'Şifre'}
                 secureTextEntry={!isPasswordVisible}
                 value={value}
                 onChangeText={onChange}
@@ -176,13 +171,15 @@ const LoginScreen = () => {
                 />
               </TouchableOpacity>
             </View>
-            {errors.password && <Text style={styles.error}>{errors.password.message}</Text>}
-          </>
+            {errors.password?.message ? (
+              <Text style={styles.error}>{errors.password.message}</Text>
+            ) : null}
+          </View>
         )}
       />
 
       <TouchableOpacity style={styles.link} onPress={() => navigation.navigate('ForgotPassword')}>
-        <Text style={styles.linkText}>{t('ui.login.forgotPassword')}</Text>
+        <Text style={styles.linkText}>{t('ui.login.forgotPassword') || 'Şifremi Unuttum'}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -190,11 +187,11 @@ const LoginScreen = () => {
         disabled={!isValid}
         onPress={handleSubmit(onSubmit)}
       >
-        <Text style={styles.buttonText}>{t('ui.login.submit')}</Text>
+        <Text style={styles.buttonText}>{t('ui.login.submit') || 'Giriş Yap'}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.secondaryText}>{t('ui.login.register')}</Text>
+        <Text style={styles.secondaryText}>{t('ui.login.register') || 'Kayıt Ol'}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.googleButton} onPress={() => promptAsync()}>
@@ -241,5 +238,4 @@ const styles = StyleSheet.create({
   eyeButton: {
     padding: 4,
   },
-
 });

@@ -9,13 +9,14 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { HirovoAPI } from '@api/business_modules/hirovo';
-import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import { MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 
 type Job = HirovoAPI.Jobs.All.IResponseModel;
+
 
 export default function JobsAllScreen() {
   const { t } = useTranslation();
@@ -51,9 +52,11 @@ export default function JobsAllScreen() {
     fetchJobs();
   }, []);
 
+
   const goToJobDetail = (jobId: string) => {
     navigation.navigate('JobsDetail', { id: jobId });
   };
+
 
   if (loading) {
     return (
@@ -75,7 +78,7 @@ export default function JobsAllScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f9f9f9' }}>
       {/* TOP BAR */}
-      <View style={styles.topBar}>
+      {/* <View style={styles.topBar}>
         <Text style={styles.topBarTitle}>{t('ui.jobs.feedTitle')}</Text>
         <View style={styles.iconContainer}>
           <TouchableOpacity>
@@ -85,7 +88,7 @@ export default function JobsAllScreen() {
             <MaterialIcons name="filter-list" size={24} color="#4b5563" />
           </TouchableOpacity>
         </View>
-      </View>
+      </View> */}
 
       {/* ALT BAŞLIK */}
       <Text style={styles.subHeader}>{t('ui.jobs.feedSubtitle')}</Text>

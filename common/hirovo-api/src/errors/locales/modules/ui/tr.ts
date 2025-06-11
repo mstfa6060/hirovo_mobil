@@ -7,6 +7,12 @@ export const uiTr = {
       notifications: "Bildirimler",
       settings: "Ayarlar",
       logout: "Çıkış Yap",
+      success: "Başarılı",
+      error: "Hata",
+      workers: "İşçiler",
+      searchWorkers: "İşçi Ara",
+      available: "Müsait",
+      unavailable: "Müsait Değil",
       login: {
         welcome: "Hirovo Hoşgeldiniz",
         subtitle: "Lütfen e-posta ve şifrenizi giriniz",
@@ -104,7 +110,9 @@ export const uiTr = {
         description: "Açıklama",
         isAvailable: "Müsaitim",
         save: "Kaydet",
-        updated: "Profil başarıyla güncellendi"
+        updated: "Profil başarıyla güncellendi",
+        email: "E-posta",
+        updateError: "Profil güncellenemedi. Lütfen tekrar deneyin.",
       },
       form: {
         phoneNumber: "Telefon Numarası",
@@ -120,7 +128,8 @@ export const uiTr = {
         description: "Açıklama",
         descriptionPlaceholder: "Kendinizden bahsedin...",
         isAvailable: "Müsaitim",
-        save: "Kaydet"
+        save: "Kaydet",
+        emailPlaceholder: "E-posta adresiniz",
       },
       validation: {
         required: "Bu alan zorunludur",

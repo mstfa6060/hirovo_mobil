@@ -24,7 +24,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../src/hooks/useAuth';
 import { DrawerParamList } from '../navigation/DrawerNavigator';
-import { RootStackParamList } from '../navigation/RootNavigator'; // bu dosya senin stack tanımını içermeli
+import { RootStackParamList } from '../navigation/RootNavigator';
 
 type NavigationProp = CompositeNavigationProp<
     DrawerNavigationProp<DrawerParamList>,
@@ -64,13 +64,13 @@ const CustomDrawerContent = (props: any) => {
             </View>
 
             <View style={styles.menu}>
-                <MenuItem icon="person" label={t('ui.editProfile')} onPress={handleProfileEdit} />
-                <MenuItem icon="notifications" label={t('ui.notifications')} badge={3} onPress={() => { }} />
-                <MenuItem icon="settings" label={t('ui.settings')} onPress={() => { }} />
+                <MenuItem icon="person" label={t('ui.editProfile') || 'Profil'} onPress={handleProfileEdit} />
+                <MenuItem icon="notifications" label={t('ui.notifications') || 'Bildirimler'} badge={3} onPress={() => { }} />
+                <MenuItem icon="settings" label={t('ui.settings') || 'Ayarlar'} onPress={() => { }} />
             </View>
 
             <View style={styles.footer}>
-                <MenuItem icon="logout" label={t('ui.logout')} isDanger onPress={handleLogout} />
+                <MenuItem icon="logout" label={t('ui.logout') || 'Çıkış'} isDanger onPress={handleLogout} />
             </View>
         </DrawerContentScrollView>
     );
@@ -79,7 +79,9 @@ const CustomDrawerContent = (props: any) => {
 const MenuItem = ({ icon, label, onPress, badge, isDanger = false }: any) => (
     <TouchableOpacity style={styles.menuItem} onPress={onPress}>
         <MaterialIcons name={icon} size={20} color={isDanger ? '#dc2626' : '#374151'} />
-        <Text style={[styles.menuText, isDanger && { color: '#dc2626' }]}>{label}</Text>
+        <Text style={[styles.menuText, isDanger && { color: '#dc2626' }]}>
+            {label || ''}
+        </Text>
         {badge ? (
             <View style={styles.badge}>
                 <Text style={styles.badgeText}>{badge}</Text>
