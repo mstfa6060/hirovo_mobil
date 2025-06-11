@@ -412,7 +412,7 @@ export namespace HirovoAPI {
 			export interface IResponseModel {
 				jobId: Guid;
 				title: string;
-				salary: __ERROR_TYPE_NOT_HANDLED__;
+				salary: number;
 				distanceInKm: Double;
 				endDate: Date;
 			}
@@ -460,7 +460,7 @@ export namespace HirovoAPI {
 				id: Guid;
 				title: string;
 				description: string;
-				salary: __ERROR_TYPE_NOT_HANDLED__;
+				salary: number;
 				type: Enums.HirovoJobType;
 				status: Enums.HirovoJobStatus;
 				employerId: Guid;
@@ -499,7 +499,7 @@ export namespace HirovoAPI {
 			export interface IResponseModel {
 				id: Guid;
 				title: string;
-				salary: __ERROR_TYPE_NOT_HANDLED__;
+				salary: number;
 				endDate: Date;
 				type: Enums.HirovoJobType;
 				status: Enums.HirovoJobStatus;
@@ -513,7 +513,7 @@ export namespace HirovoAPI {
 				jobId: Guid;
 				title: string;
 				description: string;
-				salary: __ERROR_TYPE_NOT_HANDLED__;
+				salary: number;
 				type: Enums.HirovoJobType;
 				status: Enums.HirovoJobStatus;
 			}
@@ -541,7 +541,7 @@ export namespace HirovoAPI {
 			export interface IRequestModel {
 				title: string;
 				description: string;
-				salary: __ERROR_TYPE_NOT_HANDLED__;
+				salary: number;
 				type: Enums.HirovoJobType;
 				employerId: Guid;
 				latitude: Double;
@@ -588,7 +588,7 @@ export namespace HirovoAPI {
 			export interface IJobInfo {
 				id: Guid;
 				title: string;
-				salary: __ERROR_TYPE_NOT_HANDLED__;
+				salary: number;
 				type: Enums.HirovoJobType;
 				status: Enums.HirovoJobStatus;
 				endDate: Date;
@@ -612,7 +612,7 @@ export namespace HirovoAPI {
 				jobId: Guid;
 				title: string;
 				description: string;
-				salary: __ERROR_TYPE_NOT_HANDLED__;
+				salary: number;
 				type: Enums.HirovoJobType;
 				status: Enums.HirovoJobStatus;
 				appliedAt: Date;
@@ -765,7 +765,7 @@ export namespace HirovoAPI {
 				id: Guid;
 				title: string;
 				description: string;
-				salary: __ERROR_TYPE_NOT_HANDLED__;
+				salary: number;
 				type: Enums.HirovoJobType;
 				status: Enums.HirovoJobStatus;
 				createdAt: Date;
