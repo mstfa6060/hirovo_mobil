@@ -23,6 +23,7 @@ type Worker = {
     district: string;
     birthDate?: string;
     isAvailable?: boolean;
+    description: string;
 };
 
 export default function WorkersScreen() {
@@ -62,7 +63,8 @@ export default function WorkersScreen() {
                         item.displayName?.trim() ||
                         item.phoneNumber?.trim() ||
                         item.city?.trim() ||
-                        item.district?.trim()
+                        item.district?.trim() ||
+                        item.description?.trim()
                 );
 
             setWorkers(normalizedWorkers);
@@ -134,6 +136,11 @@ export default function WorkersScreen() {
                                 {item.birthDate && (
                                     <Text style={styles.line}>
                                         <Text style={styles.label}>Doğum Tarihi:</Text> {item.birthDate}
+                                    </Text>
+                                )}
+                                {item.description && (
+                                    <Text style={styles.line}>
+                                        <Text style={styles.label}>Açıklama:</Text> {item.displayName}
                                     </Text>
                                 )}
                             </View>

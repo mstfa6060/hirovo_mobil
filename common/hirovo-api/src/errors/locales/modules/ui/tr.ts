@@ -152,6 +152,25 @@ export const uiTr = {
         available: "Müsait",
         unavailable: "Müsait Değil",
       },
+      ApplicationsScreen: {
+        myApplications: "Başvurularım",
+        title: "Başvurular",
+        noApplications: "Gösterilecek başvuru bulunamadı.",
+        loadError: "Başvurular yüklenirken hata oluştu.",
+        detailLoadError: "Başvuru detayları yüklenemedi.",
+        notFound: "Başvuru bulunamadı.",
+        appliedDate: "Başvuru Tarihi",
+        jobTitle: "İş İlanı Başlığı",
+        salary: "Maaş",
+        jobType: "İş Türü",
+        status: "Durum",
+        statuses: {
+          Pending: "Beklemede",
+          Accepted: "Kabul Edildi",
+          Rejected: "Reddedildi",
+          Cancelled: "İptal Edildi",
+        }
+      }
     },
     error: {
       DEFAULT_ERROR: "Bir hata oluştu. Lütfen tekrar deneyin.",

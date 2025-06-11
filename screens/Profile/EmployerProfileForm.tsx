@@ -22,6 +22,7 @@ const schema = z.object({
     phoneNumber: z.string().min(10, 'formErrors.phoneInvalid'),
     city: z.string().min(1, 'formErrors.required'),
     district: z.string().min(1, 'formErrors.required'),
+    description: z.string().min(1, 'formErrors.required'),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -71,6 +72,7 @@ export default function EmployerProfileForm({ userId }: { userId: string }) {
                 phoneNumber: data.phoneNumber,
                 city: data.city,
                 district: data.district,
+                description: data.description,
             });
             Alert.alert(t('ui.success'), t('ui.profile.updated'));
         } catch (error) {
