@@ -64,9 +64,9 @@ const CustomDrawerContent = (props: any) => {
             </View>
 
             <View style={styles.menu}>
-                <MenuItem icon="person" label={t('ui.editProfile') || 'Profil'} onPress={handleProfileEdit} />
-                <MenuItem icon="notifications" label={t('ui.notifications') || 'Bildirimler'} badge={3} onPress={() => { }} />
-                <MenuItem icon="settings" label={t('ui.settings') || 'Ayarlar'} onPress={() => { }} />
+                <MenuItem icon="person" label={t('ui.editProfile')} onPress={handleProfileEdit} />
+                {/* <MenuItem icon="notifications" label={t('ui.notifications')} badge={3} onPress={() => { }} />
+                <MenuItem icon="settings" label={t('ui.settings')} onPress={() => { }} /> */}
             </View>
 
             <View style={styles.footer}>

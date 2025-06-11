@@ -9,6 +9,7 @@ import {
 import { HirovoAPI } from '@api/business_modules/hirovo';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
+import { useAuth } from '../src/hooks/useAuth';
 
 type ApplicationItem = {
     id: string;
@@ -23,43 +24,27 @@ export default function ApplicationsScreen() {
     const { t } = useTranslation();
     const [applications, setApplications] = useState<ApplicationItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const { user } = useAuth();
 
     useEffect(() => {
         const fetchApplications = async () => {
             try {
-                const response = await HirovoAPI.JobApplications.All.Request({
-                    sorting: {
-                        key: 'appliedAt',
-                        direction: HirovoAPI.Enums.XSortingDirection.Descending,
-                    },
-                    filters: [],
-                    pageRequest: {
-                        currentPage: 1,
-                        perPageCount: 20,
-                        listAll: false,
-                    },
+                const response = await HirovoAPI.JobApplications.AppliedJobs.Request({
+                    workerId: user.id,
                 });
 
-                const detailedApplications = await Promise.all(
-                    response.map(async (item) => {
-                        const detail = await HirovoAPI.JobApplications.Detail.Request({
-                            jobApplicationId: item.id,
-                        });
+                const mapped = response.map((item) => ({
+                    id: item.jobId,
+                    title: item.title,
+                    salary: item.salary,
+                    jobType: HirovoAPI.Enums.HirovoJobType[item.type],
+                    status: item.applicationStatus,
+                    appliedDate: format(new Date(item.appliedAt), 'MMM d, yyyy'),
+                }));
 
-                        return {
-                            id: detail.id,
-                            title: detail.job.title,
-                            salary: detail.job.salary,
-                            jobType: HirovoAPI.Enums.HirovoJobType[detail.job.type],
-                            status: detail.status,
-                            appliedDate: format(new Date(detail.appliedAt), 'MMM d, yyyy'),
-                        };
-                    })
-                );
-
-                setApplications(detailedApplications);
+                setApplications(mapped);
             } catch (error) {
-                console.error('Başvuru listesi alınamadı:', error);
+                console.error('Başvurular alınamadı:', error);
             } finally {
                 setLoading(false);
             }
@@ -105,7 +90,6 @@ export default function ApplicationsScreen() {
         </View>
     );
 
-
     return (
         <View style={styles.container}>
             <Text style={styles.header}>{t('ui.ApplicationsScreen.myApplications')}</Text>
@@ -123,6 +107,7 @@ export default function ApplicationsScreen() {
         </View>
     );
 }
+
 
 const styles = StyleSheet.create({
     container: {
