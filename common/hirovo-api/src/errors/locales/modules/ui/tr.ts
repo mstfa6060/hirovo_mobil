@@ -136,6 +136,22 @@ export const uiTr = {
         phoneNumber: "Geçerli bir telefon numarası giriniz",
         invalidDate: "Tarih formatı geçersiz",
       },
+      workerProfileScreen: {
+        title: "İşçi Profili",
+        description: "Açıklama",
+        phoneNumber: "Telefon Numarası",
+        hidden: "Gizli",
+        visibleOnlyToEmployers: "Yalnızca yetkili işverenlere görünür.",
+        birthDate: "Doğum Tarihi",
+        city: "Şehir",
+        district: "İlçe",
+        availabilityStatus: "Müsaitlik Durumu",
+        contactWorker: "İletişime Geç",
+        detailError: "İşçi detayları yüklenemedi.",
+        notFound: "İşçi bulunamadı.",
+        available: "Müsait",
+        unavailable: "Müsait Değil",
+      },
     },
     error: {
       DEFAULT_ERROR: "Bir hata oluştu. Lütfen tekrar deneyin.",
@@ -168,5 +184,6 @@ export const uiTr = {
       phoneNumber: "Geçerli bir telefon numarası giriniz",
       invalidDate: "Tarih formatı geçersiz"
     }
+
   }
 };

@@ -7,6 +7,7 @@ import {
     StyleSheet,
     TouchableOpacity,
     Switch,
+    Linking,
 } from 'react-native';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { HirovoAPI } from '@api/business_modules/hirovo';
@@ -36,7 +37,7 @@ export default function WorkerProfileScreen() {
                     birthDate: response.birthDate ? new Date(response.birthDate) : undefined,
                 });
             } catch (err) {
-                setError(t('ui.workerDetailError'));
+                setError(t('ui.workerProfileScreen.detailError'));
             } finally {
                 setLoading(false);
             }
@@ -56,30 +57,31 @@ export default function WorkerProfileScreen() {
     if (error || !worker) {
         return (
             <View style={styles.loadingContainer}>
-                <Text style={{ color: 'red' }}>{error || t('ui.workerNotFound')}</Text>
+                <Text style={{ color: 'red' }}>{error || t('ui.workerProfileScreen.notFound')}</Text>
             </View>
         );
     }
 
     return (
         <SafeAreaView style={styles.container}>
-            <TopBar title={worker.displayName || t('ui.workerProfile')} showBackButton />
+            <TopBar title={worker.displayName || t('ui.workerProfileScreen.title')} showBackButton />
 
             <ScrollView contentContainerStyle={styles.content}>
                 <View style={styles.card}>
                     <View style={styles.section}>
-                        <Text style={styles.label}>{t('ui.description')}</Text>
+                        <Text style={styles.label}>{t('ui.workerProfileScreen.description')}</Text>
                         <Text style={styles.value}>{worker.description}</Text>
                     </View>
 
                     <View style={styles.section}>
-                        <Text style={styles.label}>{t('ui.phoneNumber')}</Text>
-                        <Text style={styles.hidden}>🔒 {t('ui.hidden')}</Text>
-                        <Text style={styles.hint}>{t('ui.visibleOnlyToEmployers')}</Text>
+                        <Text style={styles.label}>{t('ui.workerProfileScreen.phoneNumber')}</Text>
+                        <Text style={styles.value}>
+                            {worker.isAvailable ? worker.phoneNumber : '-'}
+                        </Text>
                     </View>
 
                     <View style={styles.section}>
-                        <Text style={styles.label}>{t('ui.birthDate')}</Text>
+                        <Text style={styles.label}>{t('ui.workerProfileScreen.birthDate')}</Text>
                         <Text style={styles.value}>
                             {worker.birthDate?.toLocaleDateString() || '-'}
                         </Text>
@@ -87,18 +89,18 @@ export default function WorkerProfileScreen() {
 
                     <View style={styles.cityDistrict}>
                         <View style={{ flex: 1 }}>
-                            <Text style={styles.label}>{t('ui.city')}</Text>
+                            <Text style={styles.label}>{t('ui.workerProfileScreen.city')}</Text>
                             <Text style={styles.value}>{worker.city}</Text>
                         </View>
                         <View style={{ flex: 1 }}>
-                            <Text style={styles.label}>{t('ui.district')}</Text>
+                            <Text style={styles.label}>{t('ui.workerProfileScreen.district')}</Text>
                             <Text style={styles.value}>{worker.district}</Text>
                         </View>
                     </View>
                 </View>
 
                 <View style={styles.statusCard}>
-                    <Text style={styles.statusLabel}>{t('ui.availabilityStatus')}</Text>
+                    <Text style={styles.statusLabel}>{t('ui.workerProfileScreen.availabilityStatus')}</Text>
                     <View style={styles.statusSwitchContainer}>
                         <Text
                             style={[
@@ -106,7 +108,7 @@ export default function WorkerProfileScreen() {
                                 worker.isAvailable ? styles.available : styles.unavailable,
                             ]}
                         >
-                            {worker.isAvailable ? t('ui.available') : t('ui.unavailable')}
+                            {worker.isAvailable ? t('ui.workerProfileScreen.available') : t('ui.workerProfileScreen.unavailable')}
                         </Text>
                         <Switch
                             value={worker.isAvailable}
@@ -122,8 +124,19 @@ export default function WorkerProfileScreen() {
             </ScrollView>
 
             <View style={styles.footer}>
-                <TouchableOpacity style={styles.button}>
-                    <Text style={styles.buttonText}>{t('ui.contactWorker')}</Text>
+                <TouchableOpacity
+                    style={[
+                        styles.button,
+                        !worker.isAvailable && { backgroundColor: '#d1d5db' }
+                    ]}
+                    disabled={!worker.isAvailable}
+                    onPress={() => {
+                        if (worker.isAvailable && worker.phoneNumber) {
+                            Linking.openURL(`tel:${worker.phoneNumber}`);
+                        }
+                    }}
+                >
+                    <Text style={styles.buttonText}>{t('ui.workerProfileScreen.contactWorker')}</Text>
                 </TouchableOpacity>
             </View>
         </SafeAreaView>
