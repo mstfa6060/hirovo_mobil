@@ -46,8 +46,6 @@ const LoginScreen = () => {
   });
 
   const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: AppConfig.GoogleClientId,
-    iosClientId: AppConfig.GoogleIosClientId,
     androidClientId: AppConfig.GoogleAndroidClientId,
   });
 

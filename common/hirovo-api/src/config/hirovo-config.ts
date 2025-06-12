@@ -27,6 +27,6 @@ export const AppConfig = {
   IAMUrl: 'https://api.hirovo.com/iam',
   GoogleClientId: 'YOUR_GOOGLE_CLIENT_ID',
   GoogleIosClientId: 'YOUR_IOS_CLIENT_ID',
-  GoogleAndroidClientId: 'YOUR_ANDROID_CLIENT_ID',
+  GoogleAndroidClientId: '606884613202-6hp92guha11qm77a1a6hfhre7238i5vl.apps.googleusercontent.com',
   GoogleExpoClientId: 'YOUR_EXPO_CLIENT_ID'
 };
