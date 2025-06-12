@@ -25,8 +25,9 @@ api.interceptors.request.use(
 export const AppConfig = {
   HirovoUrl: 'https://api.hirovo.com/hirovo',
   IAMUrl: 'https://api.hirovo.com/iam',
-  GoogleClientId: 'YOUR_GOOGLE_CLIENT_ID',
-  GoogleIosClientId: 'YOUR_IOS_CLIENT_ID',
+  GoogleClientId: '606884613202-3voc3mec471dnd5fg2fpe4b51bb7i2s3.apps.googleusercontent.com',
+  GoogleIosClientId: '',
   GoogleAndroidClientId: '606884613202-6hp92guha11qm77a1a6hfhre7238i5vl.apps.googleusercontent.com',
-  GoogleExpoClientId: 'YOUR_EXPO_CLIENT_ID'
+  GoogleExpoClientId: '606884613202-3voc3mec471dnd5fg2fpe4b51bb7i2s3.apps.googleusercontent.com',
+
 };

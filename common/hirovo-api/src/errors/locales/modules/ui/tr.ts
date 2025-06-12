@@ -13,6 +13,7 @@ export const uiTr = {
       searchWorkers: "İşçi Ara",
       available: "Müsait",
       unavailable: "Müsait Değil",
+      createJob: "İlan Oluştur",
       login: {
         welcome: "Hirovo Hoşgeldiniz",
         subtitle: "Lütfen e-posta ve şifrenizi giriniz",
@@ -100,6 +101,15 @@ export const uiTr = {
         viewDetails: "Detayları Gör",
         applyNow: "Şimdi Başvur",
         detailTitle: "İlan Detayı",
+        createdSuccessfully: "İş ilanı başarıyla oluşturuldu.",
+        createdError: "İş ilanı oluşturulamadı. Lütfen tekrar deneyin.",
+        createJobTitle: "İş İlanı Oluştur",
+        title: "İş İlanı Başlığı",
+        titlePlaceholder: "Örn: Bahçıvan Aranıyor",
+        descriptionPlaceholder: "İşin detaylarını giriniz...",
+        notifyRadiusKm: 'Gösterim Mesafesi (km)',
+        notifyRadiusExplanation: 'İlan, bu mesafe içindeki kullanıcılara gösterilecektir.',
+
       },
       profile: {
         title: "Profil Düzenle",

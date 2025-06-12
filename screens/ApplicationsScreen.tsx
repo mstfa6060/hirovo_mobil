@@ -27,6 +27,8 @@ export default function ApplicationsScreen() {
     const { user } = useAuth();
 
     useEffect(() => {
+        if (!user?.id) return; // user hazır değilse bekle
+
         const fetchApplications = async () => {
             try {
                 const response = await HirovoAPI.JobApplications.AppliedJobs.Request({
@@ -51,7 +53,8 @@ export default function ApplicationsScreen() {
         };
 
         fetchApplications();
-    }, []);
+    }, [user?.id]);
+
 
     const getStatusStyle = (status: HirovoAPI.Enums.ApplicationStatus) => {
         switch (status) {
