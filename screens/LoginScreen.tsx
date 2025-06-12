@@ -52,27 +52,58 @@ const LoginScreen = () => {
   });
 
   useEffect(() => {
-    if (response?.type === 'success') {
-      const { authentication } = response;
-      IAMAPI.Auth.Login.Request({
-        provider: 'Google',
-        userName: '',
-        password: '',
-        token: authentication?.accessToken ?? '',
-        platform: IAMAPI.Enums.ClientPlatforms.Mobile,
-        isCompanyHolding: false,
-        companyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd',
-      })
-        .then(async res => {
+    const handleGoogleLogin = async () => {
+      if (response?.type === 'success') {
+        try {
+          const { authentication } = response;
+
+          // Google'dan kullanıcı bilgilerini al
+          const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${authentication?.accessToken}` },
+          }).then(res => res.json());
+
+          // Kullanıcıyı veritabanında oluşturmayı dene
+          try {
+            await IAMAPI.Users.Create.Request({
+              userName: userInfo.email,
+              firstName: userInfo.given_name || '',
+              surname: userInfo.family_name || '',
+              email: userInfo.email,
+              password: 'Google', // placeholder
+              providerId: userInfo.sub,
+              userType: IAMAPI.Enums.UserType.Worker,
+              companyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd',
+              userSource: IAMAPI.Enums.UserSources.Google,
+              description: 'Google ile kayıt',
+            });
+          } catch (err: any) {
+            // 409 Conflict gibi durumlarda kullanıcı zaten vardır, ignore edebiliriz
+            console.warn('Kullanıcı zaten kayıtlı olabilir:', err?.message);
+          }
+
+          // Ardından Login işlemi
+          const res = await IAMAPI.Auth.Login.Request({
+            provider: 'Google',
+            userName: '',
+            password: '',
+            token: authentication?.accessToken ?? '',
+            platform: IAMAPI.Enums.ClientPlatforms.Mobile,
+            isCompanyHolding: false,
+            companyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd',
+          });
+
           await AsyncStorage.setItem('jwt', res.jwt);
           await AsyncStorage.setItem('refreshToken', res.refreshToken);
           navigation.reset({ index: 0, routes: [{ name: 'Drawer' }] });
-        })
-        .catch(err => {
+        } catch (err: any) {
           Alert.alert(t('error.LOGIN_FAILED_TITLE') || 'Hata', err?.message ?? t('error.DEFAULT_ERROR'));
-        });
-    }
+        }
+      }
+    };
+
+    handleGoogleLogin();
   }, [response]);
+
 
   const onAppleLogin = async () => {
     try {
