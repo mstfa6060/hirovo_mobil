@@ -109,7 +109,7 @@ export const uiTr = {
         descriptionPlaceholder: "İşin detaylarını giriniz...",
         notifyRadiusKm: 'Gösterim Mesafesi (km)',
         notifyRadiusExplanation: 'İlan, bu mesafe içindeki kullanıcılara gösterilecektir.',
-
+        submitJob: "İlanı Gönder",
       },
       profile: {
         title: "Profil Düzenle",

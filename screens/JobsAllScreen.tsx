@@ -5,7 +5,8 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
-  StyleSheet
+  StyleSheet,
+  RefreshControl,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { HirovoAPI } from '@api/business_modules/hirovo';
@@ -17,13 +18,13 @@ import { useNavigation } from '@react-navigation/native';
 
 type Job = HirovoAPI.Jobs.All.IResponseModel;
 
-
 export default function JobsAllScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -31,14 +32,14 @@ export default function JobsAllScreen() {
         const response = await HirovoAPI.Jobs.All.Request({
           sorting: {
             key: 'createdAt',
-            direction: HirovoAPI.Enums.XSortingDirection.Descending
+            direction: HirovoAPI.Enums.XSortingDirection.Descending,
           },
           filters: [],
           pageRequest: {
             currentPage: 1,
             perPageCount: 20,
-            listAll: false
-          }
+            listAll: false,
+          },
         });
         setJobs(response);
       } catch (err) {
@@ -52,11 +53,17 @@ export default function JobsAllScreen() {
     fetchJobs();
   }, []);
 
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    // Burada yenileme işlemini başlat
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  }, []);
 
   const goToJobDetail = (jobId: string) => {
     navigation.navigate('JobsDetail', { id: jobId });
   };
-
 
   if (loading) {
     return (
@@ -77,28 +84,12 @@ export default function JobsAllScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f9f9f9' }}>
-      {/* TOP BAR */}
-      {/* <View style={styles.topBar}>
-        <Text style={styles.topBarTitle}>{t('ui.jobs.feedTitle')}</Text>
-        <View style={styles.iconContainer}>
-          <TouchableOpacity>
-            <MaterialIcons name="search" size={24} color="#4b5563" />
-          </TouchableOpacity>
-          <TouchableOpacity style={{ marginLeft: 12 }}>
-            <MaterialIcons name="filter-list" size={24} color="#4b5563" />
-          </TouchableOpacity>
-        </View>
-      </View> */}
-
-      {/* ALT BAŞLIK */}
       <Text style={styles.subHeader}>{t('ui.jobs.feedSubtitle')}</Text>
 
-      {/* İLAN LİSTESİ */}
       <FlatList
         style={{ marginTop: 12 }}
         data={jobs}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingBottom: 16 }}
         renderItem={({ item }) => (
           <View style={styles.card}>
             <Text style={styles.jobTitle}>{item.title}</Text>
@@ -111,41 +102,26 @@ export default function JobsAllScreen() {
             </TouchableOpacity>
           </View>
         )}
+        contentContainerStyle={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: '#ffffff',
-    borderBottomColor: '#e5e7eb',
-    borderBottomWidth: 1
-  },
-  topBarTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827'
-  },
-  iconContainer: {
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
   subHeader: {
     fontSize: 14,
     color: '#6b7280',
     marginTop: 8,
-    marginHorizontal: 16
+    marginHorizontal: 16,
   },
   center: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   card: {
     backgroundColor: 'white',
@@ -157,33 +133,36 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
-    elevation: 3
+    elevation: 3,
   },
   jobTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1f2937'
+    color: '#1f2937',
   },
   subInfo: {
     fontSize: 14,
     color: '#6b7280',
-    marginTop: 4
+    marginTop: 4,
   },
   description: {
     fontSize: 14,
     color: '#374151',
-    marginTop: 8
+    marginTop: 8,
   },
   button: {
     backgroundColor: '#007bff',
     paddingVertical: 10,
     borderRadius: 6,
     marginTop: 12,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   buttonText: {
     color: 'white',
     fontSize: 14,
-    fontWeight: '600'
-  }
+    fontWeight: '600',
+  },
+  container: {
+    paddingBottom: 16,
+  },
 });
