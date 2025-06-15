@@ -16,6 +16,11 @@ import { RootStackParamList } from '../navigation/RootNavigator';
 import TopBar from '../components/TopBar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useAuth } from '../src/hooks/useAuth';
+import { Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
 
 type JobsDetailRouteProp = RouteProp<RootStackParamList, 'JobsDetail'>;
 
@@ -43,6 +48,47 @@ export default function JobsDetailScreen() {
 
         fetchJobDetail();
     }, [id]);
+
+
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+    const { user } = useAuth();
+
+    const handleApply = async () => {
+        try {
+            if (!user?.id || !job?.id) return;
+
+            await HirovoAPI.JobApplications.Create.Request({
+                jobId: job.id,
+                workerId: user.id,
+                companyId: "c9d8c846-10fc-466d-8f45-a4fa4e856abd",
+            });
+
+            Alert.alert(
+                t('ui.jobs.applicationSuccess'),
+                t('ui.jobs.applicationSubmitted'),
+                [
+                    {
+                        text: t('ui.success'),
+                        onPress: () => {
+                            navigation.navigate('Drawer', {
+                                screen: 'HomeTabs',
+                                params: {
+                                    screen: 'Applications',
+                                },
+                            });
+                        },
+                    },
+                ]
+            );
+        } catch (err) {
+            console.error('Başvuru hatası:', err);
+            Alert.alert(t('ui.jobs.applicationError'), t('ui.jobs.pleaseTryAgain'));
+        }
+    };
+
+
+
 
     const handleShare = async () => {
         try {
@@ -107,9 +153,10 @@ export default function JobsDetailScreen() {
                 <TouchableOpacity style={styles.iconButton} onPress={handleShare}>
                     <MaterialIcons name="share" size={24} color="#6b7280" />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.primaryButton}>
+                <TouchableOpacity style={styles.primaryButton} onPress={handleApply}>
                     <Text style={styles.primaryButtonText}>{t('ui.jobs.applyNow')}</Text>
                 </TouchableOpacity>
+
             </View>
         </SafeAreaView>
     );

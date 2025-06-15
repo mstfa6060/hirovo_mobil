@@ -1,39 +1,38 @@
 {
   "expo": {
-    "name": "hirovo_mobil",
-    "slug": "hirovo_mobil",
+    "name": "Hirovo",
+    "slug": "hirovo-mobil",
+    "owner": "mstfa6060",
     "scheme": "hirovo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "ios": {
-      "supportsTablet": true
-    },
     "android": {
-      "package": "com.mstfa6060.hirovomobil",
+      "package": "com.madentechnology.hirovomobilapp",
       "versionCode": 1,
-      "googleServicesFile": "./google-services.json", 
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "5a2aa93d-1683-4041-914d-7662a042a8f5"
+        "projectId": "2122db4d-ba6e-4881-9d43-a8ee5d32a8e3"
       }
-    },
-    "owner": "mstfa6060"
+    }
   }
 }

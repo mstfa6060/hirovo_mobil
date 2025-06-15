@@ -1,4 +1,4 @@
-package com.mstfa6060.hirovomobil
+package com.madentechnology.hirovomobilapp
 
 import android.app.Application
 import android.content.res.Configuration

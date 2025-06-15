@@ -25,9 +25,9 @@ api.interceptors.request.use(
 export const AppConfig = {
   HirovoUrl: 'https://api.hirovo.com/hirovo',
   IAMUrl: 'https://api.hirovo.com/iam',
-  GoogleClientId: '606884613202-3voc3mec471dnd5fg2fpe4b51bb7i2s3.apps.googleusercontent.com',
   GoogleIosClientId: '',
-  GoogleAndroidClientId: '606884613202-6hp92guha11qm77a1a6hfhre7238i5vl.apps.googleusercontent.com',
-  GoogleExpoClientId: '606884613202-3voc3mec471dnd5fg2fpe4b51bb7i2s3.apps.googleusercontent.com',
-
+  GoogleAndroidClientIdDev: '1053973213164-p9j88c7th2uma4u6lftfi5durebts0dn.apps.googleusercontent.com',
+  GoogleAndroidClientIdProd: '1053973213164-vj9stnat1m31lf9j4nhbge6vg2h537ns.apps.googleusercontent.com',
+  GoogleExpoClientId: '1053973213164-chjtikdv1kpmjtsj8sppf09rddp0jckc.apps.googleusercontent.com', // ✅ doğru olan bu
 };
+

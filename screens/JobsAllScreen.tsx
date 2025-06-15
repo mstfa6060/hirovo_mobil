@@ -12,9 +12,9 @@ import { useTranslation } from 'react-i18next';
 import { HirovoAPI } from '@api/business_modules/hirovo';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/RootNavigator';
-import { MaterialIcons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+// import { useLocationSync } from '../src/hooks/useLocationSync'; // ✅ Hook importu
 
 type Job = HirovoAPI.Jobs.All.IResponseModel;
 
@@ -25,6 +25,8 @@ export default function JobsAllScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+
+  // useLocationSync(); // ✅ Konum gönderme işlemi burada otomatik çağrılır
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -55,7 +57,6 @@ export default function JobsAllScreen() {
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    // Burada yenileme işlemini başlat
     setTimeout(() => {
       setRefreshing(false);
     }, 1000);

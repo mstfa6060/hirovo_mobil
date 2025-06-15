@@ -110,6 +110,11 @@ export const uiTr = {
         notifyRadiusKm: 'Gösterim Mesafesi (km)',
         notifyRadiusExplanation: 'İlan, bu mesafe içindeki kullanıcılara gösterilecektir.',
         submitJob: "İlanı Gönder",
+        "applicationSuccess": "Başvuru başarılı",
+        "applicationSubmitted": "İlana başarıyla başvurdunuz.",
+        "applicationError": "Başvuru sırasında bir hata oluştu",
+        "pleaseTryAgain": "Lütfen tekrar deneyin.",
+        "cannotApply": "Başvuru için kullanıcı bilgileri eksik."
       },
       profile: {
         title: "Profil Düzenle",

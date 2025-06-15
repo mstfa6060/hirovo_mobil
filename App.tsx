@@ -3,6 +3,10 @@ import { View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { I18nextProvider } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
+console.log('Çalışma ortamı:', Constants.appOwnership); // 'expo' ya da 'standalone'
+
+// import './src/location-task';
 
 // i18n ayarları
 import i18n from './common/hirovo-api/src/config/i18n';

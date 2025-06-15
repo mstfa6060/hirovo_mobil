@@ -1,21 +1,40 @@
 {
   "project_info": {
-    "project_number": "354614190234",
-    "project_id": "hirovo-mobile-ce2e6",
-    "storage_bucket": "hirovo-mobile-ce2e6.firebasestorage.app"
+    "project_number": "212137351763",
+    "project_id": "hirovo-mobil",
+    "storage_bucket": "hirovo-mobil.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:354614190234:android:0184eb345fff6981603f23",
+        "mobilesdk_app_id": "1:212137351763:android:4da3ef006c312b92ab44a6",
         "android_client_info": {
-          "package_name": "com.mstfa6060.hirovomobil"
+          "package_name": "com.madentechnology.hirovomobil"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBZ9lULFXMvvL4HcmC00o6w715sSg8ngw4"
+          "current_key": "AIzaSyAmfSA6yZiPfNSxeNrCpeHfLDeYmZ3VhAU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:212137351763:android:af4f6a0e35f9e486ab44a6",
+        "android_client_info": {
+          "package_name": "com.madentechnology.hirovomobilapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAmfSA6yZiPfNSxeNrCpeHfLDeYmZ3VhAU"
         }
       ],
       "services": {
