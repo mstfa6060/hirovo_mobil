@@ -1,4 +1,4 @@
-export const uiEn = {
+export const uiZh = {
   translation: {
     ui: {
 
