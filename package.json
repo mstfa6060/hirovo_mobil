@@ -24,6 +24,7 @@
     "expo-apple-authentication": "~7.2.4",
     "expo-auth-session": "~6.2.0",
     "expo-dev-client": "~5.2.0",
+    "expo-location": "~18.1.5",
     "expo-status-bar": "~2.2.3",
     "expo-task-manager": "~13.1.5",
     "i18next": "^25.2.1",

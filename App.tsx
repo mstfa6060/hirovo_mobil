@@ -4,13 +4,14 @@ import { NavigationContainer } from '@react-navigation/native';
 import { I18nextProvider } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
-console.log('Çalışma ortamı:', Constants.appOwnership); // 'expo' ya da 'standalone'
 
-// import './src/location-task';
+import { getCurrentLocation } from './src/hooks/useLocation';
+import { jwtDecode } from 'jwt-decode';
+import { HirovoAPI } from '@api/business_modules/hirovo';
 
 // i18n ayarları
 import i18n from './common/hirovo-api/src/config/i18n';
-import RootNavigator from './navigation/RootNavigator'; // ✅ Doğru import
+import RootNavigator from './navigation/RootNavigator';
 
 export default function App() {
   const [isAppReady, setIsAppReady] = useState(false);
@@ -19,16 +20,45 @@ export default function App() {
   useEffect(() => {
     const prepareApp = async () => {
       try {
+        // i18n başlatma bekleniyor
         if (!i18n.isInitialized) {
           await new Promise<void>((resolve) => {
             i18n.on('initialized', () => resolve());
           });
         }
-        await AsyncStorage.setItem('jwt', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJkOTJlMDJkYS02MDZiLTRmYzQtYTNhNC1kYmNiZTJlMDRhZjIiLCJnaXZlbl9uYW1lIjoibW9jYWsiLCJ1bmlxdWVfbmFtZSI6Ik11c3RhZmEgT2NhayIsInRlbmFudElkIjoiYzlkOGM4NDYtMTBmYy00NjZkLThmNDUtYTRmYTRlODU2YWJkIiwicGxhdGZvcm0iOiIwIiwidXNlclNvdXJjZSI6IjAiLCJyZWZyZXNoVG9rZW5JZCI6IjU2OWI4M2M5LTQwMGQtNDU4MC05ODE0LTJhN2VhNmJiODQzZiIsInVzZXJUeXBlIjoiMSIsIm5iZiI6MTc1MDA2NzQ1MCwiZXhwIjoxNzUwNjcyMjUwLCJpYXQiOjE3NTAwNjc0NTAsImF1ZCI6ImFwaS5oaXJvdm8uY29tIn0.B_pBpiP_MUZsptb9nKJ5TKLt2AVJcJiB43VeOiFSOfQ");
 
+        // JWT varsa otomatik Drawer'a yönlendir
         const token = await AsyncStorage.getItem('jwt');
         setInitialRoute(token ? 'Drawer' : 'Login');
+
+        if (token) {
+          try {
+            const decoded: any = jwtDecode(token);
+            const userId = decoded?.nameid;
+
+            // ⛔️ Expo Go'da native modül çalışmasın
+            if (Constants.appOwnership !== 'expo') {
+              const location = await getCurrentLocation();
+
+              if (location) {
+                await HirovoAPI.Location.SetLocation.Request({
+                  userId,
+                  latitude: location.latitude,
+                  longitude: location.longitude,
+                  companyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd',
+                });
+                console.log('Konum gönderildi');
+              }
+            } else {
+              console.log('Expo Go modunda, konum alınmadı');
+            }
+
+          } catch (err) {
+            console.warn('Konum gönderilemedi:', err);
+          }
+        }
       } catch (error) {
+        console.error('❌ App başlatma hatası:', error);
         setInitialRoute('Login');
       } finally {
         setIsAppReady(true);

@@ -26,6 +26,7 @@
     "types": []
   },
   "include": [
+    "App.tsx",
     "src",
     "screens",
     "common"

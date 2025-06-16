@@ -28,6 +28,7 @@ import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import * as AuthSession from 'expo-auth-session';
+import { getCurrentLocation } from '../src/hooks/useLocation';
 
 import {
   GoogleSignin,
@@ -66,11 +67,6 @@ const LoginScreen = () => {
     mode: 'onChange',
   });
 
-  const redirectUri = Constants.appOwnership === 'expo'
-    ? AuthSession.getRedirectUrl()
-    : AuthSession.makeRedirectUri({ native: 'com.madentechnology.hirovomobilapp:/oauthredirect' });
-
-  console.log('Redirect URI:', redirectUri);
   // const [request, response, promptAsync] = Google.useAuthRequest({
   //   clientId: Platform.select({
   //     android: __DEV__
@@ -81,37 +77,17 @@ const LoginScreen = () => {
   //   redirectUri: redirectUri,
   //   scopes: ['profile', 'email'],
   // });
+  const redirectUri = AuthSession.makeRedirectUri({
+    native: 'com.madentechnology.hirovomobilapp:/oauthredirect',
+  });
 
   const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId: AppConfig.GoogleAndroidClientIdProd, // Production APK
+    androidClientId: AppConfig.GoogleAndroidClientIdProd,
     scopes: ['profile', 'email'],
-    redirectUri: AuthSession.makeRedirectUri({
-      native: 'com.madentechnology.hirovomobilapp:/oauthredirect',
-    }),
+    redirectUri, // yukarıda hazırladığın URI'yi ver
   });
 
 
-
-
-
-
-  // const handleLocationUpdate = async (userId: string) => {
-  //   if (Constants.appOwnership !== 'expo') {
-  //     const Location = await import('expo-location');
-  //     const { status } = await Location.default.requestForegroundPermissionsAsync();
-  //     if (status === 'granted') {
-  //       const location = await Location.default.getCurrentPositionAsync({});
-  //       await HirovoAPI.Location.SetLocation.Request({
-  //         userId,
-  //         latitude: location.coords.latitude,
-  //         longitude: location.coords.longitude,
-  //         companyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd',
-  //       });
-  //     }
-  //   } else {
-  //     console.log('Expo Go ortamında konum işlemleri devre dışı');
-  //   }
-  // };
 
   useEffect(() => {
     const handleGoogleLogin = async () => {
@@ -154,12 +130,16 @@ const LoginScreen = () => {
           const decoded: any = jwtDecode(res.jwt);
           const userId = decoded?.nameid;
 
-          await HirovoAPI.Location.SetLocation.Request({
-            userId,
-            latitude: 40.712776,
-            longitude: -74.005974,
-            companyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd',
-          });
+          const location = await getCurrentLocation();
+          if (location) {
+            await HirovoAPI.Location.SetLocation.Request({
+              userId,
+              latitude: location.latitude,
+              longitude: location.longitude,
+              companyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd',
+            });
+          }
+
 
 
           // await startBackgroundLocationTracking();
