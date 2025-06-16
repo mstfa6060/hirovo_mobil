@@ -24,6 +24,7 @@ export default function App() {
             i18n.on('initialized', () => resolve());
           });
         }
+        await AsyncStorage.setItem('jwt', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJkOTJlMDJkYS02MDZiLTRmYzQtYTNhNC1kYmNiZTJlMDRhZjIiLCJnaXZlbl9uYW1lIjoibW9jYWsiLCJ1bmlxdWVfbmFtZSI6Ik11c3RhZmEgT2NhayIsInRlbmFudElkIjoiYzlkOGM4NDYtMTBmYy00NjZkLThmNDUtYTRmYTRlODU2YWJkIiwicGxhdGZvcm0iOiIwIiwidXNlclNvdXJjZSI6IjAiLCJyZWZyZXNoVG9rZW5JZCI6IjU2OWI4M2M5LTQwMGQtNDU4MC05ODE0LTJhN2VhNmJiODQzZiIsInVzZXJUeXBlIjoiMSIsIm5iZiI6MTc1MDA2NzQ1MCwiZXhwIjoxNzUwNjcyMjUwLCJpYXQiOjE3NTAwNjc0NTAsImF1ZCI6ImFwaS5oaXJvdm8uY29tIn0.B_pBpiP_MUZsptb9nKJ5TKLt2AVJcJiB43VeOiFSOfQ");
 
         const token = await AsyncStorage.getItem('jwt');
         setInitialRoute(token ? 'Drawer' : 'Login');
