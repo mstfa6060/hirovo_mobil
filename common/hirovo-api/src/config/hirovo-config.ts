@@ -28,6 +28,6 @@ export const AppConfig = {
   GoogleIosClientId: '',
   GoogleAndroidClientIdDev: '1053973213164-p9j88c7th2uma4u6lftfi5durebts0dn.apps.googleusercontent.com',
   GoogleAndroidClientIdProd: '1053973213164-vj9stnat1m31lf9j4nhbge6vg2h537ns.apps.googleusercontent.com',
-  GoogleExpoClientId: '1053973213164-chjtikdv1kpmjtsj8sppf09rddp0jckc.apps.googleusercontent.com', // ✅ doğru olan bu
+  GoogleExpoClientId: '1053973213164-41a19hj800bf21j5btnaeffvqbni8ibk.apps.googleusercontent.com', // ✅ doğru olan bu
 };
 

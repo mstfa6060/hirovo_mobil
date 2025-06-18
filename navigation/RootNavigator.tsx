@@ -37,13 +37,10 @@ const RootNavigator = ({ initialRoute }: RootNavigatorProps) => {
             <Stack.Screen name="Drawer" component={DrawerNavigator} />
             <Stack.Screen name="JobsDetail" component={JobsDetailScreen} />
             <Stack.Screen name="ProfileEdit" component={ProfileEditScreen} />
-            <Stack.Screen
-                name="WorkerProfile"
-                component={WorkerProfileScreen}
-                options={{ headerShown: false }}
-            />
-
+            <Stack.Screen name="WorkerProfile" component={WorkerProfileScreen} options={{ headerShown: false }} />
         </Stack.Navigator>
+
+
     );
 };
 

@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  Platform
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
@@ -17,34 +16,14 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppConfig } from '@config/hirovo-config';
 import { IAMAPI } from '@api/base_modules/iam';
-import { HirovoAPI } from '@api/business_modules/hirovo';
 import { RootStackParamList } from '../navigation/RootNavigator';
 
 import * as Google from 'expo-auth-session/providers/google';
 import * as AppleAuthentication from 'expo-apple-authentication';
-import { jwtDecode } from 'jwt-decode';
 
+import '@config/i18n';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
-import Constants from 'expo-constants';
-import * as AuthSession from 'expo-auth-session';
-import { getCurrentLocation } from '../src/hooks/useLocation';
-
-import {
-  GoogleSignin,
-  GoogleSigninButton,
-  statusCodes,
-} from '@react-native-google-signin/google-signin';
-
-
-const isExpoGo = Constants.appOwnership === 'expo';
-
-const redirectUri = isExpoGo
-  ? AuthSession.getRedirectUrl()
-  : AuthSession.makeRedirectUri({ scheme: 'hirovo' });
-
-
-
 
 const schema = z.object({
   username: z.string().min(3, 'Kullanıcı adı en az 3 karakter olmalı'),
@@ -67,90 +46,36 @@ const LoginScreen = () => {
     mode: 'onChange',
   });
 
-  // const [request, response, promptAsync] = Google.useAuthRequest({
-  //   clientId: Platform.select({
-  //     android: __DEV__
-  //       ? AppConfig.GoogleAndroidClientIdDev
-  //       : AppConfig.GoogleAndroidClientIdProd,
-  //     web: AppConfig.GoogleExpoClientId,
-  //   }),
-  //   redirectUri: redirectUri,
-  //   scopes: ['profile', 'email'],
-  // });
-  const redirectUri = AuthSession.makeRedirectUri({
-    native: 'com.madentechnology.hirovomobilapp:/oauthredirect',
-  });
-
   const [request, response, promptAsync] = Google.useAuthRequest({
+    clientId: AppConfig.GoogleAndroidClientIdDev,
+    iosClientId: AppConfig.GoogleIosClientId,
     androidClientId: AppConfig.GoogleAndroidClientIdProd,
-    scopes: ['profile', 'email'],
-    redirectUri, // yukarıda hazırladığın URI'yi ver
   });
-
-
 
   useEffect(() => {
-    const handleGoogleLogin = async () => {
-      if (response?.type === 'success') {
-        try {
-          const { authentication } = response;
-
-          const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-            headers: { Authorization: `Bearer ${authentication?.accessToken}` },
-          }).then(res => res.json());
-
-          try {
-            await IAMAPI.Users.Create.Request({
-              userName: userInfo.email,
-              firstName: userInfo.given_name || '',
-              surname: userInfo.family_name || '',
-              email: userInfo.email,
-              password: 'Google',
-              providerId: userInfo.sub,
-              userType: IAMAPI.Enums.UserType.Worker,
-              companyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd',
-              userSource: IAMAPI.Enums.UserSources.Google,
-              description: 'Google ile kayıt',
-            });
-          } catch (_) { }
-
-          const res = await IAMAPI.Auth.Login.Request({
-            provider: 'Google',
-            userName: '',
-            password: '',
-            token: authentication?.accessToken ?? '',
-            platform: IAMAPI.Enums.ClientPlatforms.Mobile,
-            isCompanyHolding: false,
-            companyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd',
-          });
-
+    if (response?.type === 'success') {
+      const { authentication } = response;
+      IAMAPI.Auth.Login.Request({
+        provider: 'Google',
+        userName: '',
+        password: '',
+        token: authentication?.accessToken ?? '',
+        platform: IAMAPI.Enums.ClientPlatforms.Mobile,
+        isCompanyHolding: false,
+        companyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd',
+      })
+        .then(async res => {
           await AsyncStorage.setItem('jwt', res.jwt);
           await AsyncStorage.setItem('refreshToken', res.refreshToken);
-
-          const decoded: any = jwtDecode(res.jwt);
-          const userId = decoded?.nameid;
-
-          const location = await getCurrentLocation();
-          if (location) {
-            await HirovoAPI.Location.SetLocation.Request({
-              userId,
-              latitude: location.latitude,
-              longitude: location.longitude,
-              companyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd',
-            });
-          }
-
-
-
-          // await startBackgroundLocationTracking();
-          navigation.reset({ index: 0, routes: [{ name: 'Drawer' }] });
-        } catch (err: any) {
-          Alert.alert(t('error.LOGIN_FAILED_TITLE') || 'Hata', err?.message ?? t('error.DEFAULT_ERROR'));
-        }
-      }
-    };
-
-    handleGoogleLogin();
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Drawer', params: { screen: 'HomeTabs' } }],
+          });
+        })
+        .catch(err => {
+          Alert.alert(t('error.LOGIN_FAILED_TITLE'), err?.message ?? t('error.DEFAULT_ERROR'));
+        });
+    }
   }, [response]);
 
   const onAppleLogin = async () => {
@@ -174,20 +99,10 @@ const LoginScreen = () => {
 
       await AsyncStorage.setItem('jwt', res.jwt);
       await AsyncStorage.setItem('refreshToken', res.refreshToken);
-
-      const decoded: any = jwtDecode(res.jwt);
-      const userId = decoded?.nameid;
-
-
-      await HirovoAPI.Location.SetLocation.Request({
-        userId,
-        latitude: 40.712776,
-        longitude: -74.005974,
-        companyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd',
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Drawer', params: { screen: 'HomeTabs' } }],
       });
-
-
-      navigation.reset({ index: 0, routes: [{ name: 'Drawer' }] });
     } catch (err: any) {
       Alert.alert('Apple Login Failed', err?.message ?? 'Error');
     }
@@ -207,46 +122,35 @@ const LoginScreen = () => {
 
       await AsyncStorage.setItem('jwt', response.jwt);
       await AsyncStorage.setItem('refreshToken', response.refreshToken);
-
-      const decoded: any = jwtDecode(response.jwt);
-      const userId = decoded?.nameid;
-
-
-      await HirovoAPI.Location.SetLocation.Request({
-        userId,
-        latitude: 40.712776,
-        longitude: -74.005974,
-        companyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd',
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Drawer', params: { screen: 'HomeTabs' } }],
       });
-
-
-      // await startBackgroundLocationTracking();
-      navigation.reset({ index: 0, routes: [{ name: 'Drawer' }] });
     } catch (err: any) {
-      Alert.alert(t('error.LOGIN_FAILED_TITLE') || 'Hata', err?.message ?? t('error.DEFAULT_ERROR'));
+      Alert.alert(t('error.LOGIN_FAILED_TITLE'), err?.message ?? t('error.DEFAULT_ERROR'));
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t('ui.login.welcome') || 'Hoşgeldiniz'}</Text>
-      <Text style={styles.subtitle}>{t('ui.login.subtitle') || 'Giriş yapınız'}</Text>
+      <Text style={styles.title}>{t('ui.login.welcome')}</Text>
+      <Text style={styles.subtitle}>{t('ui.login.subtitle')}</Text>
 
-      {/* <Controller
+      <Controller
         control={control}
         name="username"
         render={({ field: { onChange, onBlur, value } }) => (
-          <View>
+          <>
             <TextInput
-              placeholder={t('ui.login.usernamePlaceholder') || 'Kullanıcı Adı'}
+              placeholder={t('ui.login.usernamePlaceholder')}
               autoCapitalize="none"
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
               style={styles.input}
             />
-            {errors.username?.message ? <Text style={styles.error}>{errors.username.message}</Text> : null}
-          </View>
+            {errors.username && <Text style={styles.error}>{errors.username.message}</Text>}
+          </>
         )}
       />
 
@@ -254,10 +158,10 @@ const LoginScreen = () => {
         control={control}
         name="password"
         render={({ field: { onChange, onBlur, value } }) => (
-          <View>
+          <>
             <View style={styles.passwordContainer}>
               <TextInput
-                placeholder={t('ui.login.passwordPlaceholder') || 'Şifre'}
+                placeholder={t('ui.login.passwordPlaceholder')}
                 secureTextEntry={!isPasswordVisible}
                 value={value}
                 onChangeText={onChange}
@@ -268,16 +172,20 @@ const LoginScreen = () => {
                 onPress={() => setIsPasswordVisible(!isPasswordVisible)}
                 style={styles.eyeButton}
               >
-                <Ionicons name={isPasswordVisible ? 'eye' : 'eye-off'} size={20} color="#888" />
+                <Ionicons
+                  name={isPasswordVisible ? 'eye' : 'eye-off'}
+                  size={20}
+                  color="#888"
+                />
               </TouchableOpacity>
             </View>
-            {errors.password?.message ? <Text style={styles.error}>{errors.password.message}</Text> : null}
-          </View>
+            {errors.password && <Text style={styles.error}>{errors.password.message}</Text>}
+          </>
         )}
       />
 
       <TouchableOpacity style={styles.link} onPress={() => navigation.navigate('ForgotPassword')}>
-        <Text style={styles.linkText}>{t('ui.login.forgotPassword') || 'Şifremi Unuttum'}</Text>
+        <Text style={styles.linkText}>{t('ui.login.forgotPassword')}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -285,20 +193,20 @@ const LoginScreen = () => {
         disabled={!isValid}
         onPress={handleSubmit(onSubmit)}
       >
-        <Text style={styles.buttonText}>{t('ui.login.submit') || 'Giriş Yap'}</Text>
+        <Text style={styles.buttonText}>{t('ui.login.submit')}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.secondaryText}>{t('ui.login.register') || 'Kayıt Ol'}</Text>
-      </TouchableOpacity> */}
+        <Text style={styles.secondaryText}>{t('ui.login.register')}</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity style={styles.googleButton} onPress={() => promptAsync()}>
         <Text style={styles.buttonText}>Google ile Giriş</Text>
       </TouchableOpacity>
 
-      {/* <TouchableOpacity style={styles.appleButton} onPress={onAppleLogin}>
+      <TouchableOpacity style={styles.appleButton} onPress={onAppleLogin}>
         <Text style={styles.buttonText}>Apple ile Giriş</Text>
-      </TouchableOpacity> */}
+      </TouchableOpacity>
     </View>
   );
 };
