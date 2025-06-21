@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     View,
     Text,
@@ -10,6 +10,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
+    Keyboard
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
@@ -53,6 +54,8 @@ export default function CreateJobScreen() {
             notifyRadiusKm: 10,
         },
     });
+
+    const inputRefs = useRef<(TextInput | null)[]>([]);
 
     useEffect(() => {
         if (user?.id) {
@@ -107,21 +110,98 @@ export default function CreateJobScreen() {
                     <Text style={styles.headerTitle}>{t('ui.jobs.createJobTitle')}</Text>
                 </View>
 
+                {/* Title */}
                 <Text style={styles.label}>{t('ui.jobs.title')} <Text style={{ color: 'red' }}>*</Text></Text>
                 <Controller
                     control={control}
                     name="title"
                     render={({ field: { onChange, onBlur, value } }) => (
                         <TextInput
+                            ref={(ref: TextInput | null): void => {
+                                inputRefs.current[0] = ref;
+                            }}
                             style={styles.input}
                             placeholder={t('ui.jobs.titlePlaceholder')}
                             onChangeText={text => onChange(text.trim())}
                             onBlur={onBlur}
                             value={value}
+                            returnKeyType="next"
+                            onSubmitEditing={() => inputRefs.current[1]?.focus()}
+                            blurOnSubmit={false}
                         />
                     )}
                 />
 
+                {/* Salary */}
+                <Text style={styles.label}>{t('ui.jobs.salary')} <Text style={{ color: 'red' }}>*</Text></Text>
+                <Controller
+                    control={control}
+                    name="salary"
+                    render={({ field: { onChange, onBlur, value } }) => (
+                        <TextInput
+                            ref={(ref: TextInput | null): void => {
+                                inputRefs.current[1] = ref;
+                            }}
+                            style={styles.input}
+                            placeholder="75000"
+                            keyboardType="numeric"
+                            onChangeText={(text) => {
+                                const parsed = parseFloat(text);
+                                onChange(text.trim() === '' ? undefined : !isNaN(parsed) ? parsed : 0);
+                            }}
+                            onBlur={onBlur}
+                            value={value ? value.toString() : ''}
+                            returnKeyType="next"
+                            onSubmitEditing={() => inputRefs.current[2]?.focus()}
+                            blurOnSubmit={false}
+                        />
+                    )}
+                />
+
+                {/* Description */}
+                <Text style={styles.label}>{t('ui.jobs.description')} <Text style={{ color: 'red' }}>*</Text></Text>
+                <Controller
+                    control={control}
+                    name="description"
+                    render={({ field: { onChange, onBlur, value } }) => (
+                        <TextInput
+                            ref={(ref: TextInput | null): void => {
+                                inputRefs.current[2] = ref;
+                            }}
+                            style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
+                            placeholder={t('ui.jobs.descriptionPlaceholder')}
+                            multiline
+                            onChangeText={text => onChange(text)}
+                            onBlur={onBlur}
+                            value={value}
+                            blurOnSubmit={false}         // ✅ Bu dursun
+                            returnKeyType="default"      // ✅ Ekledik
+                        />
+                    )}
+                />
+
+
+                {/* Required Skills */}
+                <Text style={styles.label}>{t('ui.jobs.requiredSkills')}</Text>
+                <Controller
+                    control={control}
+                    name="requiredSkills"
+                    render={({ field }) => (
+                        <TextInput
+                            ref={(ref: TextInput | null): void => {
+                                inputRefs.current[3] = ref;
+                            }}
+                            style={styles.input}
+                            placeholder="React, TypeScript"
+                            onChangeText={text => field.onChange(text.trim())}
+                            value={field.value}
+                            returnKeyType="done"
+                            onSubmitEditing={() => Keyboard.dismiss()}
+                        />
+                    )}
+                />
+
+                {/* Type - DropdownPicker */}
                 <Text style={styles.label}>{t('ui.jobs.type')} <Text style={{ color: 'red' }}>*</Text></Text>
                 <Controller
                     control={control}
@@ -132,7 +212,7 @@ export default function CreateJobScreen() {
                             value={field.value}
                             items={items}
                             setOpen={setOpen}
-                            setValue={callback => {
+                            setValue={(callback) => {
                                 const value = typeof callback === 'function' ? callback(field.value) : callback;
                                 field.onChange(value);
                             }}
@@ -148,55 +228,7 @@ export default function CreateJobScreen() {
                     )}
                 />
 
-                <Text style={styles.label}>{t('ui.jobs.salary')} <Text style={{ color: 'red' }}>*</Text></Text>
-                <Controller
-                    control={control}
-                    name="salary"
-                    render={({ field: { onChange, onBlur, value } }) => (
-                        <TextInput
-                            style={styles.input}
-                            placeholder="75000"
-                            keyboardType="numeric"
-                            onChangeText={(text) => {
-                                const parsed = parseFloat(text);
-                                onChange(text.trim() === '' ? undefined : !isNaN(parsed) ? parsed : 0);
-                            }}
-                            onBlur={onBlur}
-                            value={value ? value.toString() : ''}
-                        />
-                    )}
-                />
-
-                <Text style={styles.label}>{t('ui.jobs.description')} <Text style={{ color: 'red' }}>*</Text></Text>
-                <Controller
-                    control={control}
-                    name="description"
-                    render={({ field: { onChange, onBlur, value } }) => (
-                        <TextInput
-                            style={[styles.input, { height: 100 }]}
-                            placeholder={t('ui.jobs.descriptionPlaceholder')}
-                            multiline
-                            onChangeText={text => onChange(text.trim())}
-                            onBlur={onBlur}
-                            value={value}
-                        />
-                    )}
-                />
-
-                <Text style={styles.label}>{t('ui.jobs.requiredSkills')}</Text>
-                <Controller
-                    control={control}
-                    name="requiredSkills"
-                    render={({ field }) => (
-                        <TextInput
-                            style={styles.input}
-                            placeholder="React, TypeScript"
-                            onChangeText={text => field.onChange(text.trim())}
-                            value={field.value}
-                        />
-                    )}
-                />
-
+                {/* Notify Radius */}
                 <Text style={styles.label}>{t('ui.jobs.notifyRadiusKm')}</Text>
                 <View style={styles.sliderRow}>
                     <TouchableOpacity
@@ -216,6 +248,7 @@ export default function CreateJobScreen() {
                     </TouchableOpacity>
                 </View>
 
+                {/* Submit */}
                 <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)} disabled={isSubmitting}>
                     {isSubmitting ? (
                         <ActivityIndicator color="#fff" />

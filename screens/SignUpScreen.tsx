@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
     View,
     Text,
@@ -9,7 +8,8 @@ import {
     Alert,
     ScrollView,
     KeyboardAvoidingView,
-    Platform
+    Platform,
+    Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useForm, Controller } from 'react-hook-form';
@@ -24,7 +24,6 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import { HirovoAPI } from '@api/business_modules/hirovo';
-import { _toLowerCase } from 'zod/v4/core';
 
 const schema = z
     .object({
@@ -49,7 +48,6 @@ const schema = z
         message: 'ui.signup.passwordMismatch',
     });
 
-
 type FormData = z.infer<typeof schema>;
 
 export default function SignUpScreen() {
@@ -57,6 +55,7 @@ export default function SignUpScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+    const inputRefs = useRef<(TextInput | null)[]>([]);
 
     const {
         control,
@@ -188,7 +187,7 @@ export default function SignUpScreen() {
                 <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }} keyboardShouldPersistTaps="handled">
                     <Text style={styles.header}>{t('ui.signup.title')}</Text>
 
-                    {inputFields.map(({ name, label, hidden, toggleVisibility, isPassword, ...rest }) => (
+                    {inputFields.map(({ name, label, hidden, toggleVisibility, isPassword, ...rest }, index) => (
                         <View key={name} style={[styles.field, hidden && { display: 'none' }]}>
                             <Text style={styles.label}>{label}</Text>
                             <Controller
@@ -197,14 +196,25 @@ export default function SignUpScreen() {
                                 render={({ field: { onChange, value } }) => (
                                     <View>
                                         <TextInput
+                                            ref={(ref: TextInput | null): void => {
+                                                inputRefs.current[index] = ref;
+                                            }}
                                             style={styles.input}
                                             value={value?.toString() ?? ''}
                                             onChangeText={(text) => {
                                                 const lowerCased = rest.toLowerCase ? text.toLowerCase() : text;
                                                 onChange(lowerCased);
                                             }}
-
                                             secureTextEntry={rest.secureTextEntry}
+                                            returnKeyType={index < inputFields.length - 1 ? 'next' : 'done'}
+                                            onSubmitEditing={() => {
+                                                if (index < inputFields.length - 1) {
+                                                    inputRefs.current[index + 1]?.focus();
+                                                } else {
+                                                    Keyboard.dismiss();
+                                                }
+                                            }}
+                                            blurOnSubmit={false}
                                             {...rest}
                                         />
                                         {isPassword && (
