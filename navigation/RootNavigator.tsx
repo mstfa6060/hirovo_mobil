@@ -6,6 +6,8 @@ import JobsDetailScreen from '../screens/JobsDetailScreen';
 import ProfileEditScreen from '../screens/Profile/ProfileEditScreen';
 import DrawerNavigator, { DrawerParamList } from './DrawerNavigator';
 import WorkerProfileScreen from '../screens/WorkerProfileScreen';
+import SignUpScreen from '../screens/SignUpScreen'; // doğru yolu senin yapına göre güncelle
+
 
 export type RootStackParamList = {
     Login: undefined;
@@ -29,20 +31,18 @@ type RootNavigatorProps = {
 };
 
 const RootNavigator = ({ initialRoute }: RootNavigatorProps) => {
-    const Stack = createNativeStackNavigator<RootStackParamList>();
-
     return (
         <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Register" component={SignUpScreen} />
             <Stack.Screen name="Drawer" component={DrawerNavigator} />
             <Stack.Screen name="JobsDetail" component={JobsDetailScreen} />
             <Stack.Screen name="ProfileEdit" component={ProfileEditScreen} />
             <Stack.Screen name="WorkerProfile" component={WorkerProfileScreen} options={{ headerShown: false }} />
         </Stack.Navigator>
-
-
     );
 };
+
 
 
 

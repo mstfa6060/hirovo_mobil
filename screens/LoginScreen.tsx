@@ -24,6 +24,7 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import '@config/i18n';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
+import App from 'App';
 
 const schema = z.object({
   username: z.string().min(3, 'Kullanıcı adı en az 3 karakter olmalı'),
@@ -62,7 +63,7 @@ const LoginScreen = () => {
         token: authentication?.accessToken ?? '',
         platform: IAMAPI.Enums.ClientPlatforms.Mobile,
         isCompanyHolding: false,
-        companyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd',
+        companyId: AppConfig.DefaultCompanyId,
       })
         .then(async res => {
           await AsyncStorage.setItem('jwt', res.jwt);
@@ -94,7 +95,7 @@ const LoginScreen = () => {
         token: credential.identityToken ?? '',
         platform: IAMAPI.Enums.ClientPlatforms.Mobile,
         isCompanyHolding: false,
-        companyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd',
+        companyId: AppConfig.DefaultCompanyId,
       });
 
       await AsyncStorage.setItem('jwt', res.jwt);
@@ -117,7 +118,7 @@ const LoginScreen = () => {
         token: '',
         platform: IAMAPI.Enums.ClientPlatforms.Mobile,
         isCompanyHolding: false,
-        companyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd',
+        companyId: AppConfig.DefaultCompanyId,
       });
 
       await AsyncStorage.setItem('jwt', response.jwt);
@@ -196,9 +197,13 @@ const LoginScreen = () => {
         <Text style={styles.buttonText}>{t('ui.login.submit')}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('Register')}>
+      <TouchableOpacity
+        style={styles.secondaryButton}
+        onPress={() => navigation.navigate('Register')}
+      >
         <Text style={styles.secondaryText}>{t('ui.login.register')}</Text>
       </TouchableOpacity>
+
 
       <TouchableOpacity style={styles.googleButton} onPress={() => promptAsync()}>
         <Text style={styles.buttonText}>Google ile Giriş</Text>

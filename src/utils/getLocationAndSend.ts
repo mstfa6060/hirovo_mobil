@@ -23,7 +23,7 @@
 
 //         const decoded: any = jwtDecode(jwt);
 //         const userId = decoded?.nameid;
-//         const companyId = 'c9d8c846-10fc-466d-8f45-a4fa4e856abd';
+//         const companyId =AppConfig.DefaultCompanyId;
 
 //         if (userId) {
 //             await HirovoAPI.Location.SetLocation.Request({

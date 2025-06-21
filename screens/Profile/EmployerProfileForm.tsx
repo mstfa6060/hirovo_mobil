@@ -58,6 +58,7 @@ export default function EmployerProfileForm({ userId }: { userId: string }) {
                     district: res.district ?? '',
                 });
             } catch (err) {
+                console.log("Hata :" + err)
                 Alert.alert(t('ui.error'), t('ui.profile.fetchError'));
             }
         };

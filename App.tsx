@@ -12,6 +12,7 @@ import { HirovoAPI } from '@api/business_modules/hirovo';
 // i18n ayarları
 import i18n from './common/hirovo-api/src/config/i18n';
 import RootNavigator from './navigation/RootNavigator';
+import { AppConfig } from '@config/hirovo-config';
 
 export default function App() {
   const [isAppReady, setIsAppReady] = useState(false);
@@ -41,13 +42,15 @@ export default function App() {
               const location = await getCurrentLocation();
 
               if (location) {
-                await HirovoAPI.Location.SetLocation.Request({
-                  userId,
+                const response = await HirovoAPI.Location.SetLocation.Request({
+                  userId: userId,
                   latitude: location.latitude,
                   longitude: location.longitude,
-                  companyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd',
+                  companyId: AppConfig.DefaultCompanyId,
                 });
-                console.log('Konum gönderildi');
+                console.log('📍 Konum API yanıtı:', response);
+                console.log(userId, location.latitude, location.longitude, AppConfig.DefaultCompanyId);
+
               }
             } else {
               console.log('Expo Go modunda, konum alınmadı');

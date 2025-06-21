@@ -20,6 +20,7 @@ import { useAuth } from '../src/hooks/useAuth';
 import { Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { AppConfig } from '@config/hirovo-config';
 
 
 type JobsDetailRouteProp = RouteProp<RootStackParamList, 'JobsDetail'>;
@@ -61,7 +62,7 @@ export default function JobsDetailScreen() {
             await HirovoAPI.JobApplications.Create.Request({
                 jobId: job.id,
                 workerId: user.id,
-                companyId: "c9d8c846-10fc-466d-8f45-a4fa4e856abd",
+                companyId: AppConfig.DefaultCompanyId,
             });
 
             Alert.alert(

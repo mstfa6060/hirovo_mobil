@@ -56,7 +56,7 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
             try {
                 const response = await HirovoAPI.Workers.Detail.Request({ userId });
                 const data = response;
-
+                console.log("Response" + data);
                 reset({
                     phoneNumber: data.phoneNumber ?? '',
                     birthDate: data.birthDate?.toString().substring(0, 10) ?? '',
@@ -66,6 +66,7 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
                     isAvailable: data.isAvailable ?? true,
                 });
             } catch (err) {
+                console.log("Hata :" + err)
                 Alert.alert(t('ui.error'), t('ui.profile.fetchError'));
             }
         };

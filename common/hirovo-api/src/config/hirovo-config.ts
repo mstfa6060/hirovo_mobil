@@ -13,9 +13,10 @@ export const api: AxiosInstance = axios.create({
 api.interceptors.request.use(
   async (config) => {
     const token = await AsyncStorage.getItem('jwt');
-    if (token && config.headers && typeof config.headers.set === 'function') {
-      config.headers.set('Authorization', `Bearer ${token}`);
+    if (token && config.headers) {
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => Promise.reject(error)
@@ -28,6 +29,7 @@ export const AppConfig = {
   GoogleIosClientId: '',
   GoogleAndroidClientIdDev: '1053973213164-p9j88c7th2uma4u6lftfi5durebts0dn.apps.googleusercontent.com',
   GoogleAndroidClientIdProd: '1053973213164-vj9stnat1m31lf9j4nhbge6vg2h537ns.apps.googleusercontent.com',
-  GoogleExpoClientId: '1053973213164-41a19hj800bf21j5btnaeffvqbni8ibk.apps.googleusercontent.com', // ✅ doğru olan bu
+  GoogleExpoClientId: '1053973213164-41a19hj800bf21j5btnaeffvqbni8ibk.apps.googleusercontent.com',
+  DefaultCompanyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd',
 };
 

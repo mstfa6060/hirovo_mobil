@@ -19,6 +19,7 @@ import { HirovoAPI } from '@api/business_modules/hirovo';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../src/hooks/useAuth';
 import DropDownPicker from 'react-native-dropdown-picker';
+import { AppConfig } from '@config/hirovo-config';
 
 const schema = z.object({
     title: z.string().min(3),
@@ -67,7 +68,7 @@ export default function CreateJobScreen() {
             const payload = {
                 ...data,
                 type: jobTypeMap[data.type],
-                companyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd',
+                companyId: AppConfig.DefaultCompanyId,
                 employerId: user.id,
                 location: 'Auto',
                 latitude: 41.015137,

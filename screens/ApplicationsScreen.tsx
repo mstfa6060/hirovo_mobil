@@ -35,6 +35,11 @@ export default function ApplicationsScreen() {
                     workerId: user.id,
                 });
 
+                if (!response || !Array.isArray(response)) {
+                    setApplications([]); // boş liste ata
+                    return;
+                }
+
                 const mapped = response.map((item) => ({
                     id: item.jobId,
                     title: item.title,
@@ -51,6 +56,7 @@ export default function ApplicationsScreen() {
                 setLoading(false);
             }
         };
+
 
         fetchApplications();
     }, [user?.id]);
