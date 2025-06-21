@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
     View,
@@ -7,6 +8,8 @@ import {
     StyleSheet,
     Alert,
     ScrollView,
+    KeyboardAvoidingView,
+    Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useForm, Controller } from 'react-hook-form';
@@ -19,27 +22,41 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation/RootNavigator'; // yolunu senin yapına göre güncelle
+import { RootStackParamList } from '../navigation/RootNavigator';
 import { HirovoAPI } from '@api/business_modules/hirovo';
+import { _toLowerCase } from 'zod/v4/core';
 
+const schema = z
+    .object({
+        userName: z.string().min(1, 'validation.required'),
+        firstName: z.string().min(1, 'validation.required'),
+        surname: z.string().min(1, 'validation.required'),
+        email: z.string().email('ui.validation.email'),
+        password: z
+            .string()
+            .min(6, 'ui.signup.passwordMin')
+            .regex(/[A-Z]/, 'ui.signup.passwordUppercase')
+            .regex(/[a-z]/, 'ui.signup.passwordLowercase')
+            .regex(/\d/, 'ui.signup.passwordDigit'),
+        confirmPassword: z.string().min(6, 'ui.signup.passwordMin'),
+        providerId: z.string(),
+        userType: z.nativeEnum(IAMAPI.Enums.UserType),
+        companyId: z.string().uuid(),
+        description: z.string().optional(),
+    })
+    .refine(data => data.password === data.confirmPassword, {
+        path: ['confirmPassword'],
+        message: 'ui.signup.passwordMismatch',
+    });
 
-const schema = z.object({
-    userName: z.string().min(1, 'validation.required'),
-    firstName: z.string().min(1, 'validation.required'),
-    surname: z.string().min(1, 'validation.required'),
-    email: z.string().email('validation.email'),
-    password: z.string().min(6, 'signup.passwordMin'),
-    providerId: z.string(), // boş geçeceğiz ama zorunlu
-    userType: z.nativeEnum(IAMAPI.Enums.UserType),
-    companyId: z.string().uuid(),
-    description: z.string().optional(),
-});
 
 type FormData = z.infer<typeof schema>;
 
 export default function SignUpScreen() {
     const { t } = useTranslation();
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    const [passwordVisible, setPasswordVisible] = useState(false);
+    const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
     const {
         control,
@@ -48,29 +65,17 @@ export default function SignUpScreen() {
     } = useForm<FormData>({
         resolver: zodResolver(schema),
         defaultValues: {
-            userName: 'testuser01',
-            firstName: 'Test',
-            surname: 'Kullanıcı',
-            email: 'testuser01@example.com',
-            password: 'Test1234!',
+            userName: '',
+            firstName: '',
+            surname: '',
+            email: '',
+            password: '',
+            confirmPassword: '',
             providerId: '',
             userType: IAMAPI.Enums.UserType.Worker,
             companyId: AppConfig.DefaultCompanyId,
-            description: 'Bu kullanıcı test amaçlı oluşturulmuştur.',
-        }
-
-
-        // defaultValues: {
-        //     userName: '',
-        //     firstName: '',
-        //     surname: '',
-        //     email: '',
-        //     password: '',
-        //     providerId: '', // zorunlu ama boş string geçiyoruz
-        //     userType: IAMAPI.Enums.UserType.Worker,
-        //     companyId: AppConfig.DefaultCompanyId,
-        //     description: '',
-        // }
+            description: '',
+        },
     });
 
     const [userTypeOpen, setUserTypeOpen] = useState(false);
@@ -82,7 +87,6 @@ export default function SignUpScreen() {
 
     const onSubmit = async (data: FormData) => {
         try {
-            // 1. Kullanıcıyı oluştur
             const userResponse = await IAMAPI.Users.Create.Request({
                 ...data,
                 companyId: AppConfig.DefaultCompanyId,
@@ -94,7 +98,6 @@ export default function SignUpScreen() {
             const userId = userResponse?.id;
             const DEFAULT_ROLE_ID = 'B3F8A7D1-4E2C-4A3E-8B5A-D3E7B9C5E2F1';
 
-            // 2. Giriş yap
             const loginResponse = await IAMAPI.Auth.Login.Request({
                 provider: 'native',
                 userName: data.userName,
@@ -104,16 +107,15 @@ export default function SignUpScreen() {
                 isCompanyHolding: false,
                 companyId: AppConfig.DefaultCompanyId,
             });
+
             await AsyncStorage.setItem('jwt', loginResponse.jwt);
             await AsyncStorage.setItem('refreshToken', loginResponse.refreshToken);
 
-
-            console.log('Kullanıcı oluşturuldu ve giriş yapıldı:', userResponse, loginResponse);
-            // 3. Kullanıcıya rol ata
             if (userId) {
                 const roleResult = await HirovoAPI.RelUserRoles.Create.Request({
                     userId,
                     roleIds: [DEFAULT_ROLE_ID],
+                    companyId: AppConfig.DefaultCompanyId,
                 });
 
                 if (!roleResult?.isEverythingOk) {
@@ -121,12 +123,10 @@ export default function SignUpScreen() {
                 }
             }
 
-
             navigation.reset({
                 index: 0,
                 routes: [{ name: 'Drawer', params: { screen: 'HomeTabs' } }],
             });
-
         } catch (error: any) {
             console.error('Kayıt olma hatası:', error);
             const errorMessage =
@@ -137,82 +137,134 @@ export default function SignUpScreen() {
         }
     };
 
-
-
     const inputFields = [
-        { name: 'userName', label: t('ui.login.usernamePlaceholder'), placeholder: t('ui.login.usernamePlaceholder') },
+        {
+            name: 'userName', label: t('ui.login.usernamePlaceholder'),
+            placeholder: t('ui.login.usernamePlaceholder'),
+            autoCapitalize: 'none' as const,
+            toLowerCase: true
+        },
         { name: 'firstName', label: t('ui.signup.name'), placeholder: t('ui.signup.enterName') },
         { name: 'surname', label: t('ui.signup.surname'), placeholder: t('ui.signup.enterSurname') },
-        { name: 'email', label: t('ui.signup.email'), placeholder: t('ui.signup.enterEmail'), keyboardType: 'email-address' as const },
-        { name: 'password', label: t('ui.signup.password'), placeholder: t('ui.signup.enterPassword'), secureTextEntry: true },
-        { name: 'providerId', label: '', placeholder: '', hidden: true }, // görünmeyecek ama gönderilecek
-        { name: 'description', label: t('ui.profile.description'), placeholder: t('ui.form.descriptionPlaceholder'), multiline: true },
+        {
+            name: 'email', label: t('ui.signup.email'), placeholder: t('ui.signup.enterEmail'), keyboardType: 'email-address' as const,
+            autoCapitalize: 'none' as const,
+            toLowerCase: true
+        },
+        {
+            name: 'password',
+            label: t('ui.signup.password'),
+            placeholder: t('ui.signup.enterPassword'),
+            secureTextEntry: !passwordVisible,
+            toggleVisibility: () => setPasswordVisible(prev => !prev),
+            isPassword: true,
+        },
+        {
+            name: 'confirmPassword',
+            label: t('ui.signup.passwordConfirm'),
+            placeholder: t('ui.signup.enterPasswordAgain'),
+            secureTextEntry: !confirmPasswordVisible,
+            toggleVisibility: () => setConfirmPasswordVisible(prev => !prev),
+            isPassword: true,
+        },
+        { name: 'providerId', label: '', placeholder: '', hidden: true },
+        {
+            name: 'description',
+            label: t('ui.profile.description'),
+            placeholder: t('ui.form.descriptionPlaceholder'),
+            multiline: true,
+            numberOfLines: 4,
+            style: [styles.input, { minHeight: 100, textAlignVertical: 'top' as 'top' }]
+        }
     ];
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: '#f9f9f9' }}>
-            <ScrollView contentContainerStyle={{ padding: 16 }}>
-                <Text style={styles.header}>{t('ui.signup.title')}</Text>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={{ flex: 1 }}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+            >
+                <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }} keyboardShouldPersistTaps="handled">
+                    <Text style={styles.header}>{t('ui.signup.title')}</Text>
 
-                {inputFields.map(({ name, label, hidden, ...rest }) => (
-                    <View key={name} style={[styles.field, hidden && { display: 'none' }]}>
-                        <Text style={styles.label}>{label}</Text>
+                    {inputFields.map(({ name, label, hidden, toggleVisibility, isPassword, ...rest }) => (
+                        <View key={name} style={[styles.field, hidden && { display: 'none' }]}>
+                            <Text style={styles.label}>{label}</Text>
+                            <Controller
+                                control={control}
+                                name={name as keyof FormData}
+                                render={({ field: { onChange, value } }) => (
+                                    <View>
+                                        <TextInput
+                                            style={styles.input}
+                                            value={value?.toString() ?? ''}
+                                            onChangeText={(text) => {
+                                                const lowerCased = rest.toLowerCase ? text.toLowerCase() : text;
+                                                onChange(lowerCased);
+                                            }}
+
+                                            secureTextEntry={rest.secureTextEntry}
+                                            {...rest}
+                                        />
+                                        {isPassword && (
+                                            <TouchableOpacity
+                                                onPress={toggleVisibility}
+                                                style={{ position: 'absolute', right: 16, top: 14 }}
+                                            >
+                                                <Text style={{ fontSize: 18 }}>
+                                                    {rest.secureTextEntry ? '👁️' : '🙈'}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
+                                )}
+                            />
+                            {errors[name as keyof FormData] && (
+                                <Text style={styles.error}>
+                                    {t(errors[name as keyof FormData]?.message?.toString() || '')}
+                                </Text>
+                            )}
+                        </View>
+                    ))}
+
+                    <View style={styles.field}>
+                        <Text style={styles.label}>{t('ui.signup.iAmA')}</Text>
                         <Controller
                             control={control}
-                            name={name as keyof FormData}
-                            render={({ field: { onChange, value } }) => (
-                                <TextInput
+                            name="userType"
+                            render={({ field }) => (
+                                <DropDownPicker
+                                    open={userTypeOpen}
+                                    value={field.value ?? null}
+                                    items={userTypeItems}
+                                    setOpen={setUserTypeOpen}
+                                    setValue={callback => {
+                                        const value = typeof callback === 'function' ? callback(field.value) : callback;
+                                        field.onChange(value);
+                                    }}
+                                    setItems={setUserTypeItems}
+                                    placeholder={t('ui.signup.iAmA')}
                                     style={styles.input}
-                                    value={value?.toString() ?? ''}
-                                    onChangeText={onChange}
-                                    {...rest}
+                                    zIndex={2000}
+                                    zIndexInverse={1000}
+                                    listMode="MODAL"
                                 />
                             )}
                         />
-                        {errors[name as keyof FormData] && (
-                            <Text style={styles.error}>
-                                {t(errors[name as keyof FormData]?.message?.toString() || '')}
-                            </Text>
-                        )}
                     </View>
-                ))}
 
-                <View style={styles.field}>
-                    <Text style={styles.label}>{t('ui.signup.iAmA')}</Text>
-                    <Controller
-                        control={control}
-                        name="userType"
-                        render={({ field }) => (
-                            <DropDownPicker
-                                open={userTypeOpen}
-                                value={field.value ?? null}
-                                items={userTypeItems}
-                                setOpen={setUserTypeOpen}
-                                setValue={callback => {
-                                    const value = typeof callback === 'function' ? callback(field.value) : callback;
-                                    field.onChange(value);
-                                }}
-                                setItems={setUserTypeItems}
-                                placeholder={t('ui.signup.iAmA')}
-                                style={styles.input}
-                                zIndex={2000}
-                                zIndexInverse={1000}
-                                listMode="MODAL"
-                            />
-                        )}
-                    />
-                </View>
-
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={handleSubmit(onSubmit)}
-                    disabled={isSubmitting}
-                >
-                    <Text style={styles.buttonText}>
-                        {isSubmitting ? t('common.loading') : t('common.save')}
-                    </Text>
-                </TouchableOpacity>
-            </ScrollView>
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={handleSubmit(onSubmit)}
+                        disabled={isSubmitting}
+                    >
+                        <Text style={styles.buttonText}>
+                            {isSubmitting ? t('common.loading') : t('common.save')}
+                        </Text>
+                    </TouchableOpacity>
+                </ScrollView>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 }

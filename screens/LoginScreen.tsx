@@ -204,14 +204,14 @@ const LoginScreen = () => {
         <Text style={styles.secondaryText}>{t('ui.login.register')}</Text>
       </TouchableOpacity>
 
-
+      {/* 
       <TouchableOpacity style={styles.googleButton} onPress={() => promptAsync()}>
         <Text style={styles.buttonText}>Google ile Giriş</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.appleButton} onPress={onAppleLogin}>
         <Text style={styles.buttonText}>Apple ile Giriş</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 };

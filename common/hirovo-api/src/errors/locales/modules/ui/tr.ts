@@ -53,6 +53,12 @@ export const uiTr = {
         errorTitle: "Hata",
         errorMessage: "Kayıt oluşturulamadı. Lütfen tekrar deneyin.",
         workerAndEmployer: "İşçi ve İşveren",
+        passwordConfirm: 'Şifre Tekrar',
+        enterPasswordAgain: 'Şifrenizi tekrar girin',
+        passwordMismatch: 'Şifreler uyuşmuyor',
+        passwordUppercase: "Şifre en az bir büyük harf içermelidir",
+        passwordLowercase: "Şifre en az bir küçük harf içermelidir",
+        passwordDigit: "Şifre en az bir rakam içermelidir",
       },
       jobs: {
         createTitle: "İş İlanı Oluştur",
@@ -121,6 +127,9 @@ export const uiTr = {
         applicationError: "Başvuru sırasında bir hata oluştu",
         pleaseTryAgain: "Lütfen tekrar deneyin.",
         cannotApply: "Başvuru için kullanıcı bilgileri eksik.",
+        createError: "İş ilanı oluşturulamadı. Lütfen tekrar deneyin.",
+        updateError: "İş ilanı güncellenemedi. Lütfen tekrar deneyin.",
+        deleteError: "İş ilanı silinemedi. Lütfen tekrar deneyin.",
 
       },
       profile: {
@@ -158,6 +167,7 @@ export const uiTr = {
         required: "Bu alan zorunludur",
         phoneNumber: "Geçerli bir telefon numarası giriniz",
         invalidDate: "Tarih formatı geçersiz",
+        email: "Geçerli bir e-posta adresi giriniz",
       },
       workerProfileScreen: {
         title: "İşçi Profili",

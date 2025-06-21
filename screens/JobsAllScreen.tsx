@@ -14,6 +14,12 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getCurrentLocation } from '../src/hooks/useLocation';
+import Constants from 'expo-constants';
+import { jwtDecode } from 'jwt-decode';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AppConfig } from '@config/hirovo-config';
+
 // import { useLocationSync } from '../src/hooks/useLocationSync'; // ✅ Hook importu
 
 type Job = HirovoAPI.Jobs.All.IResponseModel;
@@ -52,7 +58,36 @@ export default function JobsAllScreen() {
       }
     };
 
+    const sendLocation = async () => {
+      try {
+        const token = await AsyncStorage.getItem('jwt');
+        if (!token) return;
+
+        const decoded: any = jwtDecode(token);
+        const userId = decoded?.nameid;
+
+        if (Constants.appOwnership !== 'expo') {
+          const location = await getCurrentLocation();
+
+          if (location) {
+            const response = await HirovoAPI.Location.SetLocation.Request({
+              userId: userId,
+              latitude: location.latitude,
+              longitude: location.longitude,
+              companyId: AppConfig.DefaultCompanyId,
+            });
+            console.log('📍 Konum gönderildi:', response);
+          }
+        } else {
+          console.log('Expo Go modunda konum gönderilmedi');
+        }
+      } catch (error) {
+        console.warn('Konum gönderme hatası:', error);
+      }
+    };
+
     fetchJobs();
+    sendLocation();
   }, []);
 
   const onRefresh = React.useCallback(() => {

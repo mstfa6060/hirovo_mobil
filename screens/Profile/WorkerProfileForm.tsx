@@ -54,9 +54,17 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
 
         const fetchProfile = async () => {
             try {
+                console.log("Profil verisi çekiliyor, userId:", userId);
                 const response = await HirovoAPI.Workers.Detail.Request({ userId });
                 const data = response;
-                console.log("Response" + data);
+
+                console.log("Profil verisi:", data);
+
+                if (!data) {
+                    Alert.alert(t('ui.error'), t('ui.profile.notFound'));
+                    return;
+                }
+
                 reset({
                     phoneNumber: data.phoneNumber ?? '',
                     birthDate: data.birthDate?.toString().substring(0, 10) ?? '',
@@ -66,10 +74,11 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
                     isAvailable: data.isAvailable ?? true,
                 });
             } catch (err) {
-                console.log("Hata :" + err)
+                console.log("Hata :", err);
                 Alert.alert(t('ui.error'), t('ui.profile.fetchError'));
             }
         };
+
 
         fetchProfile();
     }, [userId]);

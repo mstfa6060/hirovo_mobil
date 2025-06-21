@@ -30,6 +30,7 @@ export default function App() {
 
         // JWT varsa otomatik Drawer'a yönlendir
         const token = await AsyncStorage.getItem('jwt');
+        console.log('JWT:', token);
         setInitialRoute(token ? 'Drawer' : 'Login');
 
         if (token) {
