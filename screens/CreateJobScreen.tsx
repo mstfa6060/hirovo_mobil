@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -22,13 +22,16 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import { AppConfig } from '@config/hirovo-config';
 
 const schema = z.object({
-    title: z.string().min(3),
-    type: z.enum(['full-time', 'part-time', 'contract']),
-    salary: z.coerce.number().min(1),
-    description: z.string().min(10),
+    title: z.string().min(1, { message: 'ui.jobs.jobTitleRequired' }),
+    type: z.enum(['full-time', 'part-time', 'contract'], {
+        errorMap: () => ({ message: 'ui.jobs.jobTypeRequired' }),
+    }),
+    salary: z.coerce.number().gt(0, { message: 'ui.jobs.salaryRequired' }),
+    description: z.string().min(10, { message: 'ui.jobs.jobDescriptionRequired' }),
     requiredSkills: z.string().optional(),
     deadline: z.string().optional(),
-    notifyRadiusKm: z.coerce.number().min(1).max(100),
+    notifyRadiusKm: z.coerce.number().min(1, { message: 'ui.jobs.notificationRadiusRequired' }).max(100, { message: 'ui.jobs.notificationRadiusMax' }),
+    employerId: z.string().min(1, { message: 'ui.jobs.employerId' }),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -46,8 +49,16 @@ export default function CreateJobScreen() {
         watch,
     } = useForm<FormValues>({
         resolver: zodResolver(schema),
-        defaultValues: { notifyRadiusKm: 10 },
+        defaultValues: {
+            notifyRadiusKm: 10,
+        },
     });
+
+    useEffect(() => {
+        if (user?.id) {
+            setValue('employerId', user.id);
+        }
+    }, [user]);
 
     const [open, setOpen] = useState(false);
     const [items, setItems] = useState([
@@ -57,7 +68,6 @@ export default function CreateJobScreen() {
     ]);
 
     const onSubmit = async (data: FormValues) => {
-        console.log('Form data:', data);
         try {
             const jobTypeMap = {
                 'full-time': HirovoAPI.Enums.HirovoJobType.FullTime,
@@ -77,43 +87,27 @@ export default function CreateJobScreen() {
                 requiredSkills: data.requiredSkills?.split(',').map(s => s.trim()) ?? [],
             };
 
-            console.log('POST payload:', payload);
-
             const response = await HirovoAPI.Jobs.Create.Request(payload);
-
-            console.log('POST response:', response);
 
             if ('jobId' in response || 'id' in response) {
                 Alert.alert(t('ui.success'), t('ui.jobs.createdSuccessfully'));
                 navigation.goBack();
             } else {
-                console.error('POST error: Unexpected response', response);
                 Alert.alert(t('ui.error'), t('ui.jobs.createError'));
             }
         } catch (err) {
-            console.error('POST error:', err);
             Alert.alert(t('ui.error'), t('ui.jobs.createError'));
         }
     };
 
-    // Form validasyon hatalarını logla
-    React.useEffect(() => {
-        if (Object.keys(errors).length > 0) {
-            console.log('Form errors:', errors);
-        }
-    }, [errors]);
-
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            style={{ flex: 1 }}
-        >
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
             <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
                 <View style={styles.header}>
                     <Text style={styles.headerTitle}>{t('ui.jobs.createJobTitle')}</Text>
                 </View>
 
-                <Text style={styles.label}>{t('ui.jobs.title')}</Text>
+                <Text style={styles.label}>{t('ui.jobs.title')} <Text style={{ color: 'red' }}>*</Text></Text>
                 <Controller
                     control={control}
                     name="title"
@@ -121,14 +115,14 @@ export default function CreateJobScreen() {
                         <TextInput
                             style={styles.input}
                             placeholder={t('ui.jobs.titlePlaceholder')}
-                            onChangeText={onChange}
+                            onChangeText={text => onChange(text.trim())}
                             onBlur={onBlur}
                             value={value}
                         />
                     )}
                 />
 
-                <Text style={styles.label}>{t('ui.jobs.type')}</Text>
+                <Text style={styles.label}>{t('ui.jobs.type')} <Text style={{ color: 'red' }}>*</Text></Text>
                 <Controller
                     control={control}
                     name="type"
@@ -151,12 +145,10 @@ export default function CreateJobScreen() {
                             zIndexInverse={1000}
                             listMode="MODAL"
                         />
-
-
                     )}
                 />
 
-                <Text style={styles.label}>{t('ui.jobs.salary')}</Text>
+                <Text style={styles.label}>{t('ui.jobs.salary')} <Text style={{ color: 'red' }}>*</Text></Text>
                 <Controller
                     control={control}
                     name="salary"
@@ -165,14 +157,17 @@ export default function CreateJobScreen() {
                             style={styles.input}
                             placeholder="75000"
                             keyboardType="numeric"
-                            onChangeText={text => onChange(Number(text))}
+                            onChangeText={(text) => {
+                                const parsed = parseFloat(text);
+                                onChange(text.trim() === '' ? undefined : !isNaN(parsed) ? parsed : 0);
+                            }}
                             onBlur={onBlur}
                             value={value ? value.toString() : ''}
                         />
                     )}
                 />
 
-                <Text style={styles.label}>{t('ui.jobs.description')}</Text>
+                <Text style={styles.label}>{t('ui.jobs.description')} <Text style={{ color: 'red' }}>*</Text></Text>
                 <Controller
                     control={control}
                     name="description"
@@ -181,7 +176,7 @@ export default function CreateJobScreen() {
                             style={[styles.input, { height: 100 }]}
                             placeholder={t('ui.jobs.descriptionPlaceholder')}
                             multiline
-                            onChangeText={onChange}
+                            onChangeText={text => onChange(text.trim())}
                             onBlur={onBlur}
                             value={value}
                         />
@@ -193,7 +188,12 @@ export default function CreateJobScreen() {
                     control={control}
                     name="requiredSkills"
                     render={({ field }) => (
-                        <TextInput style={styles.input} placeholder="React, TypeScript" {...field} />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="React, TypeScript"
+                            onChangeText={text => field.onChange(text.trim())}
+                            value={field.value}
+                        />
                     )}
                 />
 
