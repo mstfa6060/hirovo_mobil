@@ -203,7 +203,19 @@ export const uiTr = {
           Rejected: "Reddedildi",
           Cancelled: "İptal Edildi",
         }
-      }
+      },
+      WorkersScreen: {
+        phone: 'Telefon',
+        city: 'Şehir',
+        district: 'İlçe',
+        birthDate: 'Doğum Tarihi',
+        description: 'Açıklama',
+        available: 'Müsait',
+        unavailable: 'Meşgul',
+        title: 'İşçiler',
+        searchPlaceholder: 'İşçi ara',
+      },
+
     },
     error: {
       DEFAULT_ERROR: "Bir hata oluştu. Lütfen tekrar deneyin.",

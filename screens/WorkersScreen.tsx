@@ -14,7 +14,6 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/RootNavigator';
 
-
 type Worker = {
     id: string;
     displayName: string;
@@ -33,7 +32,6 @@ export default function WorkersScreen() {
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-
 
     const fetchWorkers = async (isRefresh = false) => {
         try {
@@ -69,7 +67,7 @@ export default function WorkersScreen() {
 
             setWorkers(normalizedWorkers);
         } catch (err) {
-            setError(t('ui.workers.loadError'));
+            setError(t('ui.WorkersScreen.loadError'));
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -101,12 +99,19 @@ export default function WorkersScreen() {
         );
     }
 
+    const getMaskedName = (name: string) => {
+        const [firstName = '', lastName = ''] = name.trim().split(' ');
+        const maskedFirst = firstName ? `${firstName.charAt(0)}***` : '';
+        const maskedLast = lastName ? `${lastName.charAt(0)}***` : '';
+        return `${maskedFirst} ${maskedLast}`.trim();
+    };
+
     return (
         <View style={styles.container}>
-            <Text style={styles.header}>{t('ui.workers')}</Text>
+            <Text style={styles.header}>{t('ui.WorkersScreen.title')}</Text>
             <View style={styles.searchBox}>
                 <TextInput
-                    placeholder={t('ui.searchWorkers')}
+                    placeholder={t('ui.WorkersScreen.searchPlaceholder')}
                     style={styles.searchInput}
                 />
             </View>
@@ -116,48 +121,57 @@ export default function WorkersScreen() {
                 contentContainerStyle={{ paddingBottom: 20 }}
                 refreshing={refreshing}
                 onRefresh={handleRefresh}
-                renderItem={({ item }) => (
-                    <TouchableOpacity
-                        style={styles.card}
-                        onPress={() => navigation.navigate('WorkerProfile', { id: item.id })}
-                    >
-                        <View style={styles.cardContent}>
-                            <View style={{ flex: 1 }}>
-                                <Text style={styles.name}>{item.displayName}</Text>
-                                <Text style={styles.line}>
-                                    <Text style={styles.label}>Telefon:</Text> {item.phoneNumber}
-                                </Text>
-                                <Text style={styles.line}>
-                                    <Text style={styles.label}>Şehir:</Text> {item.city}
-                                </Text>
-                                <Text style={styles.line}>
-                                    <Text style={styles.label}>İlçe:</Text> {item.district}
-                                </Text>
-                                {item.birthDate && (
-                                    <Text style={styles.line}>
-                                        <Text style={styles.label}>Doğum Tarihi:</Text> {item.birthDate}
-                                    </Text>
-                                )}
-                                {item.description && (
-                                    <Text style={styles.line}>
-                                        <Text style={styles.label}>Açıklama:</Text> {item.displayName}
-                                    </Text>
-                                )}
-                            </View>
-                            <View style={styles.statusContainer}>
-                                <Text
-                                    style={[
-                                        styles.status,
-                                        item.isAvailable ? styles.available : styles.unavailable,
-                                    ]}
-                                >
-                                    {item.isAvailable ? t('ui.available') : t('ui.unavailable')}
-                                </Text>
-                            </View>
-                        </View>
-                    </TouchableOpacity>
-                )}
+                renderItem={({ item }) => {
+                    const isAvailable = item.isAvailable;
+                    const displayName = isAvailable
+                        ? item.displayName
+                        : getMaskedName(item.displayName);
+                    const phoneNumber = isAvailable ? item.phoneNumber : '• • • • • • • •';
 
+                    return (
+                        <TouchableOpacity
+                            style={[styles.card, !isAvailable && styles.unavailableCard]}
+                            onPress={isAvailable ? () => navigation.navigate('WorkerProfile', { id: item.id }) : undefined}
+                        >
+                            <View style={styles.cardContent}>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.name}>{displayName}</Text>
+                                    <Text style={styles.line}>
+                                        <Text style={styles.label}>{t('ui.WorkersScreen.phone')}:</Text> {phoneNumber}
+                                    </Text>
+                                    <Text style={styles.line}>
+                                        <Text style={styles.label}>{t('ui.WorkersScreen.city')}:</Text> {item.city}
+                                    </Text>
+                                    <Text style={styles.line}>
+                                        <Text style={styles.label}>{t('ui.WorkersScreen.district')}:</Text> {item.district}
+                                    </Text>
+                                    {item.birthDate && (
+                                        <Text style={styles.line}>
+                                            <Text style={styles.label}>{t('ui.WorkersScreen.birthDate')}:</Text> {item.birthDate}
+                                        </Text>
+                                    )}
+                                    {item.description && (
+                                        <Text style={styles.line}>
+                                            <Text style={styles.label}>{t('ui.WorkersScreen.description')}:</Text> {item.description}
+                                        </Text>
+                                    )}
+                                </View>
+                                <View style={styles.statusContainer}>
+                                    <Text
+                                        style={[
+                                            styles.status,
+                                            isAvailable ? styles.available : styles.unavailable,
+                                        ]}
+                                    >
+                                        {isAvailable
+                                            ? t('ui.WorkersScreen.available')
+                                            : t('ui.WorkersScreen.unavailable')}
+                                    </Text>
+                                </View>
+                            </View>
+                        </TouchableOpacity>
+                    );
+                }}
             />
         </View>
     );
@@ -198,6 +212,12 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 1 },
         shadowRadius: 2,
         elevation: 2,
+    },
+    unavailableCard: {
+        padding: 20,
+        borderColor: '#fecaca',
+        borderWidth: 1.5,
+        backgroundColor: '#fff1f2',
     },
     cardContent: {
         flexDirection: 'row',
