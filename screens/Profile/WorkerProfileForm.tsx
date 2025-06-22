@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -18,6 +18,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import TopBar from '../../components/TopBar';
 import { HirovoAPI } from '@api/business_modules/hirovo';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { format } from 'date-fns';
 
 const schema = z.object({
     phoneNumber: z.string().min(10, 'formErrors.phoneInvalid'),
@@ -32,10 +34,13 @@ type FormData = z.infer<typeof schema>;
 
 export default function WorkerProfileForm({ userId }: { userId: string }) {
     const { t } = useTranslation();
+    const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+
     const {
         control,
         handleSubmit,
         reset,
+        setValue,
         formState: { errors, isSubmitting },
     } = useForm<FormData>({
         resolver: zodResolver(schema),
@@ -54,12 +59,8 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
 
         const fetchProfile = async () => {
             try {
-                console.log("Profil verisi çekiliyor, userId:", userId);
                 const response = await HirovoAPI.Workers.Detail.Request({ userId });
                 const data = response;
-
-                console.log("Profil verisi:", data);
-
                 if (!data) {
                     Alert.alert(t('ui.error'), t('ui.profile.notFound'));
                     return;
@@ -74,32 +75,36 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
                     isAvailable: data.isAvailable ?? true,
                 });
             } catch (err) {
-                console.log("Hata :", err);
                 Alert.alert(t('ui.error'), t('ui.profile.fetchError'));
             }
         };
 
-
         fetchProfile();
     }, [userId]);
 
+    const showDatePicker = () => setDatePickerVisibility(true);
+    const hideDatePicker = () => setDatePickerVisibility(false);
+
+    const handleConfirm = (date: Date) => {
+        const formatted = format(date, 'yyyy-MM-dd');
+        setValue('birthDate', formatted);
+        hideDatePicker();
+    };
+
     const onSubmit = async (data: FormData) => {
         try {
-            console.log("Submitting form data:", data);
             await HirovoAPI.Workers.UpdateProfile.Request({
                 ...data,
                 userId,
                 birthDate: new Date(data.birthDate),
-                description: data.description ?? '', // garanti altına al
+                description: data.description ?? '',
             });
-
 
             Alert.alert(t('ui.success'), t('ui.profile.updated'));
         } catch (error) {
             Alert.alert(t('ui.error'), t('ui.profile.updateError'));
         }
     };
-
 
     return (
         <SafeAreaView style={styles.container}>
@@ -121,6 +126,7 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
                         )}
                     />
                 </View>
+
                 <View style={styles.card}>
                     <Text style={styles.label}>{t('ui.profile.phoneNumber')}</Text>
                     <Controller
@@ -137,21 +143,36 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
                         )}
                     />
                 </View>
+
                 <View style={styles.card}>
                     <Text style={styles.label}>{t('ui.profile.birthDate')}</Text>
                     <Controller
                         control={control}
                         name="birthDate"
-                        render={({ field: { onChange, value } }) => (
-                            <TextInput
-                                style={styles.input}
-                                placeholder={t('ui.form.birthDatePlaceholder') || 'YYYY-MM-DD'}
-                                value={value}
-                                onChangeText={onChange}
-                            />
+                        render={({ field: { value } }) => (
+                            <>
+                                <TouchableOpacity onPress={showDatePicker}>
+                                    <View pointerEvents="none">
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder={t('ui.form.birthDatePlaceholder') || 'YYYY-MM-DD'}
+                                            value={value}
+                                            editable={false}
+                                        />
+                                    </View>
+                                </TouchableOpacity>
+                                <DateTimePickerModal
+                                    isVisible={isDatePickerVisible}
+                                    mode="date"
+                                    onConfirm={handleConfirm}
+                                    onCancel={hideDatePicker}
+                                    maximumDate={new Date()}
+                                />
+                            </>
                         )}
                     />
                 </View>
+
                 <View style={[styles.card, { flexDirection: 'row', gap: 12 }]}>
                     <View style={{ flex: 1 }}>
                         <Text style={styles.label}>{t('ui.profile.city')}</Text>
@@ -184,6 +205,7 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
                         />
                     </View>
                 </View>
+
                 <View style={styles.switchCard}>
                     <Text style={styles.label}>{t('ui.profile.isAvailable')}</Text>
                     <Controller
@@ -195,6 +217,7 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
                     />
                 </View>
             </ScrollView>
+
             <View style={styles.footer}>
                 {Object.keys(errors).length > 0 && (
                     <Text style={{ color: 'red', textAlign: 'center', marginBottom: 8 }}>
@@ -204,10 +227,7 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
 
                 <TouchableOpacity
                     style={styles.primaryButton}
-                    onPress={() => {
-                        console.log('🟢 Kaydet butonuna basıldı');
-                        handleSubmit(onSubmit)();
-                    }}
+                    onPress={handleSubmit(onSubmit)}
                     disabled={isSubmitting}
                 >
                     {isSubmitting ? (
@@ -217,7 +237,6 @@ export default function WorkerProfileForm({ userId }: { userId: string }) {
                     )}
                 </TouchableOpacity>
             </View>
-
         </SafeAreaView>
     );
 }
