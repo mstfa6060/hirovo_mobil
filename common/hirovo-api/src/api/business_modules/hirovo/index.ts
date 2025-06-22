@@ -263,6 +263,23 @@ export namespace HirovoAPI {
 
 	}
 
+	export namespace DeleteProfile {
+
+		export namespace Delete {
+			export const RequestPath = AppConfig.HirovoUrl + '/DeleteProfile/Delete';
+			export const Request = (data: IRequestModel) => ApiService.call<IResponseModel>(axios.post(RequestPath,{...data}));
+			export interface IRequestModel {
+				userId: Guid;
+				isDeleted: boolean;
+			}
+			export interface IResponseModel {
+				id: Guid;
+				isDeleted: boolean;
+			}
+		}
+
+	}
+
 	export namespace Roles {
 
 		export namespace UIDC {
@@ -814,94 +831,6 @@ export namespace HirovoAPI {
 			}
 			export interface IResponseModel {
 				jobApplicationId: Guid;
-			}
-		}
-
-	}
-
-	export namespace Employers {
-
-		export namespace Detail {
-			export const RequestPath = AppConfig.HirovoUrl + '/Employers/Detail';
-			export const Request = (data: IRequestModel) => ApiService.call<IResponseModel>(axios.post(RequestPath,{...data}));
-			export interface IRequestModel {
-				userId: Guid;
-			}
-			export interface IResponseModel {
-				id: Guid;
-				email: string;
-				phoneNumber: string;
-				city: string;
-				district: string;
-				description: string;
-			}
-		}
-
-		export namespace All {
-			export const RequestPath = AppConfig.HirovoUrl + '/Employers/All';
-			export const Request = (data: IRequestModel) => ApiService.call<IResponseModel[]>(axios.post(RequestPath,{...data}));
-			export interface IRequestModel {
-				userId: Guid;
-				sorting: IXSorting;
-				filters: IXFilterItem[];
-				pageRequest: IXPageRequest;
-			}
-			export interface IXSorting {
-				key: string;
-				direction: Enums.XSortingDirection;
-			}
-			export interface IObject {
-			}
-			export interface IXFilterItem {
-				key: string;
-				type: string;
-				isUsed: boolean;
-				values: IObject[];
-				min: IObject;
-				max: IObject;
-				conditionType: string;
-			}
-			export interface IXPageRequest {
-				currentPage: number;
-				perPageCount: number;
-				listAll: boolean;
-			}
-			export interface IResponseModel {
-				id: Guid;
-				title: string;
-				description: string;
-				salary: __ERROR_TYPE_NOT_HANDLED__;
-				type: Enums.HirovoJobType;
-				status: Enums.HirovoJobStatus;
-				createdAt: Date;
-			}
-		}
-
-		export namespace UpdateProfile {
-			export const RequestPath = AppConfig.HirovoUrl + '/Employers/UpdateProfile';
-			export const Request = (data: IRequestModel) => ApiService.call<IResponseModel>(axios.post(RequestPath,{...data}));
-			export interface IRequestModel {
-				userId: Guid;
-				phoneNumber: string;
-				city: string;
-				district: string;
-				description: string;
-			}
-			export interface IResponseModel {
-				id: Guid;
-			}
-		}
-
-		export namespace Delete {
-			export const RequestPath = AppConfig.HirovoUrl + '/Employers/Delete';
-			export const Request = (data: IRequestModel) => ApiService.call<IResponseModel>(axios.post(RequestPath,{...data}));
-			export interface IRequestModel {
-				userId: Guid;
-				isDeleted: boolean;
-			}
-			export interface IResponseModel {
-				id: Guid;
-				isDeleted: boolean;
 			}
 		}
 
