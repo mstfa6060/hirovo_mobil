@@ -1,7 +1,7 @@
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import HomeTabs from './HomeTabs';
-import ProfileEditScreen from '../screens/Profile/ProfileEditScreen';
+import ProfileForm from '../screens/Profile/ProfileForm';
 import CreateJobScreen from '../screens/CreateJobScreen';
 import { useTranslation } from 'react-i18next';
 import CustomDrawerContent from '../components/CustomDrawerContent';
@@ -29,12 +29,13 @@ const DrawerNavigator = () => {
             />
             <Drawer.Screen
                 name="ProfileEdit"
-                component={ProfileEditScreen}
+                component={ProfileForm}
                 options={{ title: t('ui.editProfile') }}
             />
+
             <Drawer.Screen
                 name="CreateJob"
-                component={CreateJobScreen} // 📌 bu component dosyan olmalı
+                component={CreateJobScreen}
                 options={{ title: t('ui.createJob') }}
             />
 

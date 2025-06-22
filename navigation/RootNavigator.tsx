@@ -3,10 +3,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/LoginScreen';
 import HomeTabs from './HomeTabs';
 import JobsDetailScreen from '../screens/JobsDetailScreen';
-import ProfileEditScreen from '../screens/Profile/ProfileEditScreen';
 import DrawerNavigator, { DrawerParamList } from './DrawerNavigator';
 import WorkerProfileScreen from '../screens/WorkerProfileScreen';
 import SignUpScreen from '../screens/SignUpScreen'; // doğru yolu senin yapına göre güncelle
+import ProfileForm from 'screens/Profile/ProfileForm';
 
 
 export type RootStackParamList = {
@@ -37,7 +37,7 @@ const RootNavigator = ({ initialRoute }: RootNavigatorProps) => {
             <Stack.Screen name="Register" component={SignUpScreen} />
             <Stack.Screen name="Drawer" component={DrawerNavigator} />
             <Stack.Screen name="JobsDetail" component={JobsDetailScreen} />
-            <Stack.Screen name="ProfileEdit" component={ProfileEditScreen} />
+            <Stack.Screen name="ProfileEdit" component={ProfileForm} />
             <Stack.Screen name="WorkerProfile" component={WorkerProfileScreen} options={{ headerShown: false }} />
         </Stack.Navigator>
     );
