@@ -21,6 +21,8 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../src/hooks/useAuth';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { AppConfig } from '@config/hirovo-config';
+import Slider from '@react-native-community/slider';
+
 
 const schema = z.object({
     title: z.string().min(1, { message: 'ui.jobs.jobTitleRequired' }),
@@ -229,24 +231,28 @@ export default function CreateJobScreen() {
                 />
 
                 {/* Notify Radius */}
-                <Text style={styles.label}>{t('ui.jobs.notifyRadiusKm')}</Text>
-                <View style={styles.sliderRow}>
-                    <TouchableOpacity
-                        style={styles.stepButton}
-                        onPress={() => setValue('notifyRadiusKm', Math.max(1, watch('notifyRadiusKm') - 1))}
-                    >
-                        <Text style={styles.stepText}>-</Text>
-                    </TouchableOpacity>
+                <Text style={styles.label}>{t('ui.jobs.notifyRadiusKm')} <Text style={{ color: 'red' }}>*</Text></Text>
+                <Controller
+                    control={control}
+                    name="notifyRadiusKm"
+                    render={({ field: { value, onChange } }) => (
+                        <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                            <Slider
+                                style={{ width: '100%', height: 40 }}
+                                minimumValue={1}
+                                maximumValue={100}
+                                step={1}
+                                minimumTrackTintColor="#007bff"
+                                maximumTrackTintColor="#d3d3d3"
+                                thumbTintColor="#007bff"
+                                value={value}
+                                onValueChange={onChange}
+                            />
+                            <Text style={styles.radiusValue}>{value} km</Text>
+                        </View>
+                    )}
+                />
 
-                    <Text style={styles.radiusValue}>{watch('notifyRadiusKm')} km</Text>
-
-                    <TouchableOpacity
-                        style={styles.stepButton}
-                        onPress={() => setValue('notifyRadiusKm', Math.min(100, watch('notifyRadiusKm') + 1))}
-                    >
-                        <Text style={styles.stepText}>+</Text>
-                    </TouchableOpacity>
-                </View>
 
                 {/* Submit */}
                 <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)} disabled={isSubmitting}>

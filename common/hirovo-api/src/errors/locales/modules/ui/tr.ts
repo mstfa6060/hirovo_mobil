@@ -130,7 +130,7 @@ export const uiTr = {
         createError: "İş ilanı oluşturulamadı. Lütfen tekrar deneyin.",
         updateError: "İş ilanı güncellenemedi. Lütfen tekrar deneyin.",
         deleteError: "İş ilanı silinemedi. Lütfen tekrar deneyin.",
-
+        viewLink: 'İlan bağlantısı',
       },
       profile: {
         title: "Profil Düzenle",

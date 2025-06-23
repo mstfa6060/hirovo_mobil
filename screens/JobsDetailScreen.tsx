@@ -93,14 +93,23 @@ export default function JobsDetailScreen() {
 
     const handleShare = async () => {
         try {
-            const shareMessage = `${job?.title} - ${job?.employerDisplayName}\n\n${t('ui.jobs.salary')}: ${job?.salary.toLocaleString()} ₺`;
+            if (!job) return;
+
+            const shareMessage =
+                `${job.title} - ${job.employerDisplayName}\n\n` +
+                `${t('ui.jobs.description')}: ${job.description}\n` +
+                `${t('ui.jobs.salary')}: ${job.salary.toLocaleString()} ₺\n\n` +
+                `${t('ui.jobs.viewLink')}: hirovo://jobs/${job.id}`;
+
             await Share.share({
-                message: shareMessage
+                title: job.title,
+                message: shareMessage,
             });
         } catch (err) {
             console.error('Paylaşım hatası:', err);
         }
     };
+
 
     if (loading) {
         return (
