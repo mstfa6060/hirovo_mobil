@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     View, Text, TextInput, TouchableOpacity, ActivityIndicator,
-    StyleSheet, ScrollView, Alert, Switch, Platform
+    StyleSheet, ScrollView, Alert, Switch, Platform, Modal, Pressable
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useForm, Controller } from 'react-hook-form';
@@ -11,6 +11,10 @@ import { useTranslation } from 'react-i18next';
 import { HirovoAPI } from '@api/business_modules/hirovo';
 import TopBar from '../../components/TopBar';
 import { useAuth } from '../../src/hooks/useAuth';
+import { useFocusEffect } from '@react-navigation/native';
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { format } from 'date-fns';
+import PhoneInputCustom from '../../components/PhoneInputCustom';
 
 const schema = z.object({
     phoneNumber: z.string().min(10, 'formErrors.phoneInvalid'),
@@ -46,27 +50,33 @@ export default function ProfileForm() {
         },
     });
 
-    useEffect(() => {
-        if (!user.id) return;
+    const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
-        const fetchProfile = async () => {
-            try {
-                const response = await HirovoAPI.DetailProfile.Detail.Request({ userId: user.id });
-                reset({
-                    phoneNumber: response.phoneNumber ?? '',
-                    birthDate: response.birthDate?.toString().substring(0, 10) ?? '',
-                    city: response.city ?? '',
-                    district: response.district ?? '',
-                    description: response.description ?? '',
-                    isAvailable: response.isAvailable ?? true,
-                });
-            } catch (error) {
-                Alert.alert(t('ui.error'), t('ui.profile.fetchError'));
+    useFocusEffect(
+        React.useCallback(() => {
+            const fetchProfile = async () => {
+                try {
+                    const response = await HirovoAPI.DetailProfile.Detail.Request({ userId: user.id });
+                    reset({
+                        phoneNumber: response.phoneNumber ?? '',
+                        birthDate: response.birthDate?.toString().substring(0, 10) ?? '',
+                        city: response.city ?? '',
+                        district: response.district ?? '',
+                        description: response.description ?? '',
+                        isAvailable: response.isAvailable ?? true,
+                    });
+                } catch (error) {
+                    Alert.alert(t('ui.error'), t('ui.profile.fetchError'));
+                }
+            };
+
+            if (user.id) {
+                fetchProfile();
             }
-        };
 
-        fetchProfile();
-    }, [user.id]);
+            return () => { };
+        }, [user.id, reset])
+    );
 
     const onSubmit = async (data: FormData) => {
         try {
@@ -102,28 +112,42 @@ export default function ProfileForm() {
                     control={control}
                     name="phoneNumber"
                     render={({ field: { onChange, value } }) => (
-                        <TextInput
-                            style={styles.input}
-                            keyboardType="phone-pad"
-                            placeholder={t('ui.form.phoneNumberPlaceholder') || ''}
+                        <PhoneInputCustom
                             value={value}
-                            onChangeText={onChange}
+                            onChange={onChange}
                         />
                     )}
                 />
+
 
                 <Text style={styles.label}>{t('ui.profile.birthDate')}</Text>
                 <Controller
                     control={control}
                     name="birthDate"
-                    render={({ field: { onChange, value } }) => (
-                        <TextInput
-                            style={styles.input}
-                            placeholder="YYYY-MM-DD"
-                            keyboardType="numeric"
-                            value={value}
-                            onChangeText={onChange}
-                        />
+                    render={({ field: { value, onChange } }) => (
+                        <>
+                            <TouchableOpacity onPress={() => setDatePickerVisibility(true)}>
+                                <TextInput
+                                    style={styles.input}
+                                    value={value}
+                                    editable={false}
+                                    placeholder="YYYY-MM-DD"
+                                    pointerEvents="none"
+                                />
+                            </TouchableOpacity>
+
+                            <DateTimePickerModal
+                                isVisible={isDatePickerVisible}
+                                mode="date"
+                                maximumDate={new Date()}
+                                onConfirm={(date) => {
+                                    const formatted = format(date, 'yyyy-MM-dd');
+                                    onChange(formatted);
+                                    setDatePickerVisibility(false);
+                                }}
+                                onCancel={() => setDatePickerVisibility(false)}
+                            />
+                        </>
                     )}
                 />
 
@@ -256,6 +280,33 @@ const styles = StyleSheet.create({
     primaryButtonText: {
         color: '#fff',
         fontSize: 16,
+        fontWeight: 'bold',
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'flex-end',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    modalContent: {
+        backgroundColor: '#fff',
+        paddingTop: 20,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        paddingBottom: 30,
+    },
+    modalActions: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        marginTop: 10,
+    },
+    cancelText: {
+        fontSize: 16,
+        color: '#888',
+    },
+    confirmText: {
+        fontSize: 16,
+        color: '#0b80ee',
         fontWeight: 'bold',
     },
 });
