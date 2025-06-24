@@ -20,10 +20,7 @@ export class ApiService {
           ? i18next.t(`error.${backendKey}`, `⚠ ${backendKey}`)
           : i18next.t('ui.common.unknownError');
 
-        console.log('ApiService.call errorMessage:', errorMessage);
-
-        Alert.alert(i18next.t('ui.common.errorTitle'), errorMessage);
-        console.log(i18next.t('ui.common.errorTitle'), errorMessage);
+        Alert.alert(i18next.t('common.errorTitle'), errorMessage);
 
         const enrichedError = new Error(errorMessage);
         (enrichedError as any).original = error;

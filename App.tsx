@@ -12,6 +12,7 @@ import { HirovoAPI } from '@api/business_modules/hirovo';
 import i18n from './common/hirovo-api/src/config/i18n';
 import RootNavigator from './navigation/RootNavigator';
 import { AppConfig } from '@config/hirovo-config';
+import { Provider as PaperProvider } from 'react-native-paper';
 
 export default function App() {
   const [isAppReady, setIsAppReady] = useState(false);
@@ -103,10 +104,13 @@ export default function App() {
   }
 
   return (
-    <I18nextProvider i18n={i18n}>
-      <NavigationContainer linking={linking}>
-        <RootNavigator initialRoute={initialRoute} />
-      </NavigationContainer>
-    </I18nextProvider>
+    <PaperProvider>
+      <I18nextProvider i18n={i18n}>
+        <NavigationContainer linking={linking}>
+          <RootNavigator initialRoute={initialRoute} />
+        </NavigationContainer>
+      </I18nextProvider>
+    </PaperProvider>
   );
+
 }

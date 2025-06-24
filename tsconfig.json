@@ -17,7 +17,7 @@
       ],
       "@errors/*": [
         "common/hirovo-api/src/errors/*"
-      ]
+      ],
     },
     "strict": true,
     "esModuleInterop": true,

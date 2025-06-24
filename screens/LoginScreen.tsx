@@ -25,6 +25,7 @@ import '@config/i18n';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import App from 'App';
+import { LanguageSelectorDropdown } from '../components/LanguageSelector';
 
 const schema = z.object({
   username: z.string().min(3, 'Kullanıcı adı en az 3 karakter olmalı'),
@@ -188,6 +189,8 @@ const LoginScreen = () => {
       <TouchableOpacity style={styles.link} onPress={() => navigation.navigate('ForgotPassword')}>
         <Text style={styles.linkText}>{t('ui.login.forgotPassword')}</Text>
       </TouchableOpacity>
+
+      <LanguageSelectorDropdown />
 
       <TouchableOpacity
         style={[styles.button, !isValid && styles.buttonDisabled]}

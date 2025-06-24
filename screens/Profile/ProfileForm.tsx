@@ -15,6 +15,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { format } from 'date-fns';
 import PhoneInputCustom from '../../components/PhoneInputCustom';
+import { LanguageSelectorDropdown } from 'components/LanguageSelector';
 
 const schema = z.object({
     phoneNumber: z.string().min(10, 'formErrors.phoneInvalid'),
@@ -100,6 +101,7 @@ export default function ProfileForm() {
         <SafeAreaView style={styles.container}>
             <TopBar title={t('ui.editProfile')} showBackButton />
             <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+
                 <Text style={styles.label}>{t('ui.profile.email')}</Text>
                 <TextInput
                     value={user.email}
@@ -209,6 +211,11 @@ export default function ProfileForm() {
                         )}
                     />
                 </View>
+
+
+                <Text style={styles.label}>{t('common.language')}</Text>
+                <LanguageSelectorDropdown />
+
             </ScrollView>
 
             <View style={styles.footer}>

@@ -1,6 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import * as Localization from 'react-native-localize';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { uiTr } from '@errors/locales/modules/ui/tr';
 import { uiEn } from '@errors/locales/modules/ui/en';
@@ -47,28 +48,36 @@ const resources = {
   ru: uiRu,
 };
 
-// 📱 Cihaz dili
-const deviceLanguageRaw = Localization.getLocales()?.[0]?.languageCode ?? 'en';
-const deviceLanguage = (Object.keys(resources).includes(deviceLanguageRaw)
-  ? deviceLanguageRaw
-  : 'en') as keyof typeof resources;
+const LANGUAGE_STORAGE_KEY = 'user-language';
 
-// 🧠 i18next başlat
-i18n
-  .use(initReactI18next)
-  .init({
-    fallbackLng: 'en',
-    lng: deviceLanguage,
-    resources,
-    interpolation: {
-      escapeValue: false,
-    },
-  })
-  .then(() => {
-    console.log(`i18next initialized ✅ Dil: ${deviceLanguage}`);
-  })
-  .catch(err => {
-    console.error('i18next init error ❌', err);
-  });
+// 🌍 Uygulama dili ayarla
+const initLanguage = async () => {
+  try {
+    const storedLang = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
+    const deviceLangRaw = Localization.getLocales()?.[0]?.languageCode ?? 'en';
+    const fallbackLang = (Object.keys(resources).includes(deviceLangRaw)
+      ? deviceLangRaw
+      : 'en') as keyof typeof resources;
+
+    const selectedLang = storedLang ?? fallbackLang;
+
+    await i18n
+      .use(initReactI18next)
+      .init({
+        fallbackLng: 'en',
+        lng: selectedLang,
+        resources,
+        interpolation: {
+          escapeValue: false,
+        },
+      });
+
+    console.log(`✅ i18next initialized. Dil: ${selectedLang}`);
+  } catch (error) {
+    console.error('❌ i18next init error', error);
+  }
+};
+
+initLanguage();
 
 export default i18n;

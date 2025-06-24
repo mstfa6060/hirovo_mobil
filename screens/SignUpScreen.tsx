@@ -18,12 +18,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { IAMAPI } from '@api/base_modules/iam';
 import { AppConfig } from '@config/hirovo-config';
 import { useTranslation } from 'react-i18next';
-import DropDownPicker from 'react-native-dropdown-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import { HirovoAPI } from '@api/business_modules/hirovo';
+import { Menu, Button } from 'react-native-paper';
 
 const schema = z
     .object({
@@ -56,6 +56,8 @@ export default function SignUpScreen() {
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
     const inputRefs = useRef<(TextInput | null)[]>([]);
+    const [userTypeMenuVisible, setUserTypeMenuVisible] = useState(false);
+    const [selectedUserTypeLabel, setSelectedUserTypeLabel] = useState('');
 
     const {
         control,
@@ -260,30 +262,42 @@ export default function SignUpScreen() {
                     ))}
 
                     <View style={styles.field}>
-                        <Text style={styles.label}>{t('ui.signup.iAmA')}</Text>
+                        <Text style={styles.label}>{t('ui.signup.iAmA')} <Text style={{ color: 'red' }}>*</Text></Text>
                         <Controller
                             control={control}
                             name="userType"
                             render={({ field }) => (
-                                <DropDownPicker
-                                    open={userTypeOpen}
-                                    value={field.value ?? null}
-                                    items={userTypeItems}
-                                    setOpen={setUserTypeOpen}
-                                    setValue={callback => {
-                                        const value = typeof callback === 'function' ? callback(field.value) : callback;
-                                        field.onChange(value);
-                                    }}
-                                    setItems={setUserTypeItems}
-                                    placeholder={t('ui.signup.iAmA')}
-                                    style={styles.input}
-                                    zIndex={2000}
-                                    zIndexInverse={1000}
-                                    listMode="MODAL"
-                                />
+                                <Menu
+                                    visible={userTypeMenuVisible}
+                                    onDismiss={() => setUserTypeMenuVisible(false)}
+                                    anchor={
+                                        <Button
+                                            mode="outlined"
+                                            onPress={() => setUserTypeMenuVisible(true)}
+                                            contentStyle={{ justifyContent: 'flex-start' }}
+                                        >
+                                            {selectedUserTypeLabel ||
+                                                userTypeItems.find(i => i.value === field.value)?.label ||
+                                                t('ui.signup.iAmA')}
+                                        </Button>
+                                    }
+                                >
+                                    {userTypeItems.map(item => (
+                                        <Menu.Item
+                                            key={item.value}
+                                            onPress={() => {
+                                                field.onChange(item.value);
+                                                setSelectedUserTypeLabel(item.label);
+                                                setUserTypeMenuVisible(false);
+                                            }}
+                                            title={item.label}
+                                        />
+                                    ))}
+                                </Menu>
                             )}
                         />
                     </View>
+
 
                     <TouchableOpacity
                         style={styles.button}

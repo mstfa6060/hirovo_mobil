@@ -10,7 +10,7 @@ export default {
       EMPLOYER_ALREADY_EXISTS: "İşveren zaten mevcut.",
       EMPLOYER_NOT_ACTIVE: "İşveren aktif değil.",
       EMPLOYER_ALREADY_DELETED: "İşveren zaten silinmiş.",
-      EMPLOYER_ID_NOT_VALID: "İşveren ID si geçersiz.",
+      EMPLOYER_ID_NOT_VALID: "İşveren ID si   geçersiz.",
       USER_ID_NOT_EXIST: "Kullanıcı bulunamadı.",
       PHONE_NUMBER_TOO_LONG: "Telefon numarası çok uzun.",
       CITY_TOO_LONG: "Şehir adı çok uzun.",

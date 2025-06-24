@@ -236,7 +236,9 @@ export const uiTr = {
       cancel: "İptal",
       save: "Kaydet",
       editProfile: "Profilimi Düzenle",
-      logout: "Çıkış Yap"
+      logout: "Çıkış Yap",
+      errorTitle: "Hata",
+      language: "Dil",
     },
     tabs: {
       jobs: 'İş İlanları',

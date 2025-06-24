@@ -22,6 +22,8 @@ import { useAuth } from '../src/hooks/useAuth';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { AppConfig } from '@config/hirovo-config';
 import Slider from '@react-native-community/slider';
+import { Menu, Button } from 'react-native-paper';
+
 
 
 const schema = z.object({
@@ -43,7 +45,8 @@ export default function CreateJobScreen() {
     const { t } = useTranslation();
     const navigation = useNavigation();
     const { user } = useAuth();
-
+    const [menuVisible, setMenuVisible] = useState(false);
+    const [selectedType, setSelectedType] = useState<string | null>(null);
     const {
         control,
         handleSubmit,
@@ -97,11 +100,12 @@ export default function CreateJobScreen() {
             if ('jobId' in response || 'id' in response) {
                 Alert.alert(t('ui.success'), t('ui.jobs.createdSuccessfully'));
                 navigation.goBack();
-            } else {
-                Alert.alert(t('ui.error'), t('ui.jobs.createError'));
             }
+            // else {
+            //     Alert.alert(t('ui.error'), t('ui.jobs.createError'));
+            // }
         } catch (err) {
-            Alert.alert(t('ui.error'), t('ui.jobs.createError'));
+            // Alert.alert(t('ui.error'), t('ui.jobs.createError'));
         }
     };
 
@@ -209,26 +213,38 @@ export default function CreateJobScreen() {
                     control={control}
                     name="type"
                     render={({ field }) => (
-                        <DropDownPicker
-                            open={open}
-                            value={field.value}
-                            items={items}
-                            setOpen={setOpen}
-                            setValue={(callback) => {
-                                const value = typeof callback === 'function' ? callback(field.value) : callback;
-                                field.onChange(value);
-                            }}
-                            setItems={setItems}
-                            onChangeValue={field.onChange}
-                            placeholder={t('ui.jobs.type')}
-                            style={styles.dropdown}
-                            dropDownContainerStyle={{ borderColor: '#d1d5db' }}
-                            zIndex={1000}
-                            zIndexInverse={1000}
-                            listMode="MODAL"
-                        />
+                        <View style={{ marginBottom: 16 }}>
+                            <Menu
+                                visible={menuVisible}
+                                onDismiss={() => setMenuVisible(false)}
+                                anchor={
+                                    <Button
+                                        mode="outlined"
+                                        onPress={() => setMenuVisible(true)}
+                                        contentStyle={{ justifyContent: 'flex-start' }}
+                                    >
+                                        {selectedType
+                                            ? items.find(i => i.value === selectedType)?.label
+                                            : t('ui.jobs.type')}
+                                    </Button>
+                                }
+                            >
+                                {items.map(item => (
+                                    <Menu.Item
+                                        key={item.value}
+                                        onPress={() => {
+                                            field.onChange(item.value);
+                                            setSelectedType(item.value);
+                                            setMenuVisible(false);
+                                        }}
+                                        title={item.label}
+                                    />
+                                ))}
+                            </Menu>
+                        </View>
                     )}
                 />
+
 
                 {/* Notify Radius */}
                 <Text style={styles.label}>{t('ui.jobs.notifyRadiusKm')} <Text style={{ color: 'red' }}>*</Text></Text>
