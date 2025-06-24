@@ -63,18 +63,31 @@ export default function SignUpScreen() {
         formState: { errors, isSubmitting },
     } = useForm<FormData>({
         resolver: zodResolver(schema),
+        // defaultValues: {
+        //     userName: '',
+        //     firstName: '',
+        //     surname: '',
+        //     email: '',
+        //     password: '',
+        //     confirmPassword: '',
+        //     providerId: '',
+        //     userType: IAMAPI.Enums.UserType.Worker,
+        //     companyId: AppConfig.DefaultCompanyId,
+        //     description: '',
+        // },
         defaultValues: {
-            userName: '',
-            firstName: '',
-            surname: '',
-            email: '',
-            password: '',
-            confirmPassword: '',
+            userName: 'elif',
+            firstName: 'Test',
+            surname: 'User',
+            email: 'testuser123@example.com',
+            password: 'Test123.',
+            confirmPassword: 'Test123.',
             providerId: '',
             userType: IAMAPI.Enums.UserType.Worker,
             companyId: AppConfig.DefaultCompanyId,
-            description: '',
+            description: 'Otomatik test kaydı',
         },
+
     });
 
     const [userTypeOpen, setUserTypeOpen] = useState(false);
@@ -93,6 +106,14 @@ export default function SignUpScreen() {
                 userSource: IAMAPI.Enums.UserSources.Manual,
                 description: data.description ?? '',
             });
+
+            console.log('Kullanıcı oluşturma isteği:', userResponse);
+            // Eğer kullanıcı oluşturulamadıysa login denemesini durdur
+            if (!userResponse || !userResponse.id) {
+                return;
+            }
+
+            console.log('Kullanıcı oluşturuldu:', userResponse);
 
             const userId = userResponse?.id;
             const DEFAULT_ROLE_ID = 'B3F8A7D1-4E2C-4A3E-8B5A-D3E7B9C5E2F1';
@@ -132,7 +153,7 @@ export default function SignUpScreen() {
                 error?.response?.data?.message ||
                 error?.response?.data?.title ||
                 t('ui.signup.errorMessage');
-            Alert.alert(t('ui.signup.errorTitle'), errorMessage);
+            // Alert.alert(t('ui.signup.errorTitle'), errorMessage);
         }
     };
 

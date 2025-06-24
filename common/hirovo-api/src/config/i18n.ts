@@ -13,27 +13,47 @@ import { uiHi } from '@errors/locales/modules/ui/hi';
 import { uiPt } from '@errors/locales/modules/ui/pt';
 import { uiRu } from '@errors/locales/modules/ui/ru';
 
+import backendCommonTr from '@errors/locales/modules/backend/common/tr';
+import backendHirovoTr from '@errors/locales/modules/backend/hirovo/tr';
+
+// 🔀 Merge fonksiyonu
+const mergeTranslations = (...objects: any[]) =>
+  objects.reduce((acc, obj) => {
+    for (const ns in obj.translation) {
+      acc[ns] = {
+        ...(acc[ns] || {}),
+        ...obj.translation[ns],
+      };
+    }
+    return acc;
+  }, {} as any);
+
+// 🇹🇷 Türkçe kaynakları birleştir
+const trMerged = {
+  translation: mergeTranslations(uiTr, backendCommonTr, backendHirovoTr)
+};
+
+// 🌐 Tüm kaynaklar
 const resources = {
-  ar: uiAr,
-  de: uiDe,
+  tr: trMerged,
   en: uiEn,
+  ar: uiAr,
+  zh: uiZh,
+  de: uiDe,
   es: uiEs,
   fr: uiFr,
   hi: uiHi,
   pt: uiPt,
   ru: uiRu,
-  tr: uiTr,
-  zh: uiZh,
 };
 
-// Cihaz dilini al
+// 📱 Cihaz dili
 const deviceLanguageRaw = Localization.getLocales()?.[0]?.languageCode ?? 'en';
-
-// Desteklenen dil mi kontrol et
 const deviceLanguage = (Object.keys(resources).includes(deviceLanguageRaw)
   ? deviceLanguageRaw
   : 'en') as keyof typeof resources;
 
+// 🧠 i18next başlat
 i18n
   .use(initReactI18next)
   .init({
