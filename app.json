@@ -16,6 +16,7 @@
     "android": {
       "package": "com.madentechnology.hirovomobilapp",
       "versionCode": 1,
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -50,15 +51,36 @@
         }
       ]
     },
+    "ios": {
+      "bundleIdentifier": "com.madentechnology.hirovomobilapp",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
+      },
+      "entitlements": {
+        "aps-environment": "development",
+        "com.apple.security.application-groups": [
+          "group.com.madentechnology.hirovomobilapp.onesignal"
+        ]
+      }
+    },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
+      "oneSignalAppId": "d22118fa-f46c-496a-8ac9-34f2a8de29a1",
       "eas": {
         "projectId": "2122db4d-ba6e-4881-9d43-a8ee5d32a8e3"
       }
     },
     "plugins": [
+      [
+        "onesignal-expo-plugin",
+        {
+          "mode": "development"
+        }
+      ],
       "expo-localization"
     ]
   }
