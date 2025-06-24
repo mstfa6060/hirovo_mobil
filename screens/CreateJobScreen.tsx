@@ -223,9 +223,10 @@ export default function CreateJobScreen() {
                                         onPress={() => setMenuVisible(true)}
                                         contentStyle={{ justifyContent: 'flex-start' }}
                                     >
-                                        {selectedType
-                                            ? items.find(i => i.value === selectedType)?.label
+                                        {field.value
+                                            ? items.find(i => i.value === field.value)?.label
                                             : t('ui.jobs.type')}
+
                                     </Button>
                                 }
                             >
@@ -234,7 +235,6 @@ export default function CreateJobScreen() {
                                         key={item.value}
                                         onPress={() => {
                                             field.onChange(item.value);
-                                            setSelectedType(item.value);
                                             setMenuVisible(false);
                                         }}
                                         title={item.label}

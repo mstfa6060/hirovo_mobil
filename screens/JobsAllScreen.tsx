@@ -19,8 +19,8 @@ import Constants from 'expo-constants';
 import { jwtDecode } from 'jwt-decode';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppConfig } from '@config/hirovo-config';
-
-// import { useLocationSync } from '../src/hooks/useLocationSync'; // ✅ Hook importu
+import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
 
 type Job = HirovoAPI.Jobs.All.IResponseModel;
 
@@ -32,7 +32,44 @@ export default function JobsAllScreen() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  // useLocationSync(); // ✅ Konum gönderme işlemi burada otomatik çağrılır
+  const registerPushToken = async () => {
+    try {
+      if (!Device.isDevice) {
+        console.warn('Fiziksel cihaz gerekli (simülatör desteklemez)');
+        return;
+      }
+
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+
+      if (finalStatus !== 'granted') {
+        console.warn('Push izni verilmedi');
+        return;
+      }
+
+      const { data: expoPushToken } = await Notifications.getExpoPushTokenAsync();
+      console.log('📱 Expo Push Token:', expoPushToken);
+
+      const jwt = await AsyncStorage.getItem('jwt');
+      const decoded: any = jwt ? jwtDecode(jwt) : null;
+      const userId = decoded?.nameid;
+
+      if (userId) {
+        const response = await HirovoAPI.Workers.SetExpoPushToken.Request({
+          userId,
+          expoPushToken,
+        });
+        console.log('✅ Push token kaydedildi:', response);
+      }
+    } catch (error) {
+      console.warn('Push token kaydında hata:', error);
+    }
+  };
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -88,6 +125,7 @@ export default function JobsAllScreen() {
 
     fetchJobs();
     sendLocation();
+    registerPushToken(); // ✅ Push token gönderimi burada tetikleniyor
   }, []);
 
   const onRefresh = React.useCallback(() => {
