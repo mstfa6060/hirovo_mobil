@@ -215,6 +215,9 @@ export const uiTr = {
         title: 'İşçiler',
         searchPlaceholder: 'İşçi ara',
       },
+      link: {
+        copied: 'Bağlantı panoya kopyalandı',
+      }
 
     },
     error: {
@@ -250,6 +253,7 @@ export const uiTr = {
       phoneNumber: "Geçerli bir telefon numarası giriniz",
       invalidDate: "Tarih formatı geçersiz"
     }
+
 
   }
 };

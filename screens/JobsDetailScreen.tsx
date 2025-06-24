@@ -21,6 +21,8 @@ import { Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AppConfig } from '@config/hirovo-config';
+import Toast from 'react-native-root-toast';
+import * as Clipboard from 'expo-clipboard';
 
 
 type JobsDetailRouteProp = RouteProp<RootStackParamList, 'JobsDetail'>;
@@ -95,12 +97,21 @@ export default function JobsDetailScreen() {
         try {
             if (!job) return;
 
+            const shareLink = `hirovo://jobs/${job.id}`;
             const shareMessage =
                 `${job.title} - ${job.employerDisplayName}\n\n` +
                 `${t('ui.jobs.description')}: ${job.description}\n` +
                 `${t('ui.jobs.salary')}: ${job.salary.toLocaleString()} ₺\n\n` +
-                `${t('ui.jobs.viewLink')}: hirovo://jobs/${job.id}`;
+                `${t('ui.jobs.viewLink')}: ${shareLink}`;
 
+            // 📋 Linki kopyala (isteğe bağlı kullanıcıya kolaylık)
+            await Clipboard.setStringAsync(shareLink);
+            // Toast göster
+            Toast.show('🔗 ' + t('ui.link.copied'), {
+                duration: Toast.durations.SHORT,
+                position: Toast.positions.BOTTOM,
+            });
+            // 📤 Paylaşımı başlat
             await Share.share({
                 title: job.title,
                 message: shareMessage,
