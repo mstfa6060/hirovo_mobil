@@ -25,6 +25,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../src/hooks/useAuth';
 import { DrawerParamList } from '../navigation/DrawerNavigator';
 import { RootStackParamList } from '../navigation/RootNavigator';
+import { OneSignal } from 'react-native-onesignal';
 
 type NavigationProp = CompositeNavigationProp<
     DrawerNavigationProp<DrawerParamList>,
@@ -39,7 +40,7 @@ const CustomDrawerContent = (props: any) => {
     const handleLogout = async () => {
         await AsyncStorage.removeItem('jwt');
         await AsyncStorage.removeItem('refreshToken');
-
+        OneSignal.logout();
         navigation.dispatch(
             CommonActions.reset({
                 index: 0,
