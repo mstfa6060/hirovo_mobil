@@ -142,6 +142,7 @@ export namespace IAMAPI {
 			export const Request = (data: IRequestModel) => ApiService.call<IResponseModel>(axios.post(RequestPath,{...data}));
 			export interface IRequestModel {
 				email: string;
+				companyId: Guid;
 			}
 			export interface IResponseModel {
 				userId: Guid;
@@ -410,6 +411,7 @@ export namespace IAMAPI {
 			export interface IRequestModel {
 				provider: string;
 				userName: string;
+				email: string;
 				password: string;
 				token: string;
 				platform: Enums.ClientPlatforms;

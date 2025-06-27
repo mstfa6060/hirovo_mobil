@@ -217,7 +217,36 @@ export const uiTr = {
       },
       link: {
         copied: 'Bağlantı panoya kopyalandı',
+      }, auth: {
+        forgotPassword: "Şifremi Unuttum",
+        email: "E-posta",
+        sendResetLink: "Sıfırlama Linki Gönder",
+        passwordReset: "Şifre Sıfırlama",
+        resetLinkSent: "Eğer bu e-posta adresi sistemde kayıtlıysa şifre sıfırlama bağlantısı gönderildi.",
+      }, forgotPassword: {
+        title: "Şifremi Unuttum",
+        subtitle: "Lütfen hesabınıza ait e-posta adresinizi girin. Şifre sıfırlama bağlantısı gönderilecektir.",
+        emailPlaceholder: "E-posta adresi",
+        submit: "Şifre Sıfırlama Linki Gönder",
+        successTitle: "E-posta Gönderildi",
+        successMessage: "{{email}} adresine şifre sıfırlama bağlantısı gönderildi.",
+      },
+      resetPassword: {
+        title: "Yeni Şifre Belirle",
+        subtitle: "Lütfen yeni şifrenizi girin ve onaylayın.",
+        newPassword: "Yeni Şifre",
+        confirmPassword: "Yeni Şifre (Tekrar)",
+        submit: "Şifreyi Güncelle",
+        successTitle: "Şifre Güncellendi",
+        successMessage: "Şifreniz başarıyla güncellendi. Giriş yapabilirsiniz.",
+        errors: {
+          minPassword: "Şifre en az 8 karakter olmalı",
+          passwordMismatch: "Şifreler uyuşmuyor"
+        }
       }
+      ,
+
+
 
     },
     error: {

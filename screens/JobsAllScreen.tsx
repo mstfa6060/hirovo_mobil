@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,8 @@ import {
   ActivityIndicator,
   StyleSheet,
   RefreshControl,
+  AppState,
+  AppStateStatus,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { HirovoAPI } from '@api/business_modules/hirovo';
@@ -19,7 +21,6 @@ import Constants from 'expo-constants';
 import { jwtDecode } from 'jwt-decode';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppConfig } from '@config/hirovo-config';
-import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 
 type Job = HirovoAPI.Jobs.All.IResponseModel;
@@ -32,28 +33,69 @@ export default function JobsAllScreen() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
+  const fetchJobs = async () => {
+    try {
+      const response = await HirovoAPI.Jobs.All.Request({
+        sorting: {
+          key: 'createdAt',
+          direction: HirovoAPI.Enums.XSortingDirection.Descending,
+        },
+        filters: [],
+        pageRequest: {
+          currentPage: 1,
+          perPageCount: 20,
+          listAll: false,
+        },
+      });
+      setJobs(response);
+    } catch (err) {
+      console.error(err);
+      setError(t('ui.jobs.loadError'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchJobs();
+    setRefreshing(false);
+  }, []);
+
+  const sendLocation = async () => {
+    try {
+      const token = await AsyncStorage.getItem('jwt');
+      if (!token) return;
+
+      const decoded: any = jwtDecode(token);
+      const userId = decoded?.nameid;
+
+      if (Constants.appOwnership !== 'expo') {
+        const location = await getCurrentLocation();
+
+        if (location) {
+          const response = await HirovoAPI.Location.SetLocation.Request({
+            userId: userId,
+            latitude: location.latitude,
+            longitude: location.longitude,
+            companyId: AppConfig.DefaultCompanyId,
+          });
+          console.log('📍 Konum gönderildi:', response);
+        }
+      } else {
+        console.log('Expo Go modunda konum gönderilmedi');
+      }
+    } catch (error) {
+      console.warn('Konum gönderme hatası:', error);
+    }
+  };
+
   const registerPushToken = async () => {
     try {
       if (!Device.isDevice) {
         console.warn('Fiziksel cihaz gerekli (simülatör desteklemez)');
         return;
       }
-
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-
-      if (finalStatus !== 'granted') {
-        console.warn('Push izni verilmedi');
-        return;
-      }
-
-      const { data: expoPushToken } = await Notifications.getExpoPushTokenAsync();
-      console.log('📱 Expo Push Token:', expoPushToken);
 
       const jwt = await AsyncStorage.getItem('jwt');
       const decoded: any = jwt ? jwtDecode(jwt) : null;
@@ -62,7 +104,7 @@ export default function JobsAllScreen() {
       if (userId) {
         const response = await HirovoAPI.Workers.SetExpoPushToken.Request({
           userId,
-          expoPushToken,
+          expoPushToken: userId, // Gerçek token buraya gelecek
         });
         console.log('✅ Push token kaydedildi:', response);
       }
@@ -72,67 +114,26 @@ export default function JobsAllScreen() {
   };
 
   useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const response = await HirovoAPI.Jobs.All.Request({
-          sorting: {
-            key: 'createdAt',
-            direction: HirovoAPI.Enums.XSortingDirection.Descending,
-          },
-          filters: [],
-          pageRequest: {
-            currentPage: 1,
-            perPageCount: 20,
-            listAll: false,
-          },
-        });
-        setJobs(response);
-      } catch (err) {
-        console.error(err);
-        setError(t('ui.jobs.loadError'));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const sendLocation = async () => {
-      try {
-        const token = await AsyncStorage.getItem('jwt');
-        if (!token) return;
-
-        const decoded: any = jwtDecode(token);
-        const userId = decoded?.nameid;
-
-        if (Constants.appOwnership !== 'expo') {
-          const location = await getCurrentLocation();
-
-          if (location) {
-            const response = await HirovoAPI.Location.SetLocation.Request({
-              userId: userId,
-              latitude: location.latitude,
-              longitude: location.longitude,
-              companyId: AppConfig.DefaultCompanyId,
-            });
-            console.log('📍 Konum gönderildi:', response);
-          }
-        } else {
-          console.log('Expo Go modunda konum gönderilmedi');
-        }
-      } catch (error) {
-        console.warn('Konum gönderme hatası:', error);
-      }
-    };
-
     fetchJobs();
     sendLocation();
-    registerPushToken(); // ✅ Push token gönderimi burada tetikleniyor
-  }, []);
+    registerPushToken();
 
-  const onRefresh = React.useCallback(() => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
+    // App tekrar aktifleştirilince job verisini güncelle
+    const appStateListener = AppState.addEventListener('change', (nextState: AppStateStatus) => {
+      if (nextState === 'active') {
+        fetchJobs();
+      }
+    });
+
+    // 30 saniyede bir job verisi yenile
+    const interval = setInterval(() => {
+      fetchJobs();
+    }, 30000);
+
+    return () => {
+      appStateListener.remove();
+      clearInterval(interval);
+    };
   }, []);
 
   const goToJobDetail = (jobId: string) => {

@@ -19,12 +19,9 @@ import { useTranslation } from 'react-i18next';
 import { HirovoAPI } from '@api/business_modules/hirovo';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../src/hooks/useAuth';
-import DropDownPicker from 'react-native-dropdown-picker';
 import { AppConfig } from '@config/hirovo-config';
 import Slider from '@react-native-community/slider';
 import { Menu, Button } from 'react-native-paper';
-
-
 
 const schema = z.object({
     title: z.string().min(1, { message: 'ui.jobs.jobTitleRequired' }),
@@ -46,13 +43,12 @@ export default function CreateJobScreen() {
     const navigation = useNavigation();
     const { user } = useAuth();
     const [menuVisible, setMenuVisible] = useState(false);
-    const [selectedType, setSelectedType] = useState<string | null>(null);
     const {
         control,
         handleSubmit,
         formState: { isSubmitting, errors },
         setValue,
-        watch,
+        reset,
     } = useForm<FormValues>({
         resolver: zodResolver(schema),
         defaultValues: {
@@ -68,8 +64,7 @@ export default function CreateJobScreen() {
         }
     }, [user]);
 
-    const [open, setOpen] = useState(false);
-    const [items, setItems] = useState([
+    const [items] = useState([
         { label: t('jobType.FullTime'), value: 'full-time' },
         { label: t('jobType.PartTime'), value: 'part-time' },
         { label: t('jobType.Freelance'), value: 'contract' },
@@ -99,13 +94,11 @@ export default function CreateJobScreen() {
 
             if ('jobId' in response || 'id' in response) {
                 Alert.alert(t('ui.success'), t('ui.jobs.createdSuccessfully'));
-                navigation.goBack();
+                reset(); // ✅ Formu temizle
+                navigation.goBack(); // veya formda kalmak istersen bunu kaldır
             }
-            // else {
-            //     Alert.alert(t('ui.error'), t('ui.jobs.createError'));
-            // }
         } catch (err) {
-            // Alert.alert(t('ui.error'), t('ui.jobs.createError'));
+            Alert.alert(t('ui.error'), t('ui.jobs.createError'));
         }
     };
 
@@ -123,12 +116,10 @@ export default function CreateJobScreen() {
                     name="title"
                     render={({ field: { onChange, onBlur, value } }) => (
                         <TextInput
-                            ref={(ref: TextInput | null): void => {
-                                inputRefs.current[0] = ref;
-                            }}
+                            ref={(ref) => { inputRefs.current[0] = ref; }}
                             style={styles.input}
                             placeholder={t('ui.jobs.titlePlaceholder')}
-                            onChangeText={text => onChange(text.trim())}
+                            onChangeText={text => onChange(text)}
                             onBlur={onBlur}
                             value={value}
                             returnKeyType="next"
@@ -145,15 +136,13 @@ export default function CreateJobScreen() {
                     name="salary"
                     render={({ field: { onChange, onBlur, value } }) => (
                         <TextInput
-                            ref={(ref: TextInput | null): void => {
-                                inputRefs.current[1] = ref;
-                            }}
+                            ref={(ref) => { inputRefs.current[1] = ref; }}
                             style={styles.input}
                             placeholder="75000"
                             keyboardType="numeric"
                             onChangeText={(text) => {
                                 const parsed = parseFloat(text);
-                                onChange(text.trim() === '' ? undefined : !isNaN(parsed) ? parsed : 0);
+                                onChange(text === '' ? undefined : !isNaN(parsed) ? parsed : 0);
                             }}
                             onBlur={onBlur}
                             value={value ? value.toString() : ''}
@@ -171,21 +160,18 @@ export default function CreateJobScreen() {
                     name="description"
                     render={({ field: { onChange, onBlur, value } }) => (
                         <TextInput
-                            ref={(ref: TextInput | null): void => {
-                                inputRefs.current[2] = ref;
-                            }}
+                            ref={(ref) => { inputRefs.current[2] = ref; }}
                             style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
                             placeholder={t('ui.jobs.descriptionPlaceholder')}
                             multiline
                             onChangeText={text => onChange(text)}
                             onBlur={onBlur}
                             value={value}
-                            blurOnSubmit={false}         // ✅ Bu dursun
-                            returnKeyType="default"      // ✅ Ekledik
+                            blurOnSubmit={false}
+                            returnKeyType="default"
                         />
                     )}
                 />
-
 
                 {/* Required Skills */}
                 <Text style={styles.label}>{t('ui.jobs.requiredSkills')}</Text>
@@ -194,12 +180,10 @@ export default function CreateJobScreen() {
                     name="requiredSkills"
                     render={({ field }) => (
                         <TextInput
-                            ref={(ref: TextInput | null): void => {
-                                inputRefs.current[3] = ref;
-                            }}
+                            ref={(ref) => { inputRefs.current[3] = ref; }}
                             style={styles.input}
                             placeholder="React, TypeScript"
-                            onChangeText={text => field.onChange(text.trim())}
+                            onChangeText={text => field.onChange(text)}
                             value={field.value}
                             returnKeyType="done"
                             onSubmitEditing={() => Keyboard.dismiss()}
@@ -207,7 +191,7 @@ export default function CreateJobScreen() {
                     )}
                 />
 
-                {/* Type - DropdownPicker */}
+                {/* Type - Dropdown */}
                 <Text style={styles.label}>{t('ui.jobs.type')} <Text style={{ color: 'red' }}>*</Text></Text>
                 <Controller
                     control={control}
@@ -226,7 +210,6 @@ export default function CreateJobScreen() {
                                         {field.value
                                             ? items.find(i => i.value === field.value)?.label
                                             : t('ui.jobs.type')}
-
                                     </Button>
                                 }
                             >
@@ -244,7 +227,6 @@ export default function CreateJobScreen() {
                         </View>
                     )}
                 />
-
 
                 {/* Notify Radius */}
                 <Text style={styles.label}>{t('ui.jobs.notifyRadiusKm')} <Text style={{ color: 'red' }}>*</Text></Text>
@@ -268,7 +250,6 @@ export default function CreateJobScreen() {
                         </View>
                     )}
                 />
-
 
                 {/* Submit */}
                 <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)} disabled={isSubmitting}>
@@ -311,10 +292,6 @@ const styles = StyleSheet.create({
         padding: 10,
         marginBottom: 12,
     },
-    dropdown: {
-        marginBottom: 16,
-        borderColor: '#d1d5db',
-    },
     button: {
         backgroundColor: '#007bff',
         padding: 14,
@@ -326,24 +303,6 @@ const styles = StyleSheet.create({
         color: 'white',
         fontWeight: 'bold',
         fontSize: 16,
-    },
-    sliderRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 12,
-        gap: 12,
-    },
-    stepButton: {
-        backgroundColor: '#e5e7eb',
-        borderRadius: 8,
-        paddingHorizontal: 14,
-        paddingVertical: 8,
-    },
-    stepText: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#111827',
     },
     radiusValue: {
         fontSize: 16,

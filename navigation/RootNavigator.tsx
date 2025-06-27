@@ -7,6 +7,8 @@ import DrawerNavigator, { DrawerParamList } from './DrawerNavigator';
 import WorkerProfileScreen from '../screens/WorkerProfileScreen';
 import SignUpScreen from '../screens/SignUpScreen'; // doğru yolu senin yapına göre güncelle
 import ProfileForm from 'screens/Profile/ProfileForm';
+import ForgotPasswordScreen from 'screens/ForgotPasswordScreen';
+import ResetPasswordScreen from 'screens/ResetPasswordScreen';
 
 
 export type RootStackParamList = {
@@ -21,6 +23,9 @@ export type RootStackParamList = {
         params?: object;
     };
     WorkerProfile: { id: string };
+    ForgotPasswordScreen: undefined;
+
+    ResetPassword: { token: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -39,6 +44,8 @@ const RootNavigator = ({ initialRoute }: RootNavigatorProps) => {
             <Stack.Screen name="JobsDetail" component={JobsDetailScreen} />
             <Stack.Screen name="ProfileEdit" component={ProfileForm} />
             <Stack.Screen name="WorkerProfile" component={WorkerProfileScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+            <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
         </Stack.Navigator>
     );
 };
