@@ -26,6 +26,9 @@ import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import App from 'App';
 import { LanguageSelectorDropdown } from '../components/LanguageSelector';
+import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
+
+
 
 const schema = z.object({
   username: z.string().min(3, 'Kullanıcı adı en az 3 karakter olmalı'),
@@ -60,6 +63,7 @@ const LoginScreen = () => {
       IAMAPI.Auth.Login.Request({
         provider: 'Google',
         userName: '',
+        email: '', // Google'dan gelen e-posta adresi burada kullanılabilir
         password: '',
         token: authentication?.accessToken ?? '',
         platform: IAMAPI.Enums.ClientPlatforms.Mobile,
@@ -92,6 +96,7 @@ const LoginScreen = () => {
       const res = await IAMAPI.Auth.Login.Request({
         provider: 'Apple',
         userName: '',
+        email: credential.email ?? '', // Apple'dan gelen e-posta adresi burada kullanılabilir
         password: '',
         token: credential.identityToken ?? '',
         platform: IAMAPI.Enums.ClientPlatforms.Mobile,
@@ -115,6 +120,7 @@ const LoginScreen = () => {
       const response = await IAMAPI.Auth.Login.Request({
         provider: 'native',
         userName: data.username,
+        email: data.username, // Assuming username is also the email
         password: data.password,
         token: '',
         platform: IAMAPI.Enums.ClientPlatforms.Mobile,

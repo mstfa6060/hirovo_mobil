@@ -13,20 +13,20 @@ import ResetPasswordScreen from 'screens/ResetPasswordScreen';
 
 export type RootStackParamList = {
     Login: undefined;
-    HomeTabs: undefined;
-    ForgotPassword: undefined;
     Register: undefined;
-    JobsDetail: { id: string };
-    ProfileEdit: undefined;
     Drawer: {
         screen?: keyof DrawerParamList;
         params?: object;
     };
+    HomeTabs: undefined;
+    JobsDetail: { id: string };
+    ProfileEdit: undefined;
     WorkerProfile: { id: string };
-    ForgotPasswordScreen: undefined;
-
+    ForgotPassword: undefined;
+    ForgotPasswordScreen: undefined; // Bu varsa `ForgotPassword` ile birleştirilebilir
     ResetPassword: { token: string };
 };
+
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 

@@ -36,13 +36,19 @@ export default function App() {
           path: 'worker/:id',
           parse: { id: (id: string) => id },
         },
+        // 🔑 Eksik olan bu!
+        ResetPassword: {
+          path: 'reset-password',
+          parse: { token: (token: string) => token },
+        },
       },
     },
   };
 
+
   useEffect(() => {
     // ✅ OneSignal başlat
-    OneSignal.initialize(Constants.expoConfig?.extra?.oneSignalAppId || '');
+    OneSignal.initialize(Constants.expoConfig?.extra?.oneSignalAppId);
     OneSignal.Notifications.requestPermission(true);
 
     // ✅ Bildirim uygulama açıkken gelirse

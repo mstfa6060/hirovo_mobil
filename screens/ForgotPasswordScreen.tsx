@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/RootNavigator';
+import { AppConfig } from '@config/hirovo-config';
 
 const schema = z.object({
     email: z.string().email('Geçerli bir e-posta adresi girin'),
@@ -28,7 +29,7 @@ export default function ForgotPasswordScreen() {
 
     const onSubmit = async (data: FormData) => {
         try {
-            const res = await IAMAPI.Users.ForgotPassword.Request({ email: data.email });
+            const res = await IAMAPI.Users.ForgotPassword.Request({ email: data.email, companyId: AppConfig.DefaultCompanyId });
             console.log('Forgot password response:', res);
             Alert.alert(
                 t('ui.forgotPassword.successTitle'),

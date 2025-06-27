@@ -30,6 +30,7 @@ export class ApiService {
       return payload;
     } catch (err: any) {
       if (err?.response?.status === 401) {
+        console.log('🔐 Token expired, attempting to refresh...', err);
         const expired = await TokenManager.isTokenExpired();
         if (expired) {
           const newJwt = await TokenManager.refreshToken();
