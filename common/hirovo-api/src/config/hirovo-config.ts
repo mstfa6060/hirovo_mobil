@@ -24,8 +24,10 @@ api.interceptors.request.use(
 
 
 export const AppConfig = {
+  BaseApi: "https://api.hirovo.com/",
   HirovoUrl: 'https://api.hirovo.com/hirovo',
   IAMUrl: 'https://api.hirovo.com/iam',
+  FileProviderUrl: 'https://api.hirovo.com/fileprovider',
   GoogleIosClientId: '',
   GoogleAndroidClientIdDev: '1053973213164-p9j88c7th2uma4u6lftfi5durebts0dn.apps.googleusercontent.com',
   GoogleAndroidClientIdProd: '1053973213164-vj9stnat1m31lf9j4nhbge6vg2h537ns.apps.googleusercontent.com',

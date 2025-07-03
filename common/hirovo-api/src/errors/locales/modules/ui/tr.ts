@@ -145,6 +145,23 @@ export const uiTr = {
         email: "E-posta",
         updateError: "Profil güncellenemedi. Lütfen tekrar deneyin.",
         fetchError: "Profil bilgileri alınamadı.",
+        phoneNumberPlaceholder: "e.g., +905...",
+        birthDatePlaceholder: "YYYY-MM-DD",
+        cityPlaceholder: "e.g., İstanbul",
+        districtPlaceholder: "e.g., Kadıköy",
+        descriptionPlaceholder: "Kendinizden bahsedin...",
+        photoUpdated: "Profil fotoğrafı güncellendi",
+        photoUploadError: "Fotoğraf yüklenirken bir hata oluştu",
+        uploadPhoto: "Fotoğraf Yükle",
+        validationError: "Lütfen tüm zorunlu alanları doğru doldurunuz.",
+        validation: {
+          phoneNumber: "Geçerli bir telefon numarası giriniz",
+          birthDate: "Doğum tarihi zorunludur",
+          city: "Şehir alanı zorunludur",
+          district: "İlçe alanı zorunludur",
+          descriptionMin: "Açıklama en az 10 karakter olmalıdır"
+        }
+
       },
       form: {
         phoneNumber: "Telefon Numarası",

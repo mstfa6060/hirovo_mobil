@@ -123,6 +123,7 @@ export default function SignUpScreen() {
             const loginResponse = await IAMAPI.Auth.Login.Request({
                 provider: 'native',
                 userName: data.userName,
+                email: data.email,
                 password: data.password,
                 token: '',
                 platform: IAMAPI.Enums.ClientPlatforms.Mobile,

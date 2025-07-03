@@ -29,6 +29,7 @@
     "expo-datepicker": "^1.0.23",
     "expo-dev-client": "~5.2.1",
     "expo-device": "~7.1.4",
+    "expo-document-picker": "~13.1.6",
     "expo-localization": "~16.1.5",
     "expo-location": "~18.1.5",
     "expo-status-bar": "~2.2.3",
@@ -38,6 +39,7 @@
     "i18next-http-backend": "^3.0.2",
     "jwt-decode": "^4.0.0",
     "libphonenumber-js": "^1.12.9",
+    "mime": "^4.0.7",
     "nativewind": "^4.1.23",
     "onesignal-expo-plugin": "^2.0.3",
     "react": "19.0.0",
@@ -61,7 +63,8 @@
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "^0.20.0",
     "react-use": "^17.6.0",
-    "zod": "^3.25.56"
+    "zod": "^3.25.56",
+    "expo-image-manipulator": "~13.1.7"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
@@ -70,6 +73,7 @@
     "@types/date-fns": "^2.6.3",
     "@types/estree": "^1.0.8",
     "@types/jest": "^29.5.14",
+    "@types/mime": "^4.0.0",
     "@types/react": "~19.0.10",
     "@types/react-native": "^0.73.0",
     "expo-module-scripts": "^4.1.7",
