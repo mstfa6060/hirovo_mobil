@@ -630,6 +630,7 @@ export namespace HirovoAPI {
 				type: Enums.HirovoJobType;
 				status: Enums.HirovoJobStatus;
 				hirovoEmployer_Id: Guid;
+				application: number;
 			}
 		}
 

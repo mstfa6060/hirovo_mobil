@@ -25,6 +25,7 @@ export type RootStackParamList = {
     ForgotPassword: undefined;
     ForgotPasswordScreen: undefined; // Bu varsa `ForgotPassword` ile birleştirilebilir
     ResetPassword: { token: string };
+    handleMyJobList: undefined; // Eğer bu ekranı kullanacaksan, burada tanımlamalısın
 };
 
 

@@ -14,6 +14,7 @@ export const uiTr = {
       available: "Müsait",
       unavailable: "Müsait Değil",
       createJob: "İlan Oluştur",
+      myjoblist: "İlanlarım",
       login: {
         welcome: "Hirovo Hoşgeldiniz",
         subtitle: "Lütfen e-posta ve şifrenizi giriniz",
@@ -179,6 +180,7 @@ export const uiTr = {
         isAvailable: "Müsaitim",
         save: "Kaydet",
         emailPlaceholder: "E-posta adresiniz",
+        validationError: "Lütfen tüm zorunlu alanları doğru doldurunuz.",
       },
       validation: {
         required: "Bu alan zorunludur",
@@ -262,7 +264,21 @@ export const uiTr = {
         }
       }
       ,
-
+      myjobslist: {
+        title: "İlanlarım",
+        loadError: "İlanlar yüklenirken hata oluştu.",
+        myJobsSubtitle: "Oluşturduğunuz ilanlar",
+        viewDetails: "Detayları Gör",
+        noJobs: "Gösterilecek ilan bulunamadı.",
+        deleteTitle: "İlanı Sil",
+        deleteButton: "Sil",
+        deleteSuccessTitle: "Silme Başarılı",
+        deleteSuccessMessage: "İlan başarıyla silindi.",
+        updateTitle: "İlanı Güncelle",
+        updateButton: "Güncelle",
+        updateSuccessTitle: "Güncelleme Başarılı",
+        updateSuccessMessage: "İlan başarıyla güncellendi.",
+      }
 
 
     },
