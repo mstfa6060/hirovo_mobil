@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from 'jwt-decode';
+import { FileProviderAPI } from '@api/base_modules/FileProvider';
+import { AppConfig } from '@config/hirovo-config';
 
 type User = {
     id: string;
     role: 'Worker' | 'Employer';
     fullName: string;
     email: string;
+    profilePhotoUrl: string | null;
     bucketId: string;
 };
 
@@ -16,7 +19,8 @@ export const useAuth = () => {
         role: 'Worker',
         fullName: 'Mock User',
         email: 'mock@hirovo.com',
-        bucketId: 'https://via.placeholder.com/150',
+        profilePhotoUrl: null,
+        bucketId: '',
     });
 
     useEffect(() => {
@@ -29,17 +33,35 @@ export const useAuth = () => {
             const userId = decoded?.nameid;
             const userType = decoded?.userType;
             const fullName = decoded?.unique_name || 'Mock User';
-            const email = decoded?.email || 'mock@hirovo.com'; // JWT'de email yoksa sabit
-            const bucketId = decoded?.bucketId || 'https://science.nasa.gov/wp-content/uploads/2024/03/mars2020-callouts-body.png?resize=768,432'; // JWT'de avatar yoksa sabit
+            const email = decoded?.email || 'mock@hirovo.com';
+            const bucketId = decoded?.bucketId;
 
             let role: 'Worker' | 'Employer' = 'Worker';
             if (userType === '2' || userType === 2) role = 'Employer';
+
+            let profilePhotoUrl: string | null = null;
+            if (bucketId) {
+                try {
+                    const result = await FileProviderAPI.Buckets.Detail.Request({
+                        bucketId,
+                        changeId: '00000000-0000-0000-0000-000000000000',
+                    });
+
+                    const file = result.files?.[0];
+                    if (file) {
+                        profilePhotoUrl = file.securePath || `${AppConfig.BaseApi}/file-storage/${file.path}`;
+                    }
+                } catch (err) {
+                    console.warn('📁 Profil fotoğrafı getirilemedi:', err);
+                }
+            }
 
             setUser({
                 id: userId,
                 role,
                 fullName,
                 email,
+                profilePhotoUrl,
                 bucketId,
             });
         };

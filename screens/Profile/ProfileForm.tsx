@@ -76,9 +76,11 @@ export default function ProfileForm() {
                         bucketId: user.bucketId,
                         changeId: '00000000-0000-0000-0000-000000000000',
                     });
+                    console.log('📁 Profile photo response:', responseImage);
                     const file = responseImage.files?.[0];
+                    console.log('📁 Profile photo file:', file);
                     if (file) {
-                        setPhotoUrl(file.securePath || `${AppConfig.FileProviderUrl}/${file.path}`);
+                        setPhotoUrl(`${AppConfig.BaseApi}/file-storage/${file.path}`);
                     }
                 } catch (error) {
                     Alert.alert(t('ui.error'), t('ui.profile.fetchError'));
@@ -98,7 +100,8 @@ export default function ProfileForm() {
                 district: data.district,
                 description: data.description ?? '',
                 birthDate: new Date(data.birthDate),
-                isAvailable: data.isAvailable
+                isAvailable: data.isAvailable,
+                bucketId: user.bucketId,
             });
             Alert.alert(t('ui.success'), t('ui.profile.updated'));
         } catch (error) {
