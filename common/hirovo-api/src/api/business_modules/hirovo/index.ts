@@ -82,7 +82,7 @@ export namespace HirovoAPI {
 				district: string;
 				isAvailable: boolean;
 				fullName: string;
-				profilePictureUrl: string;
+				bucketId: string;
 				coverPictureUrl: string;
 			}
 		}
@@ -124,6 +124,7 @@ export namespace HirovoAPI {
 				isAvailable?: boolean;
 				displayName: string;
 				description: string;
+				bucketId: string;
 			}
 		}
 
@@ -133,6 +134,7 @@ export namespace HirovoAPI {
 			export interface IRequestModel {
 				userId: Guid;
 				description: string;
+				bucketId: string;
 				phoneNumber: string;
 				birthDate: Date;
 				city: string;
@@ -188,6 +190,7 @@ export namespace HirovoAPI {
 				description: string;
 				birthDate: Date;
 				isAvailable: boolean;
+				bucketId: string;
 			}
 		}
 
@@ -255,6 +258,7 @@ export namespace HirovoAPI {
 				description: string;
 				birthDate: Date;
 				isAvailable: boolean;
+				bucketId: string;
 			}
 			export interface IResponseModel {
 				userId: Guid;

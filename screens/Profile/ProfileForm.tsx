@@ -73,7 +73,7 @@ export default function ProfileForm() {
                         isAvailable: response.isAvailable ?? true,
                     });
                     const responseImage = await FileProviderAPI.Buckets.Detail.Request({
-                        bucketId: user.id,
+                        bucketId: user.bucketId,
                         changeId: '00000000-0000-0000-0000-000000000000',
                     });
                     const file = responseImage.files?.[0];

@@ -60,7 +60,7 @@ const CustomDrawerContent = (props: any) => {
         <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1, paddingTop: 60 }}>
             <View style={styles.profile}>
                 <Image
-                    source={{ uri: user?.avatar || 'https://via.placeholder.com/150' }}
+                    source={{ uri: user?.bucketId || 'https://via.placeholder.com/150' }}
                     style={styles.avatar}
                 />
                 <Text style={styles.name}>{user?.fullName || 'Kullanıcı'}</Text>

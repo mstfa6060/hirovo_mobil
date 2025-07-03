@@ -109,6 +109,7 @@ export namespace IAMAPI {
 				isActive: boolean;
 				isAvailable: boolean;
 				phoneNumber: string;
+				bucketId: string;
 			}
 		}
 
@@ -411,7 +412,6 @@ export namespace IAMAPI {
 			export interface IRequestModel {
 				provider: string;
 				userName: string;
-				email: string;
 				password: string;
 				token: string;
 				platform: Enums.ClientPlatforms;

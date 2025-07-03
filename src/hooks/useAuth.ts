@@ -7,7 +7,7 @@ type User = {
     role: 'Worker' | 'Employer';
     fullName: string;
     email: string;
-    avatar: string;
+    bucketId: string;
 };
 
 export const useAuth = () => {
@@ -16,7 +16,7 @@ export const useAuth = () => {
         role: 'Worker',
         fullName: 'Mock User',
         email: 'mock@hirovo.com',
-        avatar: 'https://via.placeholder.com/150',
+        bucketId: 'https://via.placeholder.com/150',
     });
 
     useEffect(() => {
@@ -30,7 +30,7 @@ export const useAuth = () => {
             const userType = decoded?.userType;
             const fullName = decoded?.unique_name || 'Mock User';
             const email = decoded?.email || 'mock@hirovo.com'; // JWT'de email yoksa sabit
-            const avatar = decoded?.avatar || 'https://media.licdn.com/dms/image/v2/D4D03AQFwdYXpsFHFrA/profile-displayphoto-shrink_200_200/B4DZSFbBJ0HkAc-/0/1737405240615?e=2147483647&v=beta&t=HbxySPJ0VxGDCNjaGheiwm-GgfiXFuLjeb042YwqsmM'; // JWT'de avatar yoksa sabit
+            const bucketId = decoded?.bucketId || 'https://media.sciencephoto.com/image/c0509276/800wm/C0509276-Perseverance_rover_on_Mars_surface,_illustration.jpg'; // JWT'de avatar yoksa sabit
 
             let role: 'Worker' | 'Employer' = 'Worker';
             if (userType === '2' || userType === 2) role = 'Employer';
@@ -40,7 +40,7 @@ export const useAuth = () => {
                 role,
                 fullName,
                 email,
-                avatar,
+                bucketId,
             });
         };
 
