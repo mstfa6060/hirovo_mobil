@@ -269,6 +269,7 @@ export const uiTr = {
     error: {
       DEFAULT_ERROR: "Bir hata oluştu. Lütfen tekrar deneyin.",
       TITLE: "Hata",
+      LOGIN_FAILED_TITLE: "Giriş Başarısız"
     },
     jobType: {
       FullTime: "Tam Zamanlı",

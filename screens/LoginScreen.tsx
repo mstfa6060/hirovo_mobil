@@ -63,7 +63,6 @@ const LoginScreen = () => {
       IAMAPI.Auth.Login.Request({
         provider: 'Google',
         userName: '',
-        email: '', // Google'dan gelen e-posta adresi burada kullanılabilir
         password: '',
         token: authentication?.accessToken ?? '',
         platform: IAMAPI.Enums.ClientPlatforms.Mobile,
@@ -95,8 +94,7 @@ const LoginScreen = () => {
 
       const res = await IAMAPI.Auth.Login.Request({
         provider: 'Apple',
-        userName: '',
-        email: credential.email ?? '', // Apple'dan gelen e-posta adresi burada kullanılabilir
+        userName: credential.email ?? '', // Apple'dan gelen e-posta adresi burada kullanılabilir
         password: '',
         token: credential.identityToken ?? '',
         platform: IAMAPI.Enums.ClientPlatforms.Mobile,
@@ -117,16 +115,18 @@ const LoginScreen = () => {
 
   const onSubmit = async (data: FormData) => {
     try {
+      console.log('Login data:', data);
       const response = await IAMAPI.Auth.Login.Request({
         provider: 'native',
         userName: data.username,
-        email: data.username, // Assuming username is also the email
         password: data.password,
         token: '',
         platform: IAMAPI.Enums.ClientPlatforms.Mobile,
         isCompanyHolding: false,
         companyId: AppConfig.DefaultCompanyId,
       });
+
+      console.log('Login response:', response);
 
       await AsyncStorage.setItem('jwt', response.jwt);
       await AsyncStorage.setItem('refreshToken', response.refreshToken);

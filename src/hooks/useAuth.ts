@@ -30,7 +30,7 @@ export const useAuth = () => {
             const userType = decoded?.userType;
             const fullName = decoded?.unique_name || 'Mock User';
             const email = decoded?.email || 'mock@hirovo.com'; // JWT'de email yoksa sabit
-            const bucketId = decoded?.bucketId || 'https://media.sciencephoto.com/image/c0509276/800wm/C0509276-Perseverance_rover_on_Mars_surface,_illustration.jpg'; // JWT'de avatar yoksa sabit
+            const bucketId = decoded?.bucketId || 'https://science.nasa.gov/wp-content/uploads/2024/03/mars2020-callouts-body.png?resize=768,432'; // JWT'de avatar yoksa sabit
 
             let role: 'Worker' | 'Employer' = 'Worker';
             if (userType === '2' || userType === 2) role = 'Employer';
