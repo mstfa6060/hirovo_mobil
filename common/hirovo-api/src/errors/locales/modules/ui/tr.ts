@@ -287,6 +287,18 @@ export const uiTr = {
         confirmMessage: 'Bu ilanı sonlandırmak istediğinizden emin misiniz?',
         editJob: "İlanı Düzenle",
         viewApplications: "Başvuruları Görüntüle",
+      },
+      jobApplications: {
+        title: "İş Başvuruları",
+        unknownUser: "Bilinmeyen Kullanıcı",
+        appliedAt: "Başvuru Tarihi",
+        status: "Durum",
+        applicationStatus: {
+          Pending: "Beklemede",
+          Accepted: "Kabul Edildi",
+          Rejected: "Reddedildi",
+          Cancelled: "İptal Edildi",
+        },
       }
 
 

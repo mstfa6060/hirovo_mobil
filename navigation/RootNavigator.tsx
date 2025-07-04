@@ -9,6 +9,8 @@ import SignUpScreen from '../screens/SignUpScreen'; // doğru yolu senin yapına
 import ProfileForm from 'screens/Profile/ProfileForm';
 import ForgotPasswordScreen from 'screens/ForgotPasswordScreen';
 import ResetPasswordScreen from 'screens/ResetPasswordScreen';
+import JobApplicationsScreen from 'screens/JobApplicationsScreen';
+import EditJobScreen from 'screens/EditJobScreen';
 
 
 export type RootStackParamList = {
@@ -25,7 +27,9 @@ export type RootStackParamList = {
     ForgotPassword: undefined;
     ForgotPasswordScreen: undefined; // Bu varsa `ForgotPassword` ile birleştirilebilir
     ResetPassword: { token: string };
-    handleMyJobList: undefined; // Eğer bu ekranı kullanacaksan, burada tanımlamalısın
+    handleMyJobList: undefined;
+    EditJobScreen: { jobId: string };
+    JobApplicationsScreen: { jobId: string };
 };
 
 
@@ -47,6 +51,9 @@ const RootNavigator = ({ initialRoute }: RootNavigatorProps) => {
             <Stack.Screen name="WorkerProfile" component={WorkerProfileScreen} options={{ headerShown: false }} />
             <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
             <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+            <Stack.Screen name="JobApplicationsScreen" component={JobApplicationsScreen} />
+            <Stack.Screen name="EditJobScreen" component={EditJobScreen} />
+
         </Stack.Navigator>
     );
 };

@@ -591,6 +591,10 @@ export namespace HirovoAPI {
 				status: Enums.HirovoJobStatus;
 				employerId: Guid;
 				employerDisplayName: string;
+				latitude: Double;
+				longitude: Double;
+				notifyRadiusKm: Double;
+				endDate: Date;
 			}
 		}
 
@@ -787,6 +791,7 @@ export namespace HirovoAPI {
 				status: Enums.ApplicationStatus;
 				appliedAt: Date;
 				endDate: Date;
+				jobTitle: string;
 				phoneNumber: string;
 				birthDate?: Date;
 				city: string;

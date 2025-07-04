@@ -6,19 +6,22 @@ import {
     ActivityIndicator,
     StyleSheet,
     RefreshControl,
+    TouchableOpacity,
 } from 'react-native';
 import { HirovoAPI } from '@api/business_modules/hirovo';
-import { useRoute } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
-import TopBar from 'components/TopBar';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRoute, RouteProp } from '@react-navigation/native';
+import TopBar from 'components/TopBar';
+import { RootStackParamList } from '../navigation/RootNavigator';
 
 type JobApplication = HirovoAPI.JobApplications.All.IResponseModel;
+type JobApplicationsRouteProp = RouteProp<RootStackParamList, 'JobApplicationsScreen'>;
 
 const JobApplicationsScreen = () => {
     const { t } = useTranslation();
-    const route = useRoute<any>();
-    const jobId: string = route.params?.jobId;
+    const route = useRoute<JobApplicationsRouteProp>();
+    const { jobId } = route.params;
 
     const [applications, setApplications] = useState<JobApplication[]>([]);
     const [loading, setLoading] = useState(true);
@@ -68,16 +71,50 @@ const JobApplicationsScreen = () => {
         fetchApplications();
     };
 
+    const handleStatusChange = async (applicationId: string, newStatus: HirovoAPI.Enums.ApplicationStatus) => {
+        try {
+            console.log(`Başvuru durumu güncelleniyor: ${applicationId} -> ${newStatus}`);
+            await HirovoAPI.JobApplications.UpdateStatus.Request({
+                jobApplicationId: applicationId,
+                status: newStatus,
+            });
+            fetchApplications();
+        } catch (error) {
+            console.error('Durum güncellenemedi:', error);
+        }
+    };
+
     const renderItem = ({ item }: { item: JobApplication }) => (
         <View style={styles.card}>
-            <Text style={styles.title}>{item.worker.fullName}</Text>
-            <Text style={styles.sub}>{item.worker.phoneNumber} • {item.worker.city}, {item.worker.district}</Text>
+            <Text style={styles.title}>
+                {item.displayName || t('ui.jobApplications.unknownUser')}
+            </Text>
+            <Text style={styles.sub}>
+                {item.phoneNumber || '-'} • {item.city}, {item.district}
+            </Text>
             <Text style={styles.status}>
-                {t(`applicationStatus.${HirovoAPI.Enums.ApplicationStatus[item.status]}`)}
+                {t(`ui.jobApplications.applicationStatus.${HirovoAPI.Enums.ApplicationStatus[item.status]}`)}
             </Text>
             <Text style={styles.date}>
                 {t('ui.jobApplications.appliedAt')}: {new Date(item.appliedAt).toLocaleDateString()}
             </Text>
+
+            {item.status === HirovoAPI.Enums.ApplicationStatus.Pending && (
+                <View style={styles.buttonGroup}>
+                    <TouchableOpacity
+                        style={[styles.actionButton, { backgroundColor: '#10b981' }]}
+                        onPress={() => handleStatusChange(item.id, HirovoAPI.Enums.ApplicationStatus.Accepted)}
+                    >
+                        <Text style={styles.buttonText}>{t('common.confirm')}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.actionButton, { backgroundColor: '#ef4444' }]}
+                        onPress={() => handleStatusChange(item.id, HirovoAPI.Enums.ApplicationStatus.Rejected)}
+                    >
+                        <Text style={styles.buttonText}>{t('common.cancel')}</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
         </View>
     );
 
@@ -94,7 +131,9 @@ const JobApplicationsScreen = () => {
                     keyExtractor={(item) => item.id}
                     renderItem={renderItem}
                     contentContainerStyle={styles.list}
-                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                    }
                 />
             )}
         </SafeAreaView>
@@ -141,6 +180,23 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#9ca3af',
         marginTop: 2,
+    },
+    buttonGroup: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 12,
+        gap: 8,
+    },
+    actionButton: {
+        flex: 1,
+        paddingVertical: 10,
+        borderRadius: 9999,
+        alignItems: 'center',
+    },
+    buttonText: {
+        color: 'white',
+        fontWeight: '600',
+        fontSize: 14,
     },
 });
 
