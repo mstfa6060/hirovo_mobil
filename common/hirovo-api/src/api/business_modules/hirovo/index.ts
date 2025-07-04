@@ -644,6 +644,9 @@ export namespace HirovoAPI {
 				salary: __ERROR_TYPE_NOT_HANDLED__;
 				type: Enums.HirovoJobType;
 				status: Enums.HirovoJobStatus;
+				latitude: Double;
+				longitude: Double;
+				notifyRadiusKm: Double;
 			}
 			export interface IResponseModel {
 				id: Guid;

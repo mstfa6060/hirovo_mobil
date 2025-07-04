@@ -278,6 +278,15 @@ export const uiTr = {
         updateButton: "Güncelle",
         updateSuccessTitle: "Güncelleme Başarılı",
         updateSuccessMessage: "İlan başarıyla güncellendi.",
+        stopError: "İlan durdurulamadı. Lütfen tekrar deneyin.",
+        stopJob: "İlanı Durdur",
+        applicationCount: '{{count}} başvuru',
+        stoppedTitle: 'İlan Sonlandırıldı',
+        stoppedMessage: 'İlan başarıyla durduruldu.',
+        confirmTitle: 'Emin misiniz?',
+        confirmMessage: 'Bu ilanı sonlandırmak istediğinizden emin misiniz?',
+        editJob: "İlanı Düzenle",
+        viewApplications: "Başvuruları Görüntüle",
       }
 
 
@@ -305,6 +314,7 @@ export const uiTr = {
       logout: "Çıkış Yap",
       errorTitle: "Hata",
       language: "Dil",
+      confirm: 'Evet',
     },
     tabs: {
       jobs: 'İş İlanları',

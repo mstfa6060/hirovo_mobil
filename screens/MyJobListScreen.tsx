@@ -7,6 +7,7 @@ import {
     ActivityIndicator,
     StyleSheet,
     RefreshControl,
+    Alert,
 } from 'react-native';
 import { useAuth } from 'src/hooks/useAuth';
 import { HirovoAPI } from '@api/business_modules/hirovo';
@@ -53,6 +54,7 @@ const MyJobListScreen = () => {
                     listAll: false,
                 },
             });
+
             setJobs(response);
         } catch (err) {
             console.error('İlanlar alınamadı:', err);
@@ -96,7 +98,6 @@ const MyJobListScreen = () => {
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: '#f9f9f9' }}>
             <TopBar title={t('ui.myjobslist.title')} showBackButton />
-
             <Text style={styles.subHeader}>{t('ui.myjobslist.myJobsSubtitle')}</Text>
 
             <FlatList
@@ -104,16 +105,32 @@ const MyJobListScreen = () => {
                 data={jobs}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
-                    <View style={styles.card}>
+                    <TouchableOpacity onPress={() => goToJobDetail(item.id)} style={styles.card}>
                         <Text style={styles.jobTitle}>{item.title}</Text>
                         <Text style={styles.subInfo}>Hirovo Inc.</Text>
                         <Text style={styles.description}>
                             {item.salary}₺ – {t(`jobType.${HirovoAPI.Enums.HirovoJobType[item.type]}`)}, {t(`jobStatus.${HirovoAPI.Enums.HirovoJobStatus[item.status]}`)}
                         </Text>
-                        <TouchableOpacity onPress={() => goToJobDetail(item.id)} style={styles.button}>
-                            <Text style={styles.buttonText}>{t('ui.myjobslist.viewDetails')}</Text>
-                        </TouchableOpacity>
-                    </View>
+                        <Text style={styles.applicationText}>
+                            {t('ui.myjobslist.applicationCount', { count: item.application })}
+                        </Text>
+
+                        <View style={styles.buttonGroup}>
+                            <TouchableOpacity
+                                onPress={() => navigation.navigate('EditJobScreen', { jobId: item.id })}
+                                style={[styles.roundButton, styles.lightButton]}
+                            >
+                                <Text style={styles.lightButtonText}>{t('ui.myjobslist.editJob')}</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={() => navigation.navigate('JobApplicationsScreen', { jobId: item.id })}
+                                style={[styles.roundButton, styles.primaryButton]}
+                            >
+                                <Text style={styles.primaryButtonText}>{t('ui.myjobslist.viewApplications')}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </TouchableOpacity>
                 )}
                 contentContainerStyle={styles.container}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
@@ -161,17 +178,37 @@ const styles = StyleSheet.create({
         color: '#374151',
         marginTop: 8,
     },
-    button: {
-        backgroundColor: '#007bff',
-        paddingVertical: 10,
-        borderRadius: 6,
-        marginTop: 12,
-        alignItems: 'center',
+    applicationText: {
+        fontSize: 13,
+        color: '#10b981',
+        marginTop: 6,
     },
-    buttonText: {
-        color: 'white',
+    buttonGroup: {
+        flexDirection: 'row',
+        gap: 8,
+        marginTop: 16,
+        flexWrap: 'wrap',
+    },
+    roundButton: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 9999,
+    },
+    lightButton: {
+        backgroundColor: '#f1f5f9',
+    },
+    lightButtonText: {
+        color: '#1f2937',
+        fontWeight: '500',
         fontSize: 14,
+    },
+    primaryButton: {
+        backgroundColor: '#007bff',
+    },
+    primaryButtonText: {
+        color: 'white',
         fontWeight: '600',
+        fontSize: 14,
     },
     container: {
         paddingBottom: 16,
