@@ -8,6 +8,7 @@ import Constants from 'expo-constants';
 import { jwtDecode } from 'jwt-decode';
 import { OneSignal } from 'react-native-onesignal';
 import { Provider as PaperProvider } from 'react-native-paper';
+import * as Updates from 'expo-updates';
 
 import { getCurrentLocation } from './src/hooks/useLocation';
 import { HirovoAPI } from '@api/business_modules/hirovo';
@@ -36,7 +37,6 @@ export default function App() {
           path: 'worker/:id',
           parse: { id: (id: string) => id },
         },
-        // 🔑 Eksik olan bu!
         ResetPassword: {
           path: 'reset-password',
           parse: { token: (token: string) => token },
@@ -45,8 +45,25 @@ export default function App() {
     },
   };
 
-
   useEffect(() => {
+    // ✅ OTA güncelleme kontrolü
+    const checkForUpdates = async () => {
+      try {
+        const update = await Updates.checkForUpdateAsync();
+        if (update.isAvailable) {
+          console.log('📦 Yeni güncelleme bulundu, indiriliyor...');
+          await Updates.fetchUpdateAsync();
+          await Updates.reloadAsync(); // uygulamayı yeniden başlat
+        } else {
+          console.log('✅ Uygulama güncel');
+        }
+      } catch (error) {
+        console.log('❌ OTA kontrol hatası:', error);
+      }
+    };
+
+    checkForUpdates();
+
     // ✅ OneSignal başlat
     OneSignal.initialize(Constants.expoConfig?.extra?.oneSignalAppId);
     OneSignal.Notifications.requestPermission(true);

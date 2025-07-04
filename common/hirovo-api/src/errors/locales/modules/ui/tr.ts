@@ -136,6 +136,7 @@ export const uiTr = {
         deleteError: "İş ilanı silinemedi. Lütfen tekrar deneyin.",
         viewLink: 'İlan bağlantısı',
         cannotApplyOwn: "Kendi ilanınıza başvuramazsınız.",
+        addSkill: "Beceri Ekle",
       },
       profile: {
         title: "Profil Düzenle",
@@ -325,6 +326,8 @@ export const uiTr = {
         loadError: "İlan bilgileri yüklenemedi.",
         jobTitleRequired: "İlan başlığı zorunludur.",
         jobDescriptionRequired: "Açıklama en az 10 karakter olmalıdır.",
+        addSkill: "Beceri Ekle",
+        requiredSkills: "Gerekli Beceriler",
       },
       changePasswordScreen: {
         changePassword: "Şifre Değiştir",

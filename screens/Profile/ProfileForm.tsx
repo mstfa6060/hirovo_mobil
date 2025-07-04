@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
     View, Text, TextInput, TouchableOpacity, ActivityIndicator,
-    StyleSheet, ScrollView, Alert, Switch, Platform, Image
+    StyleSheet, ScrollView, Alert, Switch, Platform, Image, KeyboardAvoidingView
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useForm, Controller } from 'react-hook-form';
@@ -28,8 +28,6 @@ const schema = z.object({
     description: z.string().min(10, { message: 'ui.profile.validation.descriptionMin' }),
     isAvailable: z.boolean(),
 });
-
-
 
 type FormData = z.infer<typeof schema>;
 
@@ -73,10 +71,12 @@ export default function ProfileForm() {
                         description: response.description ?? '',
                         isAvailable: response.isAvailable ?? true,
                     });
+
                     const responseImage = await FileProviderAPI.Buckets.Detail.Request({
                         bucketId: user.bucketId,
                         changeId: '00000000-0000-0000-0000-000000000000',
                     });
+
                     const file = responseImage.files?.[responseImage.files?.length - 1] || null;
                     if (file) {
                         setPhotoUrl(file);
@@ -111,203 +111,199 @@ export default function ProfileForm() {
     return (
         <SafeAreaView style={styles.container}>
             <TopBar title={t('ui.editProfile')} showBackButton />
-            <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
-                <View style={{ alignItems: 'center', marginTop: 16 }}>
-                    {photoUrl ? (
-                        <Image
-                            source={{ uri: `${user.profilePhotoUrl}` }}
-                            style={{ width: 120, height: 120, borderRadius: 60 }}
-                        />
-                    ) : (
-                        <View style={{ width: 120, height: 120, borderRadius: 60, backgroundColor: '#E5E7EB', justifyContent: 'center', alignItems: 'center' }}>
-                            <Text style={{ color: '#6B7280' }}>No Photo</Text>
-                        </View>
-                    )}
-                    <TouchableOpacity
-                        onPress={async () => {
-                            try {
-                                setIsUploading(true);
-                                const uploadResponse = await pickAndUploadProfilePhoto({
-                                    userId: user.id,
-                                    tenantId: AppConfig.DefaultCompanyId,
-                                    bucketId: user.bucketId,
-                                });
 
-                                const uploadedFile = uploadResponse?.files?.[uploadResponse?.files?.length - 1];
-                                if (uploadedFile) {
-                                    setPhotoUrl(uploadedFile);
-                                    setUploadedBucketId(uploadResponse.bucketId);
-
-                                    // ✅ Global kullanıcı state'ini güncelle
-                                    updateUser({
-                                        bucketId: uploadResponse.bucketId,
-                                        profilePhotoUrl: `${AppConfig.BaseApi}/file-storage/${uploadedFile.path}`,
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+            >
+                <ScrollView
+                    style={{ flex: 1 }}
+                    contentContainerStyle={{ paddingBottom: 100 }}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    {/* Profil Fotoğrafı */}
+                    <View style={{ alignItems: 'center', marginTop: 16 }}>
+                        {photoUrl ? (
+                            <Image
+                                source={{ uri: `${user.profilePhotoUrl}` }}
+                                style={{ width: 120, height: 120, borderRadius: 60 }}
+                            />
+                        ) : (
+                            <View style={{ width: 120, height: 120, borderRadius: 60, backgroundColor: '#E5E7EB', justifyContent: 'center', alignItems: 'center' }}>
+                                <Text style={{ color: '#6B7280' }}>No Photo</Text>
+                            </View>
+                        )}
+                        <TouchableOpacity
+                            onPress={async () => {
+                                try {
+                                    setIsUploading(true);
+                                    const uploadResponse = await pickAndUploadProfilePhoto({
+                                        userId: user.id,
+                                        tenantId: AppConfig.DefaultCompanyId,
+                                        bucketId: user.bucketId,
                                     });
+                                    const uploadedFile = uploadResponse?.files?.[uploadResponse?.files?.length - 1];
+                                    if (uploadedFile) {
+                                        setPhotoUrl(uploadedFile);
+                                        setUploadedBucketId(uploadResponse.bucketId);
+                                        updateUser({
+                                            bucketId: uploadResponse.bucketId,
+                                            profilePhotoUrl: `${AppConfig.BaseApi}/file-storage/${uploadedFile.path}`,
+                                        });
+                                    }
+                                } catch {
+                                    Alert.alert(t('ui.error'), t('ui.profile.photoUploadError'));
+                                } finally {
+                                    setIsUploading(false);
                                 }
-                            } catch {
-                                Alert.alert(t('ui.error'), t('ui.profile.photoUploadError'));
-                            } finally {
-                                setIsUploading(false);
-                            }
-                        }}
-                        style={{ marginTop: 12, backgroundColor: '#0b80ee', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999 }}
-                    >
-                        {isUploading ? <ActivityIndicator color="#fff" /> : <Text style={{ color: '#fff' }}>{t('ui.profile.uploadPhoto')}</Text>}
-                    </TouchableOpacity>
-                </View>
-
-                {/* E-posta (salt okunur) */}
-                <Text style={styles.label}>{t('ui.profile.email')}</Text>
-                <TextInput
-                    value={user.email}
-                    editable={false}
-                    style={[styles.input, { backgroundColor: '#f3f4f6' }]}
-                />
-
-                {/* Telefon */}
-                <Text style={styles.label}>{t('ui.profile.phoneNumber')}</Text>
-                <Controller
-                    control={control}
-                    name="phoneNumber"
-                    render={({ field: { onChange, value } }) => (
-                        <>
-                            <PhoneInputCustom value={value} onChange={onChange} />
-                            {errors.phoneNumber && (
-                                <Text style={{ color: 'red', marginTop: 4 }}>{t(errors.phoneNumber.message || '')}</Text>
-                            )}
-                        </>
-                    )}
-                />
-
-                {/* Doğum Tarihi */}
-                <Text style={styles.label}>{t('ui.profile.birthDate')}</Text>
-                <Controller
-                    control={control}
-                    name="birthDate"
-                    render={({ field: { value, onChange } }) => (
-                        <>
-                            <TouchableOpacity onPress={() => setDatePickerVisibility(true)}>
-                                <TextInput
-                                    style={styles.input}
-                                    value={value}
-                                    editable={false}
-                                    placeholder="YYYY-MM-DD"
-                                />
-                            </TouchableOpacity>
-                            <DateTimePickerModal
-                                isVisible={isDatePickerVisible}
-                                mode="date"
-                                maximumDate={new Date()}
-                                onConfirm={(date) => {
-                                    const formatted = format(date, 'yyyy-MM-dd');
-                                    onChange(formatted);
-                                    setDatePickerVisibility(false);
-                                }}
-                                onCancel={() => setDatePickerVisibility(false)}
-                            />
-                            {errors.birthDate && (
-                                <Text style={{ color: 'red', marginTop: 4 }}>{t(errors.birthDate.message || '')}</Text>
-                            )}
-                        </>
-                    )}
-                />
-
-                {/* Şehir ve İlçe */}
-                <View style={styles.row}>
-                    <View style={{ flex: 1 }}>
-                        <Text style={styles.label}>{t('ui.profile.city')}</Text>
-                        <Controller
-                            control={control}
-                            name="city"
-                            render={({ field: { onChange, value } }) => (
-                                <>
-                                    <TextInput
-                                        style={[styles.input, errors.city && { borderColor: 'red' }]}
-                                        placeholder={t('ui.form.cityPlaceholder') || ''}
-                                        value={value}
-                                        onChangeText={onChange}
-                                    />
-                                    {errors.city && (
-                                        <Text style={{ color: 'red', marginTop: 4 }}>{t(errors.city.message || '')}</Text>
-                                    )}
-                                </>
-                            )}
-                        />
+                            }}
+                            style={{ marginTop: 12, backgroundColor: '#0b80ee', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999 }}
+                        >
+                            {isUploading ? <ActivityIndicator color="#fff" /> : <Text style={{ color: '#fff' }}>{t('ui.profile.uploadPhoto')}</Text>}
+                        </TouchableOpacity>
                     </View>
-                    <View style={{ flex: 1, marginLeft: 12 }}>
-                        <Text style={styles.label}>{t('ui.profile.district')}</Text>
-                        <Controller
-                            control={control}
-                            name="district"
-                            render={({ field: { onChange, value } }) => (
-                                <>
-                                    <TextInput
-                                        style={[styles.input, errors.district && { borderColor: 'red' }]}
-                                        placeholder={t('ui.form.districtPlaceholder') || ''}
-                                        value={value}
-                                        onChangeText={onChange}
-                                    />
-                                    {errors.district && (
-                                        <Text style={{ color: 'red', marginTop: 4 }}>{t(errors.district.message || '')}</Text>
-                                    )}
-                                </>
-                            )}
-                        />
-                    </View>
-                </View>
 
-                {/* Açıklama */}
-                <Text style={styles.label}>{t('ui.profile.description')}</Text>
-                <Controller
-                    control={control}
-                    name="description"
-                    render={({ field: { onChange, value } }) => (
-                        <>
-                            <TextInput
-                                style={[styles.input, { height: 100, textAlignVertical: 'top' }, errors.description && { borderColor: 'red' }]}
-                                multiline
-                                placeholder={t('ui.form.descriptionPlaceholder') || ''}
-                                value={value}
-                                onChangeText={onChange}
-                            />
-                            {errors.description && (
-                                <Text style={{ color: 'red', marginTop: 4 }}>{t(errors.description.message || '')}</Text>
-                            )}
-                        </>
-                    )}
-                />
+                    {/* E-posta */}
+                    <Text style={styles.label}>{t('ui.profile.email')}</Text>
+                    <TextInput
+                        value={user.email}
+                        editable={false}
+                        style={[styles.input, { backgroundColor: '#f3f4f6' }]}
+                    />
 
-                {/* Müsaitlik */}
-                <View style={styles.switchRow}>
-                    <Text style={styles.label}>{t('ui.profile.isAvailable')}</Text>
+                    {/* Telefon */}
+                    <Text style={styles.label}>{t('ui.profile.phoneNumber')}</Text>
                     <Controller
                         control={control}
-                        name="isAvailable"
-                        render={({ field: { value, onChange } }) => (
-                            <Switch value={value} onValueChange={onChange} />
+                        name="phoneNumber"
+                        render={({ field: { onChange, value } }) => (
+                            <>
+                                <PhoneInputCustom value={value} onChange={onChange} />
+                                {errors.phoneNumber && <Text style={styles.errorText}>{t(errors.phoneNumber.message || '')}</Text>}
+                            </>
                         )}
                     />
+
+                    {/* Doğum Tarihi */}
+                    <Text style={styles.label}>{t('ui.profile.birthDate')}</Text>
+                    <Controller
+                        control={control}
+                        name="birthDate"
+                        render={({ field: { value, onChange } }) => (
+                            <>
+                                <TouchableOpacity onPress={() => setDatePickerVisibility(true)}>
+                                    <TextInput
+                                        style={styles.input}
+                                        value={value}
+                                        editable={false}
+                                        placeholder="YYYY-MM-DD"
+                                    />
+                                </TouchableOpacity>
+                                <DateTimePickerModal
+                                    isVisible={isDatePickerVisible}
+                                    mode="date"
+                                    maximumDate={new Date()}
+                                    onConfirm={(date) => {
+                                        onChange(format(date, 'yyyy-MM-dd'));
+                                        setDatePickerVisibility(false);
+                                    }}
+                                    onCancel={() => setDatePickerVisibility(false)}
+                                />
+                                {errors.birthDate && <Text style={styles.errorText}>{t(errors.birthDate.message || '')}</Text>}
+                            </>
+                        )}
+                    />
+
+                    {/* Şehir ve İlçe */}
+                    <View style={styles.row}>
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.label}>{t('ui.profile.city')}</Text>
+                            <Controller
+                                control={control}
+                                name="city"
+                                render={({ field: { onChange, value } }) => (
+                                    <>
+                                        <TextInput
+                                            style={[styles.input, errors.city && { borderColor: 'red' }]}
+                                            placeholder={t('ui.form.cityPlaceholder') || ''}
+                                            value={value}
+                                            onChangeText={onChange}
+                                        />
+                                        {errors.city && <Text style={styles.errorText}>{t(errors.city.message || '')}</Text>}
+                                    </>
+                                )}
+                            />
+                        </View>
+                        <View style={{ flex: 1, marginLeft: 12 }}>
+                            <Text style={styles.label}>{t('ui.profile.district')}</Text>
+                            <Controller
+                                control={control}
+                                name="district"
+                                render={({ field: { onChange, value } }) => (
+                                    <>
+                                        <TextInput
+                                            style={[styles.input, errors.district && { borderColor: 'red' }]}
+                                            placeholder={t('ui.form.districtPlaceholder') || ''}
+                                            value={value}
+                                            onChangeText={onChange}
+                                        />
+                                        {errors.district && <Text style={styles.errorText}>{t(errors.district.message || '')}</Text>}
+                                    </>
+                                )}
+                            />
+                        </View>
+                    </View>
+
+                    {/* Açıklama */}
+                    <Text style={styles.label}>{t('ui.profile.description')}</Text>
+                    <Controller
+                        control={control}
+                        name="description"
+                        render={({ field: { onChange, value } }) => (
+                            <>
+                                <TextInput
+                                    style={[styles.input, { height: 100, textAlignVertical: 'top' }, errors.description && { borderColor: 'red' }]}
+                                    multiline
+                                    placeholder={t('ui.form.descriptionPlaceholder') || ''}
+                                    value={value}
+                                    onChangeText={onChange}
+                                />
+                                {errors.description && <Text style={styles.errorText}>{t(errors.description.message || '')}</Text>}
+                            </>
+                        )}
+                    />
+
+                    {/* Müsaitlik */}
+                    <View style={styles.switchRow}>
+                        <Text style={styles.label}>{t('ui.profile.isAvailable')}</Text>
+                        <Controller
+                            control={control}
+                            name="isAvailable"
+                            render={({ field: { value, onChange } }) => (
+                                <Switch value={value} onValueChange={onChange} />
+                            )}
+                        />
+                    </View>
+
+                    {/* Dil Seçici */}
+                    <Text style={styles.label}>{t('common.language')}</Text>
+                    <LanguageSelectorDropdown />
+                </ScrollView>
+
+                {/* Kaydet Butonu */}
+                <View style={styles.bottomButtonContainer}>
+                    <TouchableOpacity
+                        style={styles.primaryButton}
+                        onPress={handleSubmit(onSubmit)}
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting
+                            ? <ActivityIndicator color="#fff" />
+                            : <Text style={styles.primaryButtonText}>{t('ui.form.save')}</Text>}
+                    </TouchableOpacity>
                 </View>
-
-                {/* Dil Seçici */}
-                <Text style={styles.label}>{t('common.language')}</Text>
-                <LanguageSelectorDropdown />
-            </ScrollView>
-
-            <View style={styles.footer}>
-                {Object.keys(errors).length > 0 && (
-                    <Text style={{ color: 'red', textAlign: 'center', marginBottom: 8 }}>
-                        {t('ui.form.validationError')}
-                    </Text>
-                )}
-                <TouchableOpacity
-                    style={styles.primaryButton}
-                    onPress={handleSubmit(onSubmit)}
-                    disabled={isSubmitting}
-                >
-                    {isSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>{t('ui.form.save')}</Text>}
-                </TouchableOpacity>
-            </View>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 }
@@ -335,19 +331,11 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center'
     },
-    footer: {
-        position: 'absolute',
-        bottom: Platform.OS === 'ios' ? 20 : 12,
-        left: 16,
-        right: 16,
+    bottomButtonContainer: {
+        padding: 16,
         backgroundColor: '#fff',
-        borderRadius: 16,
-        padding: 12,
-        shadowColor: '#000',
-        shadowOpacity: 0.06,
-        shadowOffset: { width: 0, height: -2 },
-        shadowRadius: 8,
-        elevation: 8,
+        borderTopWidth: 1,
+        borderColor: '#e5e7eb',
     },
     primaryButton: {
         backgroundColor: '#0b80ee',
@@ -360,5 +348,9 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    errorText: {
+        color: 'red',
+        marginTop: 4,
     },
 });

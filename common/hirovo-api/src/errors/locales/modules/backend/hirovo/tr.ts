@@ -1,6 +1,8 @@
 export default {
   translation: {
     error: {
+      SKILL_NAME_REQUIRED: "Skill adı gereklidir.",
+      SKILL_NAME_ALREADY_EXISTS: "Skill adı zaten mevcut.",
       PLAN_NOT_VALID: "Plan geçersiz.",
       PLAN_NOT_FOUND: "Plan bulunamadı.",
       PLAN_ALREADY_EXISTS: "Plan zaten mevcut.",

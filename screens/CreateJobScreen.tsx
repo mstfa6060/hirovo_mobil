@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     View,
     Text,
@@ -21,7 +21,8 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../src/hooks/useAuth';
 import { AppConfig } from '@config/hirovo-config';
 import Slider from '@react-native-community/slider';
-import { Menu, Button } from 'react-native-paper';
+import { RadioButton } from 'react-native-paper';
+import TopBar from '../components/TopBar';
 
 const schema = z.object({
     title: z.string().min(1, { message: 'ui.jobs.jobTitleRequired' }),
@@ -30,9 +31,12 @@ const schema = z.object({
     }),
     salary: z.coerce.number().gt(0, { message: 'ui.jobs.salaryRequired' }),
     description: z.string().min(10, { message: 'ui.jobs.jobDescriptionRequired' }),
-    requiredSkills: z.string().optional(),
+    requiredSkills: z.array(z.string().min(1)).min(1, { message: 'ui.jobs.skillsRequired' }),
     deadline: z.string().optional(),
-    notifyRadiusKm: z.coerce.number().min(1, { message: 'ui.jobs.notificationRadiusRequired' }).max(100, { message: 'ui.jobs.notificationRadiusMax' }),
+    notifyRadiusKm: z.coerce
+        .number()
+        .min(1, { message: 'ui.jobs.notificationRadiusRequired' })
+        .max(100, { message: 'ui.jobs.notificationRadiusMax' }),
     employerId: z.string().min(1, { message: 'ui.jobs.employerId' }),
 });
 
@@ -42,33 +46,30 @@ export default function CreateJobScreen() {
     const { t } = useTranslation();
     const navigation = useNavigation();
     const { user } = useAuth();
-    const [menuVisible, setMenuVisible] = useState(false);
+    const inputRefs = useRef<(TextInput | null)[]>([]);
+    const skillInputRef = useRef<TextInput | null>(null);
+    const [skillInput, setSkillInput] = useState('');
+
     const {
         control,
         handleSubmit,
         formState: { isSubmitting, errors },
         setValue,
+        setFocus,
         reset,
     } = useForm<FormValues>({
         resolver: zodResolver(schema),
         defaultValues: {
             notifyRadiusKm: 10,
+            requiredSkills: [],
         },
     });
-
-    const inputRefs = useRef<(TextInput | null)[]>([]);
 
     useEffect(() => {
         if (user?.id) {
             setValue('employerId', user.id);
         }
     }, [user]);
-
-    const [items] = useState([
-        { label: t('jobType.FullTime'), value: 'full-time' },
-        { label: t('jobType.PartTime'), value: 'part-time' },
-        { label: t('jobType.Freelance'), value: 'contract' },
-    ]);
 
     const onSubmit = async (data: FormValues) => {
         try {
@@ -86,198 +87,234 @@ export default function CreateJobScreen() {
                 location: 'Auto',
                 latitude: 41.015137,
                 longitude: 28.97953,
-                notifyRadiusKm: data.notifyRadiusKm,
-                requiredSkills: data.requiredSkills?.split(',').map(s => s.trim()) ?? [],
+                requiredSkills: data.requiredSkills,
             };
 
             const response = await HirovoAPI.Jobs.Create.Request(payload);
 
             if ('jobId' in response || 'id' in response) {
                 Alert.alert(t('ui.success'), t('ui.jobs.createdSuccessfully'));
-                reset(); // ✅ Formu temizle
-                navigation.goBack(); // veya formda kalmak istersen bunu kaldır
+                reset();
+                navigation.goBack();
             }
         } catch (err) {
             Alert.alert(t('ui.error'), t('ui.jobs.createError'));
         }
     };
 
+    const onInvalid = () => {
+        Keyboard.dismiss();
+        const fieldOrder: (keyof FormValues)[] = [
+            'title',
+            'salary',
+            'description',
+            'requiredSkills',
+            'type',
+            'notifyRadiusKm',
+            'employerId',
+        ];
+
+        for (const fieldName of fieldOrder) {
+            if (errors[fieldName]) {
+                const index = fieldOrder.indexOf(fieldName);
+                const ref = inputRefs.current[index];
+                if (ref?.focus) {
+                    ref.focus();
+                } else {
+                    setFocus(fieldName);
+                }
+                break;
+            }
+        }
+    };
+
+    const handleAddSkill = (currentSkills: string[], onChange: (val: string[]) => void) => {
+        const trimmed = skillInput.trim();
+        if (trimmed.length > 0 && !currentSkills.includes(trimmed)) {
+            onChange([...currentSkills, trimmed]);
+            setSkillInput('');
+            setTimeout(() => {
+                skillInputRef.current?.focus(); // input açık kalmaya devam etsin
+            }, 10);
+        }
+    };
+
     return (
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-            <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-                <View style={styles.header}>
-                    <Text style={styles.headerTitle}>{t('ui.jobs.createJobTitle')}</Text>
-                </View>
+        <View style={{ flex: 1, backgroundColor: '#fff' }}>
+            <TopBar title={t('ui.jobs.createJobTitle')} showBackButton />
 
-                {/* Title */}
-                <Text style={styles.label}>{t('ui.jobs.title')} <Text style={{ color: 'red' }}>*</Text></Text>
-                <Controller
-                    control={control}
-                    name="title"
-                    render={({ field: { onChange, onBlur, value } }) => (
-                        <TextInput
-                            ref={(ref) => { inputRefs.current[0] = ref; }}
-                            style={styles.input}
-                            placeholder={t('ui.jobs.titlePlaceholder')}
-                            onChangeText={text => onChange(text)}
-                            onBlur={onBlur}
-                            value={value}
-                            returnKeyType="next"
-                            onSubmitEditing={() => inputRefs.current[1]?.focus()}
-                            blurOnSubmit={false}
-                        />
-                    )}
-                />
-
-                {/* Salary */}
-                <Text style={styles.label}>{t('ui.jobs.salary')} <Text style={{ color: 'red' }}>*</Text></Text>
-                <Controller
-                    control={control}
-                    name="salary"
-                    render={({ field: { onChange, onBlur, value } }) => (
-                        <TextInput
-                            ref={(ref) => { inputRefs.current[1] = ref; }}
-                            style={styles.input}
-                            placeholder="75000"
-                            keyboardType="numeric"
-                            onChangeText={(text) => {
-                                const parsed = parseFloat(text);
-                                onChange(text === '' ? undefined : !isNaN(parsed) ? parsed : 0);
-                            }}
-                            onBlur={onBlur}
-                            value={value ? value.toString() : ''}
-                            returnKeyType="next"
-                            onSubmitEditing={() => inputRefs.current[2]?.focus()}
-                            blurOnSubmit={false}
-                        />
-                    )}
-                />
-
-                {/* Description */}
-                <Text style={styles.label}>{t('ui.jobs.description')} <Text style={{ color: 'red' }}>*</Text></Text>
-                <Controller
-                    control={control}
-                    name="description"
-                    render={({ field: { onChange, onBlur, value } }) => (
-                        <TextInput
-                            ref={(ref) => { inputRefs.current[2] = ref; }}
-                            style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
-                            placeholder={t('ui.jobs.descriptionPlaceholder')}
-                            multiline
-                            onChangeText={text => onChange(text)}
-                            onBlur={onBlur}
-                            value={value}
-                            blurOnSubmit={false}
-                            returnKeyType="default"
-                        />
-                    )}
-                />
-
-                {/* Required Skills */}
-                <Text style={styles.label}>{t('ui.jobs.requiredSkills')}</Text>
-                <Controller
-                    control={control}
-                    name="requiredSkills"
-                    render={({ field }) => (
-                        <TextInput
-                            ref={(ref) => { inputRefs.current[3] = ref; }}
-                            style={styles.input}
-                            placeholder="React, TypeScript"
-                            onChangeText={text => field.onChange(text)}
-                            value={field.value}
-                            returnKeyType="done"
-                            onSubmitEditing={() => Keyboard.dismiss()}
-                        />
-                    )}
-                />
-
-                {/* Type - Dropdown */}
-                <Text style={styles.label}>{t('ui.jobs.type')} <Text style={{ color: 'red' }}>*</Text></Text>
-                <Controller
-                    control={control}
-                    name="type"
-                    render={({ field }) => (
-                        <View style={{ marginBottom: 16 }}>
-                            <Menu
-                                visible={menuVisible}
-                                onDismiss={() => setMenuVisible(false)}
-                                anchor={
-                                    <Button
-                                        mode="outlined"
-                                        onPress={() => setMenuVisible(true)}
-                                        contentStyle={{ justifyContent: 'flex-start' }}
-                                    >
-                                        {field.value
-                                            ? items.find(i => i.value === field.value)?.label
-                                            : t('ui.jobs.type')}
-                                    </Button>
-                                }
-                            >
-                                {items.map(item => (
-                                    <Menu.Item
-                                        key={item.value}
-                                        onPress={() => {
-                                            field.onChange(item.value);
-                                            setMenuVisible(false);
-                                        }}
-                                        title={item.label}
-                                    />
-                                ))}
-                            </Menu>
-                        </View>
-                    )}
-                />
-
-                {/* Notify Radius */}
-                <Text style={styles.label}>{t('ui.jobs.notifyRadiusKm')} <Text style={{ color: 'red' }}>*</Text></Text>
-                <Controller
-                    control={control}
-                    name="notifyRadiusKm"
-                    render={({ field: { value, onChange } }) => (
-                        <View style={{ alignItems: 'center', marginBottom: 20 }}>
-                            <Slider
-                                style={{ width: '100%', height: 40 }}
-                                minimumValue={1}
-                                maximumValue={100}
-                                step={1}
-                                minimumTrackTintColor="#007bff"
-                                maximumTrackTintColor="#d3d3d3"
-                                thumbTintColor="#007bff"
-                                value={value}
-                                onValueChange={onChange}
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                style={{ flex: 1 }}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+            >
+                <ScrollView
+                    contentContainerStyle={styles.scrollContent}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    {/* Title */}
+                    <Text style={styles.label}>{t('ui.jobs.title')} *</Text>
+                    <Controller
+                        control={control}
+                        name="title"
+                        render={({ field }) => (
+                            <TextInput
+                                ref={(ref) => { inputRefs.current[0] = ref; }}
+                                style={styles.input}
+                                placeholder={t('ui.jobs.titlePlaceholder')}
+                                onChangeText={field.onChange}
+                                value={field.value}
                             />
-                            <Text style={styles.radiusValue}>{value} km</Text>
-                        </View>
-                    )}
-                />
+                        )}
+                    />
+                    {errors.title && <Text style={styles.error}>{t(errors.title.message || '')}</Text>}
 
-                {/* Submit */}
-                <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)} disabled={isSubmitting}>
-                    {isSubmitting ? (
-                        <ActivityIndicator color="#fff" />
-                    ) : (
-                        <Text style={styles.buttonText}>{t('ui.jobs.submitJob')}</Text>
-                    )}
+                    {/* Salary */}
+                    <Text style={styles.label}>{t('ui.jobs.salary')} *</Text>
+                    <Controller
+                        control={control}
+                        name="salary"
+                        render={({ field }) => (
+                            <TextInput
+                                ref={(ref) => { inputRefs.current[1] = ref; }}
+                                style={styles.input}
+                                placeholder="75000"
+                                keyboardType="numeric"
+                                onChangeText={(text) => {
+                                    const parsed = parseFloat(text);
+                                    field.onChange(text === '' ? undefined : !isNaN(parsed) ? parsed : 0);
+                                }}
+                                value={field.value ? field.value.toString() : ''}
+                            />
+                        )}
+                    />
+                    {errors.salary && <Text style={styles.error}>{t(errors.salary.message || '')}</Text>}
+
+                    {/* Description */}
+                    <Text style={styles.label}>{t('ui.jobs.description')} *</Text>
+                    <Controller
+                        control={control}
+                        name="description"
+                        render={({ field }) => (
+                            <TextInput
+                                ref={(ref) => { inputRefs.current[2] = ref; }}
+                                style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
+                                placeholder={t('ui.jobs.descriptionPlaceholder')}
+                                multiline
+                                onChangeText={field.onChange}
+                                value={field.value}
+                            />
+                        )}
+                    />
+                    {errors.description && <Text style={styles.error}>{t(errors.description.message || '')}</Text>}
+
+                    {/* Required Skills */}
+                    <Text style={styles.label}>{t('ui.jobs.requiredSkills')} *</Text>
+                    <Controller
+                        control={control}
+                        name="requiredSkills"
+                        render={({ field: { value, onChange } }) => (
+                            <>
+                                <View style={styles.skillTagContainer}>
+                                    {value?.map((skill, idx) => (
+                                        <View key={idx} style={styles.skillTag}>
+                                            <Text style={styles.skillText}>{skill}</Text>
+                                            <TouchableOpacity onPress={() => {
+                                                const updated = value.filter((_, i) => i !== idx);
+                                                onChange(updated);
+                                            }}>
+                                                <Text style={styles.removeSkill}>×</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    ))}
+                                </View>
+
+                                <TextInput
+                                    ref={skillInputRef}
+                                    style={styles.input}
+                                    placeholder={t('ui.jobs.addSkill')}
+                                    value={skillInput}
+                                    onChangeText={setSkillInput}
+                                    onSubmitEditing={() => handleAddSkill(value, onChange)}
+                                    returnKeyType="done"
+                                />
+                            </>
+                        )}
+                    />
+                    {errors.requiredSkills && <Text style={styles.error}>{t(errors.requiredSkills.message || '')}</Text>}
+
+                    {/* Type */}
+                    <Text style={styles.label}>{t('ui.jobs.type')} *</Text>
+                    <Controller
+                        control={control}
+                        name="type"
+                        render={({ field: { value, onChange } }) => (
+                            <RadioButton.Group onValueChange={onChange} value={value}>
+                                <View style={styles.radioRow}>
+                                    <RadioButton value="full-time" />
+                                    <Text style={styles.radioLabel}>{t('jobType.FullTime')}</Text>
+                                </View>
+                                <View style={styles.radioRow}>
+                                    <RadioButton value="part-time" />
+                                    <Text style={styles.radioLabel}>{t('jobType.PartTime')}</Text>
+                                </View>
+                                <View style={styles.radioRow}>
+                                    <RadioButton value="contract" />
+                                    <Text style={styles.radioLabel}>{t('jobType.Freelance')}</Text>
+                                </View>
+                            </RadioButton.Group>
+                        )}
+                    />
+                    {errors.type && <Text style={styles.error}>{t(errors.type.message || '')}</Text>}
+
+                    {/* Notify Radius */}
+                    <Text style={styles.label}>{t('ui.jobs.notifyRadiusKm')} *</Text>
+                    <Controller
+                        control={control}
+                        name="notifyRadiusKm"
+                        render={({ field }) => (
+                            <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                                <Slider
+                                    style={{ width: '100%', height: 40 }}
+                                    minimumValue={1}
+                                    maximumValue={100}
+                                    step={1}
+                                    minimumTrackTintColor="#007bff"
+                                    maximumTrackTintColor="#d3d3d3"
+                                    thumbTintColor="#007bff"
+                                    value={field.value}
+                                    onValueChange={field.onChange}
+                                />
+                                <Text style={styles.radiusValue}>{field.value} km</Text>
+                            </View>
+                        )}
+                    />
+                    {errors.notifyRadiusKm && <Text style={styles.error}>{t(errors.notifyRadiusKm.message || '')}</Text>}
+
+                    <View style={{ height: 80 }} />
+                </ScrollView>
+            </KeyboardAvoidingView>
+
+            {/* Submit Button */}
+            <View style={styles.bottomButtonContainer}>
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={handleSubmit(onSubmit, onInvalid)}
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting
+                        ? <ActivityIndicator color="#fff" />
+                        : <Text style={styles.buttonText}>{t('ui.jobs.submitJob')}</Text>}
                 </TouchableOpacity>
-            </ScrollView>
-        </KeyboardAvoidingView>
+            </View>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
+    scrollContent: {
         padding: 16,
         backgroundColor: '#f9f9f9',
-    },
-    header: {
-        marginBottom: 16,
-        marginTop: 18,
-    },
-    headerTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#111827',
-        textAlign: 'center',
     },
     label: {
         fontSize: 14,
@@ -292,12 +329,16 @@ const styles = StyleSheet.create({
         padding: 10,
         marginBottom: 12,
     },
+    error: {
+        color: 'red',
+        marginBottom: 8,
+        marginTop: -8,
+    },
     button: {
         backgroundColor: '#007bff',
         padding: 14,
         borderRadius: 9999,
         alignItems: 'center',
-        marginTop: 12,
     },
     buttonText: {
         color: 'white',
@@ -308,5 +349,44 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '500',
         color: '#007bff',
+    },
+    bottomButtonContainer: {
+        padding: 16,
+        backgroundColor: '#fff',
+        borderTopWidth: 1,
+        borderColor: '#e5e7eb',
+    },
+    radioRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    radioLabel: {
+        fontSize: 14,
+        color: '#333',
+    },
+    skillTagContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        marginBottom: 8,
+    },
+    skillTag: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#e0e7ff',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 16,
+        marginRight: 8,
+        marginBottom: 8,
+    },
+    skillText: {
+        fontSize: 13,
+        color: '#1e40af',
+    },
+    removeSkill: {
+        marginLeft: 6,
+        color: '#1e3a8a',
+        fontWeight: 'bold',
     },
 });

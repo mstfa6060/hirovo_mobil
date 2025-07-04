@@ -23,8 +23,7 @@ import { AppConfig } from '@config/hirovo-config';
 import Slider from '@react-native-community/slider';
 import { RadioButton } from 'react-native-paper';
 import { RootStackParamList } from '../navigation/RootNavigator';
-import TopBar from 'components/TopBar'; // varsa
-
+import TopBar from 'components/TopBar';
 
 const schema = z.object({
     title: z.string().min(1, { message: 'ui.EditJobScreen.jobTitleRequired' }),
@@ -33,7 +32,7 @@ const schema = z.object({
     }),
     salary: z.coerce.number().gt(0, { message: 'ui.EditJobScreen.salaryRequired' }),
     description: z.string().min(10, { message: 'ui.EditJobScreen.jobDescriptionRequired' }),
-    requiredSkills: z.string().optional(),
+    requiredSkills: z.array(z.string().min(1)).min(1, { message: 'ui.EditJobScreen.skillsRequired' }),
     deadline: z.string().optional(),
     notifyRadiusKm: z.coerce.number().min(1, { message: 'ui.EditJobScreen.notificationRadiusRequired' }).max(100, { message: 'ui.EditJobScreen.notificationRadiusMax' }),
     employerId: z.string().min(1, { message: 'ui.EditJobScreen.employerId' }),
@@ -48,15 +47,19 @@ export default function EditJobScreen() {
     const route = useRoute<EditJobRouteProp>();
     const { user } = useAuth();
     const { jobId } = route.params;
+    const [skillInput, setSkillInput] = useState('');
+    const skillInputRef = useRef<TextInput | null>(null);
+
     const {
         control,
         handleSubmit,
-        formState: { isSubmitting },
+        formState: { isSubmitting, errors },
         setValue,
     } = useForm<FormValues>({
         resolver: zodResolver(schema),
         defaultValues: {
             notifyRadiusKm: 10,
+            requiredSkills: [],
         },
     });
 
@@ -76,6 +79,7 @@ export default function EditJobScreen() {
                     setValue('salary', res.salary);
                     setValue('type', typeMap[res.type]);
                     setValue('notifyRadiusKm', res.notifyRadiusKm);
+                    setValue('requiredSkills', res.requiredSkills ?? []);
                 })
                 .catch(() => {
                     Alert.alert(t('ui.error'), t('ui.EditJobScreen.loadError'));
@@ -101,6 +105,7 @@ export default function EditJobScreen() {
                 latitude: 41.015137,
                 longitude: 28.97953,
                 notifyRadiusKm: data.notifyRadiusKm,
+                requiredSkills: data.requiredSkills,
             };
 
             await HirovoAPI.Jobs.Update.Request(payload);
@@ -116,7 +121,6 @@ export default function EditJobScreen() {
             <TopBar title={t('ui.EditJobScreen.editJobTitle')} showBackButton />
 
             <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-
                 <Text style={styles.label}>{t('ui.EditJobScreen.title')} *</Text>
                 <Controller
                     control={control}
@@ -160,6 +164,49 @@ export default function EditJobScreen() {
                         />
                     )}
                 />
+
+                <Text style={styles.label}>{t('ui.EditJobScreen.requiredSkills')} *</Text>
+                <Controller
+                    control={control}
+                    name="requiredSkills"
+                    render={({ field: { value, onChange } }) => (
+                        <>
+                            <View style={styles.skillTagContainer}>
+                                {value?.map((skill, idx) => (
+                                    <View key={idx} style={styles.skillTag}>
+                                        <Text style={styles.skillText}>{skill}</Text>
+                                        <TouchableOpacity onPress={() => {
+                                            const updated = value.filter((_, i) => i !== idx);
+                                            onChange(updated);
+                                        }}>
+                                            <Text style={styles.removeSkill}>×</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                ))}
+                            </View>
+
+                            <TextInput
+                                ref={skillInputRef}
+                                style={styles.input}
+                                placeholder={t('ui.EditJobScreen.addSkill')}
+                                value={skillInput}
+                                onChangeText={setSkillInput}
+                                onSubmitEditing={() => {
+                                    const trimmed = skillInput.trim();
+                                    if (trimmed.length > 0 && !value.includes(trimmed)) {
+                                        onChange([...value, trimmed]);
+                                        setSkillInput('');
+                                        setTimeout(() => {
+                                            skillInputRef.current?.focus();
+                                        }, 10);
+                                    }
+                                }}
+                                returnKeyType="done"
+                            />
+                        </>
+                    )}
+                />
+                {errors.requiredSkills && <Text style={styles.error}>{t(errors.requiredSkills.message || '')}</Text>}
 
                 <Text style={styles.label}>{t('ui.EditJobScreen.type')} *</Text>
                 <Controller
@@ -222,20 +269,6 @@ const styles = StyleSheet.create({
         padding: 16,
         backgroundColor: '#f9f9f9',
     },
-    backButton: {
-        marginBottom: 10,
-    },
-    backButtonText: {
-        color: '#007bff',
-        fontSize: 16,
-    },
-    headerTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#111827',
-        textAlign: 'center',
-        marginBottom: 16,
-    },
     label: {
         fontSize: 14,
         color: '#333',
@@ -274,5 +307,34 @@ const styles = StyleSheet.create({
     radioLabel: {
         fontSize: 14,
         color: '#333',
+    },
+    skillTagContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        marginBottom: 8,
+    },
+    skillTag: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#e0e7ff',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 16,
+        marginRight: 8,
+        marginBottom: 8,
+    },
+    skillText: {
+        fontSize: 13,
+        color: '#1e40af',
+    },
+    removeSkill: {
+        marginLeft: 6,
+        color: '#1e3a8a',
+        fontWeight: 'bold',
+    },
+    error: {
+        color: 'red',
+        marginBottom: 8,
+        marginTop: -8,
     },
 });

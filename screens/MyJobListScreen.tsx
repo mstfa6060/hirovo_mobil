@@ -7,7 +7,6 @@ import {
     ActivityIndicator,
     StyleSheet,
     RefreshControl,
-    Alert,
 } from 'react-native';
 import { useAuth } from 'src/hooks/useAuth';
 import { HirovoAPI } from '@api/business_modules/hirovo';
@@ -30,6 +29,8 @@ const MyJobListScreen = () => {
     const [error, setError] = useState<string | null>(null);
 
     const fetchJobs = async () => {
+        if (!user?.id) return;
+
         try {
             setLoading(true);
             const response = await HirovoAPI.Jobs.All.Request({
@@ -56,6 +57,7 @@ const MyJobListScreen = () => {
             });
 
             setJobs(response);
+            setError(null);
         } catch (err) {
             console.error('İlanlar alınamadı:', err);
             setError(t('ui.myjobslist.loadError') || 'İlanlar alınırken hata oluştu.');
@@ -65,18 +67,21 @@ const MyJobListScreen = () => {
     };
 
     const onRefresh = useCallback(async () => {
+        if (!user?.id) return;
         setRefreshing(true);
         await fetchJobs();
         setRefreshing(false);
-    }, []);
+    }, [user?.id]);
 
     const goToJobDetail = (jobId: string) => {
         navigation.navigate('JobsDetail', { id: jobId });
     };
 
     useEffect(() => {
-        if (user.id) fetchJobs();
-    }, [user.id]);
+        if (user?.id) {
+            fetchJobs();
+        }
+    }, [user?.id]);
 
     if (loading) {
         return (
