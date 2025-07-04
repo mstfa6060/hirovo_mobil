@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from 'jwt-decode';
 import { FileProviderAPI } from '@api/base_modules/FileProvider';
 import { AppConfig } from '@config/hirovo-config';
+import { HirovoAPI } from '@api/business_modules/hirovo';
 
 type User = {
     id: string;
@@ -23,51 +24,63 @@ export const useAuth = () => {
         bucketId: '',
     });
 
-    useEffect(() => {
-        const getUserFromJwt = async () => {
-            const token = await AsyncStorage.getItem('jwt');
-            if (!token) return;
+    const fetchAndSetUser = async () => {
+        const token = await AsyncStorage.getItem('jwt');
+        if (!token) return;
 
-            const decoded: any = jwtDecode(token);
+        const decoded: any = jwtDecode(token);
+        const userId = decoded?.nameid;
+        const userType = decoded?.userType;
+        const fullName = decoded?.unique_name || 'Mock User';
+        const email = decoded?.email || 'mock@hirovo.com';
 
-            const userId = decoded?.nameid;
-            const userType = decoded?.userType;
-            const fullName = decoded?.unique_name || 'Mock User';
-            const email = decoded?.email || 'mock@hirovo.com';
-            const bucketId = decoded?.bucketId;
+        let role: 'Worker' | 'Employer' = 'Worker';
+        if (userType === '2' || userType === 2) role = 'Employer';
 
-            let role: 'Worker' | 'Employer' = 'Worker';
-            if (userType === '2' || userType === 2) role = 'Employer';
+        let bucketId = '';
+        let profilePhotoUrl: string | null = null;
 
-            let profilePhotoUrl: string | null = null;
+        try {
+            const profile = await HirovoAPI.DetailProfile.Detail.Request({ userId });
+            bucketId = profile.bucketId || '';
+
             if (bucketId) {
-                try {
-                    const result = await FileProviderAPI.Buckets.Detail.Request({
-                        bucketId,
-                        changeId: '00000000-0000-0000-0000-000000000000',
-                    });
+                const result = await FileProviderAPI.Buckets.Detail.Request({
+                    bucketId,
+                    changeId: '00000000-0000-0000-0000-000000000000',
+                });
 
-                    const file = result.files?.[0];
-                    if (file) {
-                        profilePhotoUrl = file.securePath || `${AppConfig.BaseApi}/file-storage/${file.path}`;
-                    }
-                } catch (err) {
-                    console.warn('📁 Profil fotoğrafı getirilemedi:', err);
+                const file = result.files?.[result.files?.length - 1];
+                if (file) {
+                    profilePhotoUrl = file.securePath || `${AppConfig.BaseApi}/file-storage/${file.path}`;
                 }
             }
+        } catch (err) {
+            console.warn('📁 Profil bilgisi veya fotoğrafı getirilemedi:', err);
+        }
 
-            setUser({
-                id: userId,
-                role,
-                fullName,
-                email,
-                profilePhotoUrl,
-                bucketId,
-            });
-        };
+        setUser({
+            id: userId,
+            role,
+            fullName,
+            email,
+            profilePhotoUrl,
+            bucketId,
+        });
+    };
 
-        getUserFromJwt();
+    useEffect(() => {
+        fetchAndSetUser();
     }, []);
 
-    return { user };
+    // ✅ Manuel olarak user nesnesini güncellemek için
+    const updateUser = (partial: Partial<User>) => {
+        setUser((prev) => ({ ...prev, ...partial }));
+    };
+
+    return {
+        user,
+        updateUser,
+        refresh: fetchAndSetUser,
+    };
 };

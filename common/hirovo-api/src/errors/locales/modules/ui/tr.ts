@@ -1,3 +1,5 @@
+import EditJobScreen from "screens/EditJobScreen";
+
 export const uiTr = {
   translation: {
     ui: {
@@ -15,6 +17,7 @@ export const uiTr = {
       unavailable: "Müsait Değil",
       createJob: "İlan Oluştur",
       myjoblist: "İlanlarım",
+      changepassword: "Şifremi Değiştir",
       login: {
         welcome: "Hirovo Hoşgeldiniz",
         subtitle: "Lütfen e-posta ve şifrenizi giriniz",
@@ -132,6 +135,7 @@ export const uiTr = {
         updateError: "İş ilanı güncellenemedi. Lütfen tekrar deneyin.",
         deleteError: "İş ilanı silinemedi. Lütfen tekrar deneyin.",
         viewLink: 'İlan bağlantısı',
+        cannotApplyOwn: "Kendi ilanınıza başvuramazsınız.",
       },
       profile: {
         title: "Profil Düzenle",
@@ -299,9 +303,40 @@ export const uiTr = {
           Rejected: "Reddedildi",
           Cancelled: "İptal Edildi",
         },
-      }
-
-
+      },
+      EditJobScreen: {
+        editJobTitle: "İş İlanını Düzenle",
+        title: "İlan Başlığı",
+        titlePlaceholder: "Örn: Senior Software Engineer",
+        salary: "Maaş",
+        salaryRequired: "Maaş zorunludur ve pozitif olmalıdır.",
+        description: "Açıklama",
+        descriptionPlaceholder: "İşin detaylarını giriniz...",
+        descriptionRequired: "Açıklama en az 10 karakter olmalıdır.",
+        type: "İş Türü",
+        jobTypeRequired: "İş türü zorunludur.",
+        notifyRadiusKm: "Gösterim Mesafesi (km)",
+        notificationRadiusRequired: "Bildirim mesafesi zorunludur.",
+        notificationRadiusMax: "Bildirim mesafesi maksimum 100 km olabilir.",
+        employerId: "İşveren ID",
+        updateJob: "İlanı Güncelle",
+        updatedSuccessfully: "İlan başarıyla güncellendi.",
+        updateError: "İlan güncellenemedi. Lütfen tekrar deneyin.",
+        loadError: "İlan bilgileri yüklenemedi.",
+        jobTitleRequired: "İlan başlığı zorunludur.",
+        jobDescriptionRequired: "Açıklama en az 10 karakter olmalıdır.",
+      },
+      changePasswordScreen: {
+        changePassword: "Şifre Değiştir",
+        oldPassword: "Mevcut Şifre",
+        oldPasswordRequired: "Mevcut şifre zorunludur",
+        newPassword: "Yeni Şifre",
+        newPasswordRules: "Şifre en az 8 karakter, bir büyük harf ve bir rakam içermelidir",
+        confirmPassword: "Yeni Şifre (Tekrar)",
+        passwordsMustMatch: "Şifreler uyuşmuyor",
+        savePassword: "Şifreyi Kaydet",
+        passwordChangedSuccess: "Şifreniz başarıyla değiştirildi",
+      },
     },
     error: {
       DEFAULT_ERROR: "Bir hata oluştu. Lütfen tekrar deneyin.",

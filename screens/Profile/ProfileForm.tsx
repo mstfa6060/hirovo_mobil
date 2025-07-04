@@ -35,7 +35,7 @@ type FormData = z.infer<typeof schema>;
 
 export default function ProfileForm() {
     const { t } = useTranslation();
-    const { user } = useAuth();
+    const { user, updateUser } = useAuth();
 
     const {
         control,
@@ -56,8 +56,9 @@ export default function ProfileForm() {
     });
 
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-    const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+    const [photoUrl, setPhotoUrl] = useState<FileProviderAPI.Files.Upload.IFileResponse | null>(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [uploadedBucketId, setUploadedBucketId] = useState<string | null>(null);
 
     useFocusEffect(
         React.useCallback(() => {
@@ -76,11 +77,9 @@ export default function ProfileForm() {
                         bucketId: user.bucketId,
                         changeId: '00000000-0000-0000-0000-000000000000',
                     });
-                    console.log('📁 Profile photo response:', responseImage);
-                    const file = responseImage.files?.[0];
-                    console.log('📁 Profile photo file:', file);
+                    const file = responseImage.files?.[responseImage.files?.length - 1] || null;
                     if (file) {
-                        setPhotoUrl(`${AppConfig.BaseApi}/file-storage/${file.path}`);
+                        setPhotoUrl(file);
                     }
                 } catch (error) {
                     Alert.alert(t('ui.error'), t('ui.profile.fetchError'));
@@ -101,7 +100,7 @@ export default function ProfileForm() {
                 description: data.description ?? '',
                 birthDate: new Date(data.birthDate),
                 isAvailable: data.isAvailable,
-                bucketId: user.bucketId,
+                bucketId: uploadedBucketId ?? user.bucketId,
             });
             Alert.alert(t('ui.success'), t('ui.profile.updated'));
         } catch (error) {
@@ -115,7 +114,10 @@ export default function ProfileForm() {
             <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
                 <View style={{ alignItems: 'center', marginTop: 16 }}>
                     {photoUrl ? (
-                        <Image source={{ uri: photoUrl }} style={{ width: 120, height: 120, borderRadius: 60 }} />
+                        <Image
+                            source={{ uri: `${user.profilePhotoUrl}` }}
+                            style={{ width: 120, height: 120, borderRadius: 60 }}
+                        />
                     ) : (
                         <View style={{ width: 120, height: 120, borderRadius: 60, backgroundColor: '#E5E7EB', justifyContent: 'center', alignItems: 'center' }}>
                             <Text style={{ color: '#6B7280' }}>No Photo</Text>
@@ -125,15 +127,22 @@ export default function ProfileForm() {
                         onPress={async () => {
                             try {
                                 setIsUploading(true);
-                                const uploadedPath = await pickAndUploadProfilePhoto({
+                                const uploadResponse = await pickAndUploadProfilePhoto({
                                     userId: user.id,
                                     tenantId: AppConfig.DefaultCompanyId,
+                                    bucketId: user.bucketId,
                                 });
 
-                                console.log('📁 Uploaded photo path:', uploadedPath);
-                                if (uploadedPath) {
-                                    setPhotoUrl(uploadedPath);
-                                    Alert.alert(t('ui.success'), t('ui.profile.photoUpdated'));
+                                const uploadedFile = uploadResponse?.files?.[uploadResponse?.files?.length - 1];
+                                if (uploadedFile) {
+                                    setPhotoUrl(uploadedFile);
+                                    setUploadedBucketId(uploadResponse.bucketId);
+
+                                    // ✅ Global kullanıcı state'ini güncelle
+                                    updateUser({
+                                        bucketId: uploadResponse.bucketId,
+                                        profilePhotoUrl: `${AppConfig.BaseApi}/file-storage/${uploadedFile.path}`,
+                                    });
                                 }
                             } catch {
                                 Alert.alert(t('ui.error'), t('ui.profile.photoUploadError'));

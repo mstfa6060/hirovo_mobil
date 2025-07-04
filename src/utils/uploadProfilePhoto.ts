@@ -7,10 +7,12 @@ import { FileProviderAPI } from '@api/base_modules/FileProvider';
 export const pickAndUploadProfilePhoto = async ({
     userId,
     tenantId,
+    bucketId,
 }: {
     userId: string;
     tenantId: string;
-}): Promise<string | null> => {
+    bucketId: string;
+}): Promise<FileProviderAPI.Files.Upload.IResponseModel | null> => {
     try {
         const result = await DocumentPicker.getDocumentAsync({
             type: 'image/*',
@@ -40,22 +42,21 @@ export const pickAndUploadProfilePhoto = async ({
         formData.append('versionName', 'v1');
         formData.append('tenantId', tenantId);
         formData.append('bucketType', FileProviderAPI.Enums.BucketTypes.SingleFileBucket.toString());
-        formData.append('bucketId', userId); // userId -> bucketId eşlemesi
+        formData.append('bucketId', bucketId);
         formData.append('formFile', {
             uri: manipulatedImage.uri,
             name: `profile_${Date.now()}.jpg`,
             type: 'image/jpeg',
         } as any);
 
-        const uploaded = await ApiService.callMultipart<FileProviderAPI.Files.Upload.IResponseModel>(
+        return await ApiService.callMultipart<FileProviderAPI.Files.Upload.IResponseModel>(
             FileProviderAPI.Files.Upload.RequestPath,
             formData
         );
+        // console.log('📁 Profil resmi yükleme sonucu:', uploaded);
+        // const uploadedFile = uploaded.files?.[0] as any;
 
-        const uploadedFile = uploaded.files?.[0] as any;
-        console.log('📁 Profil resmi yüklendi:', uploadedFile);
-
-        return uploadedFile?.securePath || `${AppConfig.BaseApi}/file-storage/${uploadedFile?.path}`;
+        // return uploadedFile?.securePath || `${AppConfig.BaseApi}/file-storage/${uploadedFile?.path}`;
     } catch (err: any) {
         console.error('📁 Profil resmi yükleme hatası:', {
             status: err?.response?.status,

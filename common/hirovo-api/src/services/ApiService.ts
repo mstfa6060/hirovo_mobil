@@ -12,8 +12,6 @@ export class ApiService {
   ): Promise<T> {
     try {
       const response = await promise;
-      console.log('📡 API Response:', { response });
-
 
       const { hasError, error, payload } = response.data;
 

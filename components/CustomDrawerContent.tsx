@@ -58,6 +58,9 @@ const CustomDrawerContent = (props: any) => {
     const handleMyJobList = () => {
         navigation.navigate('Drawer', { screen: 'MyJobList' });
     };
+    const handleChangePassword = () => {
+        navigation.navigate('Drawer', { screen: 'ChangePassword' });
+    };
 
     return (
         <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1, paddingTop: 60 }}>
@@ -73,13 +76,14 @@ const CustomDrawerContent = (props: any) => {
             <View style={styles.menu}>
                 <MenuItem icon="person" label={t('ui.editProfile')} onPress={handleProfileEdit} />
                 <MenuItem icon="work" label={t('ui.createJob')} onPress={handleCreateJob} />
-                <MenuItem icon="work" label={t('ui.myjoblist')} onPress={handleMyJobList} />
-
+                <MenuItem icon="assignment" label={t('ui.myjoblist')} onPress={handleMyJobList} />
                 {/* <MenuItem icon="notifications" label={t('ui.notifications')} badge={3} onPress={() => { }} />
                 <MenuItem icon="settings" label={t('ui.settings')} onPress={() => { }} /> */}
             </View>
 
             <View style={styles.footer}>
+                <MenuItem icon="lock" label={t('ui.changePasswordScreen.changePassword')} onPress={handleChangePassword} />
+
                 <MenuItem icon="logout" label={t('ui.logout') || 'Çıkış'} isDanger onPress={handleLogout} />
             </View>
         </DrawerContentScrollView>

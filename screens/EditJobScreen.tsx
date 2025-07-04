@@ -21,20 +21,22 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { useAuth } from '../src/hooks/useAuth';
 import { AppConfig } from '@config/hirovo-config';
 import Slider from '@react-native-community/slider';
-import { Menu, Button } from 'react-native-paper';
+import { RadioButton } from 'react-native-paper';
 import { RootStackParamList } from '../navigation/RootNavigator';
+import TopBar from 'components/TopBar'; // varsa
+
 
 const schema = z.object({
-    title: z.string().min(1, { message: 'ui.jobs.jobTitleRequired' }),
+    title: z.string().min(1, { message: 'ui.EditJobScreen.jobTitleRequired' }),
     type: z.enum(['full-time', 'part-time', 'contract'], {
-        errorMap: () => ({ message: 'ui.jobs.jobTypeRequired' }),
+        errorMap: () => ({ message: 'ui.EditJobScreen.jobTypeRequired' }),
     }),
-    salary: z.coerce.number().gt(0, { message: 'ui.jobs.salaryRequired' }),
-    description: z.string().min(10, { message: 'ui.jobs.jobDescriptionRequired' }),
+    salary: z.coerce.number().gt(0, { message: 'ui.EditJobScreen.salaryRequired' }),
+    description: z.string().min(10, { message: 'ui.EditJobScreen.jobDescriptionRequired' }),
     requiredSkills: z.string().optional(),
     deadline: z.string().optional(),
-    notifyRadiusKm: z.coerce.number().min(1, { message: 'ui.jobs.notificationRadiusRequired' }).max(100, { message: 'ui.jobs.notificationRadiusMax' }),
-    employerId: z.string().min(1, { message: 'ui.jobs.employerId' }),
+    notifyRadiusKm: z.coerce.number().min(1, { message: 'ui.EditJobScreen.notificationRadiusRequired' }).max(100, { message: 'ui.EditJobScreen.notificationRadiusMax' }),
+    employerId: z.string().min(1, { message: 'ui.EditJobScreen.employerId' }),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -46,13 +48,11 @@ export default function EditJobScreen() {
     const route = useRoute<EditJobRouteProp>();
     const { user } = useAuth();
     const { jobId } = route.params;
-    const [menuVisible, setMenuVisible] = useState(false);
     const {
         control,
         handleSubmit,
         formState: { isSubmitting },
         setValue,
-        reset,
     } = useForm<FormValues>({
         resolver: zodResolver(schema),
         defaultValues: {
@@ -60,29 +60,25 @@ export default function EditJobScreen() {
         },
     });
 
-    const inputRefs = useRef<(TextInput | null)[]>([]);
-
-    const [items] = useState([
-        { label: t('jobType.FullTime'), value: 'full-time' },
-        { label: t('jobType.PartTime'), value: 'part-time' },
-        { label: t('jobType.Freelance'), value: 'contract' },
-    ]);
-
     useEffect(() => {
-
         if (user?.id) setValue('employerId', user.id);
         if (jobId) {
             HirovoAPI.Jobs.Detail.Request({ jobId })
                 .then(res => {
+                    const typeMap = {
+                        [HirovoAPI.Enums.HirovoJobType.FullTime]: 'full-time',
+                        [HirovoAPI.Enums.HirovoJobType.PartTime]: 'part-time',
+                        [HirovoAPI.Enums.HirovoJobType.Freelance]: 'contract',
+                    } as const;
+
                     setValue('title', res.title);
                     setValue('description', res.description);
                     setValue('salary', res.salary);
-                    const jobType = Object.entries(HirovoAPI.Enums.HirovoJobType).find(([_, v]) => v === res.type)?.[0]?.toLowerCase();
-                    setValue('type', jobType as any);
-                    setValue('notifyRadiusKm', 10); // varsayılan veya backend'den alınabilir
+                    setValue('type', typeMap[res.type]);
+                    setValue('notifyRadiusKm', res.notifyRadiusKm);
                 })
                 .catch(() => {
-                    Alert.alert(t('ui.error'), t('ui.jobs.loadError'));
+                    Alert.alert(t('ui.error'), t('ui.EditJobScreen.loadError'));
                 });
         }
     }, [user, jobId]);
@@ -108,33 +104,34 @@ export default function EditJobScreen() {
             };
 
             await HirovoAPI.Jobs.Update.Request(payload);
-            Alert.alert(t('ui.success'), t('ui.jobs.updatedSuccessfully'));
+            Alert.alert(t('ui.success'), t('ui.EditJobScreen.updatedSuccessfully'));
             navigation.goBack();
         } catch (err) {
-            Alert.alert(t('ui.error'), t('ui.jobs.updateError'));
+            Alert.alert(t('ui.error'), t('ui.EditJobScreen.updateError'));
         }
     };
 
     return (
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-            <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-                <Text style={styles.headerTitle}>{t('ui.jobs.editJobTitle')}</Text>
+            <TopBar title={t('ui.EditJobScreen.editJobTitle')} showBackButton />
 
-                <Text style={styles.label}>{t('ui.jobs.title')} *</Text>
+            <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+
+                <Text style={styles.label}>{t('ui.EditJobScreen.title')} *</Text>
                 <Controller
                     control={control}
                     name="title"
                     render={({ field: { onChange, value } }) => (
                         <TextInput
                             style={styles.input}
-                            placeholder={t('ui.jobs.titlePlaceholder')}
+                            placeholder={t('ui.EditJobScreen.titlePlaceholder')}
                             onChangeText={onChange}
                             value={value}
                         />
                     )}
                 />
 
-                <Text style={styles.label}>{t('ui.jobs.salary')} *</Text>
+                <Text style={styles.label}>{t('ui.EditJobScreen.salary')} *</Text>
                 <Controller
                     control={control}
                     name="salary"
@@ -149,14 +146,14 @@ export default function EditJobScreen() {
                     )}
                 />
 
-                <Text style={styles.label}>{t('ui.jobs.description')} *</Text>
+                <Text style={styles.label}>{t('ui.EditJobScreen.description')} *</Text>
                 <Controller
                     control={control}
                     name="description"
                     render={({ field: { onChange, value } }) => (
                         <TextInput
                             style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
-                            placeholder={t('ui.jobs.descriptionPlaceholder')}
+                            placeholder={t('ui.EditJobScreen.descriptionPlaceholder')}
                             multiline
                             onChangeText={onChange}
                             value={value}
@@ -164,41 +161,29 @@ export default function EditJobScreen() {
                     )}
                 />
 
-                <Text style={styles.label}>{t('ui.jobs.type')} *</Text>
+                <Text style={styles.label}>{t('ui.EditJobScreen.type')} *</Text>
                 <Controller
                     control={control}
                     name="type"
-                    render={({ field }) => (
-                        <View style={{ marginBottom: 16 }}>
-                            <Menu
-                                visible={menuVisible}
-                                onDismiss={() => setMenuVisible(false)}
-                                anchor={
-                                    <Button
-                                        mode="outlined"
-                                        onPress={() => setMenuVisible(true)}
-                                        contentStyle={{ justifyContent: 'flex-start' }}
-                                    >
-                                        {field.value ? items.find(i => i.value === field.value)?.label : t('ui.jobs.type')}
-                                    </Button>
-                                }
-                            >
-                                {items.map(item => (
-                                    <Menu.Item
-                                        key={item.value}
-                                        onPress={() => {
-                                            field.onChange(item.value);
-                                            setMenuVisible(false);
-                                        }}
-                                        title={item.label}
-                                    />
-                                ))}
-                            </Menu>
-                        </View>
+                    render={({ field: { value, onChange } }) => (
+                        <RadioButton.Group onValueChange={onChange} value={value}>
+                            <View style={styles.radioRow}>
+                                <RadioButton value="full-time" />
+                                <Text style={styles.radioLabel}>{t('jobType.FullTime')}</Text>
+                            </View>
+                            <View style={styles.radioRow}>
+                                <RadioButton value="part-time" />
+                                <Text style={styles.radioLabel}>{t('jobType.PartTime')}</Text>
+                            </View>
+                            <View style={styles.radioRow}>
+                                <RadioButton value="contract" />
+                                <Text style={styles.radioLabel}>{t('jobType.Freelance')}</Text>
+                            </View>
+                        </RadioButton.Group>
                     )}
                 />
 
-                <Text style={styles.label}>{t('ui.jobs.notifyRadiusKm')} *</Text>
+                <Text style={styles.label}>{t('ui.EditJobScreen.notifyRadiusKm')} *</Text>
                 <Controller
                     control={control}
                     name="notifyRadiusKm"
@@ -224,7 +209,7 @@ export default function EditJobScreen() {
                     {isSubmitting ? (
                         <ActivityIndicator color="#fff" />
                     ) : (
-                        <Text style={styles.buttonText}>{t('ui.jobs.updateJob')}</Text>
+                        <Text style={styles.buttonText}>{t('ui.EditJobScreen.updateJob')}</Text>
                     )}
                 </TouchableOpacity>
             </ScrollView>
@@ -237,12 +222,19 @@ const styles = StyleSheet.create({
         padding: 16,
         backgroundColor: '#f9f9f9',
     },
+    backButton: {
+        marginBottom: 10,
+    },
+    backButtonText: {
+        color: '#007bff',
+        fontSize: 16,
+    },
     headerTitle: {
         fontSize: 24,
         fontWeight: 'bold',
         color: '#111827',
         textAlign: 'center',
-        marginVertical: 16,
+        marginBottom: 16,
     },
     label: {
         fontSize: 14,
@@ -273,5 +265,14 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '500',
         color: '#007bff',
+    },
+    radioRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    radioLabel: {
+        fontSize: 14,
+        color: '#333',
     },
 });

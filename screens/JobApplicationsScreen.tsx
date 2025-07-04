@@ -7,6 +7,7 @@ import {
     StyleSheet,
     RefreshControl,
     TouchableOpacity,
+    Linking,
 } from 'react-native';
 import { HirovoAPI } from '@api/business_modules/hirovo';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import TopBar from 'components/TopBar';
 import { RootStackParamList } from '../navigation/RootNavigator';
+import { Feather } from '@expo/vector-icons';
 
 type JobApplication = HirovoAPI.JobApplications.All.IResponseModel;
 type JobApplicationsRouteProp = RouteProp<RootStackParamList, 'JobApplicationsScreen'>;
@@ -73,7 +75,6 @@ const JobApplicationsScreen = () => {
 
     const handleStatusChange = async (applicationId: string, newStatus: HirovoAPI.Enums.ApplicationStatus) => {
         try {
-            console.log(`Başvuru durumu güncelleniyor: ${applicationId} -> ${newStatus}`);
             await HirovoAPI.JobApplications.UpdateStatus.Request({
                 jobApplicationId: applicationId,
                 status: newStatus,
@@ -84,39 +85,67 @@ const JobApplicationsScreen = () => {
         }
     };
 
-    const renderItem = ({ item }: { item: JobApplication }) => (
-        <View style={styles.card}>
-            <Text style={styles.title}>
-                {item.displayName || t('ui.jobApplications.unknownUser')}
-            </Text>
-            <Text style={styles.sub}>
-                {item.phoneNumber || '-'} • {item.city}, {item.district}
-            </Text>
-            <Text style={styles.status}>
-                {t(`ui.jobApplications.applicationStatus.${HirovoAPI.Enums.ApplicationStatus[item.status]}`)}
-            </Text>
-            <Text style={styles.date}>
-                {t('ui.jobApplications.appliedAt')}: {new Date(item.appliedAt).toLocaleDateString()}
-            </Text>
+    const handleCall = (phoneNumber: string) => {
+        if (phoneNumber) {
+            Linking.openURL(`tel:${phoneNumber}`);
+        }
+    };
 
-            {item.status === HirovoAPI.Enums.ApplicationStatus.Pending && (
-                <View style={styles.buttonGroup}>
-                    <TouchableOpacity
-                        style={[styles.actionButton, { backgroundColor: '#10b981' }]}
-                        onPress={() => handleStatusChange(item.id, HirovoAPI.Enums.ApplicationStatus.Accepted)}
-                    >
-                        <Text style={styles.buttonText}>{t('common.confirm')}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.actionButton, { backgroundColor: '#ef4444' }]}
-                        onPress={() => handleStatusChange(item.id, HirovoAPI.Enums.ApplicationStatus.Rejected)}
-                    >
-                        <Text style={styles.buttonText}>{t('common.cancel')}</Text>
-                    </TouchableOpacity>
-                </View>
-            )}
-        </View>
-    );
+    const renderItem = ({ item }: { item: JobApplication }) => {
+        const isAccepted = item.status === HirovoAPI.Enums.ApplicationStatus.Accepted;
+        return (
+            <View style={styles.card}>
+                <Text style={styles.title}>
+                    {item.displayName || t('ui.jobApplications.unknownUser')}
+                </Text>
+
+                {isAccepted && (
+                    <View style={styles.phoneRow}>
+                        <Text style={styles.phoneText}>📞 {item.phoneNumber}</Text>
+                        <TouchableOpacity
+                            onPress={() => handleCall(item.phoneNumber)}
+                            style={styles.callButton}
+                        >
+                            <Feather name="phone" size={20} color="white" />
+                        </TouchableOpacity>
+                    </View>
+                )}
+
+                {!isAccepted && (
+                    <Text style={styles.hiddenText}>
+                        📞 {t('ui.jobApplications.hiddenPhone')}
+                    </Text>
+                )}
+
+                <Text style={styles.sub}>
+                    {item.city}, {item.district}
+                </Text>
+                <Text style={styles.status}>
+                    {t(`ui.jobApplications.applicationStatus.${HirovoAPI.Enums.ApplicationStatus[item.status]}`)}
+                </Text>
+                <Text style={styles.date}>
+                    {t('ui.jobApplications.appliedAt')}: {new Date(item.appliedAt).toLocaleDateString()}
+                </Text>
+
+                {item.status === HirovoAPI.Enums.ApplicationStatus.Pending && (
+                    <View style={styles.buttonGroup}>
+                        <TouchableOpacity
+                            style={[styles.actionButton, { backgroundColor: '#10b981' }]}
+                            onPress={() => handleStatusChange(item.id, HirovoAPI.Enums.ApplicationStatus.Accepted)}
+                        >
+                            <Text style={styles.buttonText}>{t('common.confirm')}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.actionButton, { backgroundColor: '#ef4444' }]}
+                            onPress={() => handleStatusChange(item.id, HirovoAPI.Enums.ApplicationStatus.Rejected)}
+                        >
+                            <Text style={styles.buttonText}>{t('common.cancel')}</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+            </View>
+        );
+    };
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: '#f9f9f9' }}>
@@ -164,6 +193,26 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
         color: '#1f2937',
+    },
+    phoneRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginTop: 8,
+    },
+    phoneText: {
+        fontSize: 14,
+        color: '#374151',
+    },
+    callButton: {
+        backgroundColor: '#10b981',
+        borderRadius: 9999,
+        padding: 8,
+    },
+    hiddenText: {
+        fontSize: 14,
+        color: '#9ca3af',
+        marginTop: 8,
     },
     sub: {
         fontSize: 13,

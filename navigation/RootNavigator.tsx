@@ -11,6 +11,7 @@ import ForgotPasswordScreen from 'screens/ForgotPasswordScreen';
 import ResetPasswordScreen from 'screens/ResetPasswordScreen';
 import JobApplicationsScreen from 'screens/JobApplicationsScreen';
 import EditJobScreen from 'screens/EditJobScreen';
+import ChangePasswordScreen from 'screens/ChangePasswordScreen';
 
 
 export type RootStackParamList = {

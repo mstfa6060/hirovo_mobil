@@ -44,10 +44,11 @@ export default function ApplicationsScreen() {
                     id: item.jobId,
                     title: item.title,
                     salary: item.salary,
-                    jobType: HirovoAPI.Enums.HirovoJobType[item.type],
+                    jobType: HirovoAPI.Enums.HirovoJobType[item.type] ?? 'Unknown',
                     status: item.applicationStatus,
                     appliedDate: format(new Date(item.appliedAt), 'MMM d, yyyy'),
                 }));
+
 
                 setApplications(mapped);
             } catch (error) {

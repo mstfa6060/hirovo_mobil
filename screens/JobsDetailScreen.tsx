@@ -90,28 +90,26 @@ export default function JobsDetailScreen() {
         }
     };
 
-
-
-
     const handleShare = async () => {
         try {
             if (!job) return;
 
-            const shareLink = `hirovo://jobs/${job.id}`;
+            const jobId = job.id;
+            const deepLink = `hirovo://jobs/${jobId}`;
+            const fallbackLink = `https://mstfa6060.github.io/hirovo-link/?jobId=${jobId}`;
+
             const shareMessage =
                 `${job.title} - ${job.employerDisplayName}\n\n` +
                 `${t('ui.jobs.description')}: ${job.description}\n` +
                 `${t('ui.jobs.salary')}: ${job.salary.toLocaleString()} ₺\n\n` +
-                `${t('ui.jobs.viewLink')}: ${shareLink}`;
+                `${t('ui.jobs.viewLink')}: ${fallbackLink}`;
 
-            // 📋 Linki kopyala (isteğe bağlı kullanıcıya kolaylık)
-            await Clipboard.setStringAsync(shareLink);
-            // Toast göster
+            await Clipboard.setStringAsync(fallbackLink);
             Toast.show('🔗 ' + t('ui.link.copied'), {
                 duration: Toast.durations.SHORT,
                 position: Toast.positions.BOTTOM,
             });
-            // 📤 Paylaşımı başlat
+
             await Share.share({
                 title: job.title,
                 message: shareMessage,
@@ -174,9 +172,24 @@ export default function JobsDetailScreen() {
                 <TouchableOpacity style={styles.iconButton} onPress={handleShare}>
                     <MaterialIcons name="share" size={24} color="#6b7280" />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.primaryButton} onPress={handleApply}>
-                    <Text style={styles.primaryButtonText}>{t('ui.jobs.applyNow')}</Text>
+                <TouchableOpacity
+                    style={[
+                        styles.primaryButton,
+                        user.id === job.employerId && { backgroundColor: '#d1d5db' }
+                    ]}
+                    onPress={handleApply}
+                    disabled={user.id === job.employerId}
+                >
+                    <Text style={[
+                        styles.primaryButtonText,
+                        user.id === job.employerId && { color: '#9ca3af' }
+                    ]}>
+                        {user.id === job.employerId
+                            ? t('ui.jobs.cannotApplyOwn') // örneğin: "Kendi ilanınıza başvuramazsınız"
+                            : t('ui.jobs.applyNow')}
+                    </Text>
                 </TouchableOpacity>
+
 
             </View>
         </SafeAreaView>

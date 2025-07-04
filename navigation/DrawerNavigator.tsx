@@ -6,12 +6,14 @@ import CreateJobScreen from '../screens/CreateJobScreen';
 import { useTranslation } from 'react-i18next';
 import CustomDrawerContent from '../components/CustomDrawerContent';
 import MyJobListScreen from 'screens/MyJobListScreen';
+import ChangePasswordScreen from 'screens/ChangePasswordScreen';
 
 export type DrawerParamList = {
     HomeTabs: undefined;
     ProfileEdit: undefined;
     CreateJob: undefined;
     MyJobList: undefined;
+    ChangePassword: undefined;
 };
 
 const Drawer = createDrawerNavigator<DrawerParamList>();
@@ -44,6 +46,12 @@ const DrawerNavigator = () => {
                 name="MyJobList"
                 component={MyJobListScreen}
                 options={{ title: t('ui.myjoblist') }}
+            />
+
+            <Drawer.Screen
+                name="ChangePassword"
+                component={ChangePasswordScreen}
+                options={{ title: t('ui.changepassword') }}
             />
 
         </Drawer.Navigator>
