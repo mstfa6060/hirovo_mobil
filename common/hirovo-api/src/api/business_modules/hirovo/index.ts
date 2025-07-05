@@ -510,6 +510,20 @@ export namespace HirovoAPI {
 
 	export namespace Skills {
 
+		export namespace Pick {
+			export const RequestPath = AppConfig.HirovoUrl + '/Skills/Pick';
+			export const Request = (data: IRequestModel) => ApiService.call<IResponseModel[]>(axios.post(RequestPath,{...data}));
+			export interface IRequestModel {
+				selectedIds: Guid[];
+				keyword: string;
+				limit: number;
+			}
+			export interface IResponseModel {
+				id: Guid;
+				title: string;
+			}
+		}
+
 		export namespace All {
 			export const RequestPath = AppConfig.HirovoUrl + '/Skills/All';
 			export const Request = (data: IRequestModel) => ApiService.call<IResponseModel[]>(axios.post(RequestPath,{...data}));
