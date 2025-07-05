@@ -10,7 +10,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
-    Keyboard
+    Keyboard,
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
@@ -79,15 +79,24 @@ export default function CreateJobScreen() {
                 'contract': HirovoAPI.Enums.HirovoJobType.Freelance,
             };
 
+            // Beceri adlarını backend'e göndererek ID'lerini al
+            const skillIds: string[] = [];
+            for (const skillName of data.requiredSkills) {
+                const res = await HirovoAPI.Skills.Create.Request({ name: skillName });
+                skillIds.push(res.id);
+            }
+
             const payload = {
-                ...data,
+                title: data.title,
+                description: data.description,
+                salary: data.salary,
                 type: jobTypeMap[data.type],
-                companyId: AppConfig.DefaultCompanyId,
                 employerId: user.id,
-                location: 'Auto',
                 latitude: 41.015137,
                 longitude: 28.97953,
-                requiredSkills: data.requiredSkills,
+                notifyRadiusKm: data.notifyRadiusKm,
+                companyId: AppConfig.DefaultCompanyId,
+                skillIds,
             };
 
             const response = await HirovoAPI.Jobs.Create.Request(payload);
@@ -148,10 +157,7 @@ export default function CreateJobScreen() {
                 style={{ flex: 1 }}
                 keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
             >
-                <ScrollView
-                    contentContainerStyle={styles.scrollContent}
-                    keyboardShouldPersistTaps="handled"
-                >
+                <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
                     {/* Title */}
                     <Text style={styles.label}>{t('ui.jobs.title')} *</Text>
                     <Controller
