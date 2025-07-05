@@ -517,6 +517,7 @@ export namespace HirovoAPI {
 				selectedIds: Guid[];
 				keyword: string;
 				limit: number;
+				languageCode: string;
 			}
 			export interface IResponseModel {
 				id: Guid;
@@ -528,6 +529,7 @@ export namespace HirovoAPI {
 			export const RequestPath = AppConfig.HirovoUrl + '/Skills/All';
 			export const Request = (data: IRequestModel) => ApiService.call<IResponseModel[]>(axios.post(RequestPath,{...data}));
 			export interface IRequestModel {
+				languageCode: string;
 				sorting: IXSorting;
 				filters: IXFilterItem[];
 				pageRequest: IXPageRequest;
@@ -562,7 +564,9 @@ export namespace HirovoAPI {
 			export const RequestPath = AppConfig.HirovoUrl + '/Skills/Create';
 			export const Request = (data: IRequestModel) => ApiService.call<IResponseModel>(axios.post(RequestPath,{...data}));
 			export interface IRequestModel {
-				name: string;
+				key: string;
+				languageCode: string;
+				translatedName: string;
 			}
 			export interface IResponseModel {
 				id: Guid;

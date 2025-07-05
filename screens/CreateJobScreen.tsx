@@ -11,6 +11,7 @@ import {
     Platform,
     ScrollView,
     Keyboard,
+    FlatList
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
@@ -33,11 +34,8 @@ const schema = z.object({
     description: z.string().min(10, { message: 'ui.jobs.jobDescriptionRequired' }),
     requiredSkills: z.array(z.string().min(1)).min(1, { message: 'ui.jobs.skillsRequired' }),
     deadline: z.string().optional(),
-    notifyRadiusKm: z.coerce
-        .number()
-        .min(1, { message: 'ui.jobs.notificationRadiusRequired' })
-        .max(100, { message: 'ui.jobs.notificationRadiusMax' }),
-    employerId: z.string().min(1, { message: 'ui.jobs.employerId' }),
+    notifyRadiusKm: z.coerce.number().min(1).max(100),
+    employerId: z.string().min(1),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -49,6 +47,7 @@ export default function CreateJobScreen() {
     const inputRefs = useRef<(TextInput | null)[]>([]);
     const skillInputRef = useRef<TextInput | null>(null);
     const [skillInput, setSkillInput] = useState('');
+    const [suggestions, setSuggestions] = useState<{ id: string; title: string }[]>([]);
 
     const {
         control,
@@ -71,6 +70,12 @@ export default function CreateJobScreen() {
         }
     }, [user]);
 
+    const fetchSuggestions = async (keyword: string) => {
+        if (!keyword.trim()) return setSuggestions([]);
+        const res = await HirovoAPI.Skills.Pick.Request({ keyword, selectedIds: [], limit: 5 });
+        setSuggestions(res);
+    };
+
     const onSubmit = async (data: FormValues) => {
         try {
             const jobTypeMap = {
@@ -79,7 +84,6 @@ export default function CreateJobScreen() {
                 'contract': HirovoAPI.Enums.HirovoJobType.Freelance,
             };
 
-            // Beceri adlarını backend'e göndererek ID'lerini al
             const skillIds: string[] = [];
             for (const skillName of data.requiredSkills) {
                 const res = await HirovoAPI.Skills.Create.Request({ name: skillName });
@@ -106,7 +110,7 @@ export default function CreateJobScreen() {
                 reset();
                 navigation.goBack();
             }
-        } catch (err) {
+        } catch {
             Alert.alert(t('ui.error'), t('ui.jobs.createError'));
         }
     };
@@ -139,11 +143,12 @@ export default function CreateJobScreen() {
 
     const handleAddSkill = (currentSkills: string[], onChange: (val: string[]) => void) => {
         const trimmed = skillInput.trim();
-        if (trimmed.length > 0 && !currentSkills.includes(trimmed)) {
+        if (trimmed && !currentSkills.includes(trimmed)) {
             onChange([...currentSkills, trimmed]);
             setSkillInput('');
+            setSuggestions([]);
             setTimeout(() => {
-                skillInputRef.current?.focus(); // input açık kalmaya devam etsin
+                skillInputRef.current?.focus();
             }, 10);
         }
     };
@@ -151,7 +156,6 @@ export default function CreateJobScreen() {
     return (
         <View style={{ flex: 1, backgroundColor: '#fff' }}>
             <TopBar title={t('ui.jobs.createJobTitle')} showBackButton />
-
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : undefined}
                 style={{ flex: 1 }}
@@ -222,7 +226,7 @@ export default function CreateJobScreen() {
                         render={({ field: { value, onChange } }) => (
                             <>
                                 <View style={styles.skillTagContainer}>
-                                    {value?.map((skill, idx) => (
+                                    {(value || []).map((skill, idx) => (
                                         <View key={idx} style={styles.skillTag}>
                                             <Text style={styles.skillText}>{skill}</Text>
                                             <TouchableOpacity onPress={() => {
@@ -240,10 +244,34 @@ export default function CreateJobScreen() {
                                     style={styles.input}
                                     placeholder={t('ui.jobs.addSkill')}
                                     value={skillInput}
-                                    onChangeText={setSkillInput}
+                                    onChangeText={(text) => {
+                                        setSkillInput(text);
+                                        fetchSuggestions(text);
+                                    }}
                                     onSubmitEditing={() => handleAddSkill(value, onChange)}
-                                    returnKeyType="done"
                                 />
+
+                                {suggestions.length > 0 && (
+                                    <View style={styles.suggestionList}>
+                                        {suggestions.map((item) => (
+                                            <TouchableOpacity
+                                                key={item.id}
+                                                style={styles.suggestion}
+                                                onPress={() => {
+                                                    if (!value.includes(item.title)) {
+                                                        onChange([...value, item.title]);
+                                                    }
+                                                    setSkillInput('');
+                                                    setSuggestions([]);
+                                                    setTimeout(() => skillInputRef.current?.focus(), 10);
+                                                }}
+                                            >
+                                                <Text>{item.title}</Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                )}
+
                             </>
                         )}
                     />
@@ -301,7 +329,6 @@ export default function CreateJobScreen() {
                 </ScrollView>
             </KeyboardAvoidingView>
 
-            {/* Submit Button */}
             <View style={styles.bottomButtonContainer}>
                 <TouchableOpacity
                     style={styles.button}
@@ -395,4 +422,18 @@ const styles = StyleSheet.create({
         color: '#1e3a8a',
         fontWeight: 'bold',
     },
+    suggestion: {
+        padding: 10,
+        backgroundColor: '#f1f5f9',
+        borderBottomWidth: 1,
+        borderColor: '#e5e7eb',
+    }, suggestionList: {
+        borderWidth: 1,
+        borderColor: '#d1d5db',
+        borderRadius: 6,
+        marginBottom: 10,
+        backgroundColor: 'white',
+        overflow: 'hidden',
+    },
+
 });

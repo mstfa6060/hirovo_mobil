@@ -3,6 +3,10 @@ export default {
     error: {
       SKILL_NAME_REQUIRED: "Skill adı gereklidir.",
       SKILL_NAME_ALREADY_EXISTS: "Skill adı zaten mevcut.",
+      SKILL_KEY_REQUIRED: "Skill anahtarı gereklidir.",
+      SKILL_KEY_ALREADY_EXISTS: "Skill anahtarı zaten mevcut.",
+      LANGUAGE_CODE_REQUIRED: "Dil kodu gereklidir.",
+      TRANSLATED_NAME_REQUIRED: "Çevrilmiş isim gereklidir.",
       PLAN_NOT_VALID: "Plan geçersiz.",
       PLAN_NOT_FOUND: "Plan bulunamadı.",
       PLAN_ALREADY_EXISTS: "Plan zaten mevcut.",
