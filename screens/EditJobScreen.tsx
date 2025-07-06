@@ -1,5 +1,3 @@
-// 📁 screens/EditJobScreen.tsx
-
 import React, { useEffect, useRef, useState } from 'react';
 import {
     View,
@@ -12,7 +10,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
-    Keyboard,
+    Keyboard
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
@@ -36,8 +34,9 @@ const schema = z.object({
     salary: z.coerce.number().gt(0, { message: 'ui.EditJobScreen.salaryRequired' }),
     description: z.string().min(10, { message: 'ui.EditJobScreen.jobDescriptionRequired' }),
     requiredSkills: z.array(z.string().min(1)).min(1, { message: 'ui.EditJobScreen.skillsRequired' }),
-    notifyRadiusKm: z.coerce.number().min(1).max(100),
-    employerId: z.string().min(1),
+    deadline: z.string().optional(),
+    notifyRadiusKm: z.coerce.number().min(1, { message: 'ui.EditJobScreen.notificationRadiusRequired' }).max(100, { message: 'ui.EditJobScreen.notificationRadiusMax' }),
+    employerId: z.string().min(1, { message: 'ui.EditJobScreen.employerId' }),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -50,7 +49,9 @@ export default function EditJobScreen() {
     const { user } = useAuth();
     const { jobId } = route.params;
     const [skillInput, setSkillInput] = useState('');
+    const [suggestions, setSuggestions] = useState<string[]>([]);
     const skillInputRef = useRef<TextInput | null>(null);
+    const scrollRef = useRef<ScrollView | null>(null);
 
     const {
         control,
@@ -67,10 +68,9 @@ export default function EditJobScreen() {
 
     useEffect(() => {
         if (user?.id) setValue('employerId', user.id);
-
         if (jobId) {
             HirovoAPI.Jobs.Detail.Request({ jobId })
-                .then((res) => {
+                .then(res => {
                     const typeMap = {
                         [HirovoAPI.Enums.HirovoJobType.FullTime]: 'full-time',
                         [HirovoAPI.Enums.HirovoJobType.PartTime]: 'part-time',
@@ -82,13 +82,30 @@ export default function EditJobScreen() {
                     setValue('salary', res.salary);
                     setValue('type', typeMap[res.type]);
                     setValue('notifyRadiusKm', res.notifyRadiusKm);
-                    // setValue('requiredSkills', res.requiredSkills); ❌ kaldırıldı, çünkü API'de yok
+                    setValue('requiredSkills', res.requiredSkills || []); // Adjusted to use correct property
                 })
                 .catch(() => {
                     Alert.alert(t('ui.error'), t('ui.EditJobScreen.loadError'));
                 });
         }
     }, [user, jobId]);
+
+    const fetchSuggestions = async (keyword: string) => {
+        if (!keyword.trim()) return setSuggestions([]);
+        try {
+            const res = await HirovoAPI.Skills.Pick.Request({
+                keyword,
+                selectedIds: [],
+                limit: 5,
+                languageCode: i18n.language,
+            });
+            console.log('API Response:', res); // Log the API response for debugging
+            setSuggestions(res.map(skill => skill.title)); // Map response to skill titles
+        } catch (error) {
+            console.error('Error fetching suggestions:', error); // Log any errors
+            Alert.alert(t('ui.error'), t('ui.EditJobScreen.fetchSuggestionsError'));
+        }
+    };
 
     const onUpdate = async (data: FormValues) => {
         try {
@@ -97,17 +114,6 @@ export default function EditJobScreen() {
                 'part-time': HirovoAPI.Enums.HirovoJobType.PartTime,
                 'contract': HirovoAPI.Enums.HirovoJobType.Freelance,
             };
-
-            // Skill isimlerinden skillId üret
-            const skillIds: string[] = [];
-            for (const skillName of data.requiredSkills) {
-                const res = await HirovoAPI.Skills.Create.Request({
-                    key: skillName.toLowerCase().replace(/\s+/g, '-'),
-                    translatedName: skillName,
-                    languageCode: i18n.language,
-                });
-                skillIds.push(res.id);
-            }
 
             const payload = {
                 jobId,
@@ -119,7 +125,7 @@ export default function EditJobScreen() {
                 latitude: 41.015137,
                 longitude: 28.97953,
                 notifyRadiusKm: data.notifyRadiusKm,
-                skillIds,
+                requiredSkills: data.requiredSkills,
             };
 
             await HirovoAPI.Jobs.Update.Request(payload);
@@ -133,10 +139,52 @@ export default function EditJobScreen() {
     return (
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
             <TopBar title={t('ui.EditJobScreen.editJobTitle')} showBackButton />
-            <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-                {/* Diğer alanlar aynı kalıyor */}
 
-                {/* Required Skills */}
+            <ScrollView ref={scrollRef} contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+                <Text style={styles.label}>{t('ui.EditJobScreen.title')} *</Text>
+                <Controller
+                    control={control}
+                    name="title"
+                    render={({ field: { onChange, value } }) => (
+                        <TextInput
+                            style={styles.input}
+                            placeholder={t('ui.EditJobScreen.titlePlaceholder')}
+                            onChangeText={onChange}
+                            value={value}
+                        />
+                    )}
+                />
+
+                <Text style={styles.label}>{t('ui.EditJobScreen.salary')} *</Text>
+                <Controller
+                    control={control}
+                    name="salary"
+                    render={({ field: { onChange, value } }) => (
+                        <TextInput
+                            style={styles.input}
+                            placeholder="75000"
+                            keyboardType="numeric"
+                            onChangeText={text => onChange(parseFloat(text))}
+                            value={value ? value.toString() : ''}
+                        />
+                    )}
+                />
+
+                <Text style={styles.label}>{t('ui.EditJobScreen.description')} *</Text>
+                <Controller
+                    control={control}
+                    name="description"
+                    render={({ field: { onChange, value } }) => (
+                        <TextInput
+                            style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
+                            placeholder={t('ui.EditJobScreen.descriptionPlaceholder')}
+                            multiline
+                            onChangeText={onChange}
+                            value={value}
+                        />
+                    )}
+                />
+
                 <Text style={styles.label}>{t('ui.EditJobScreen.requiredSkills')} *</Text>
                 <Controller
                     control={control}
@@ -147,10 +195,12 @@ export default function EditJobScreen() {
                                 {value?.map((skill, idx) => (
                                     <View key={idx} style={styles.skillTag}>
                                         <Text style={styles.skillText}>{skill}</Text>
-                                        <TouchableOpacity onPress={() => {
-                                            const updated = value.filter((_, i) => i !== idx);
-                                            onChange(updated);
-                                        }}>
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                const updated = value.filter((_, i) => i !== idx);
+                                                onChange(updated);
+                                            }}
+                                        >
                                             <Text style={styles.removeSkill}>×</Text>
                                         </TouchableOpacity>
                                     </View>
@@ -162,7 +212,23 @@ export default function EditJobScreen() {
                                 style={styles.input}
                                 placeholder={t('ui.EditJobScreen.addSkill')}
                                 value={skillInput}
-                                onChangeText={setSkillInput}
+                                onChangeText={(text) => {
+                                    setSkillInput(text);
+                                    fetchSuggestions(text);
+                                }}
+                                onFocus={() => {
+                                    if (skillInputRef.current) {
+                                        skillInputRef.current.measureLayout(
+                                            scrollRef.current as any,
+                                            (x, y) => {
+                                                scrollRef.current?.scrollTo({ x: 0, y: y - 20, animated: true });
+                                            },
+                                            () => {
+                                                console.warn('Measure layout error occurred');
+                                            }
+                                        );
+                                    }
+                                }}
                                 onSubmitEditing={() => {
                                     const trimmed = skillInput.trim();
                                     if (trimmed.length > 0 && !value.includes(trimmed)) {
@@ -175,12 +241,72 @@ export default function EditJobScreen() {
                                 }}
                                 returnKeyType="done"
                             />
+
+                            {suggestions.length > 0 && (
+                                <View style={styles.suggestionsContainer}>
+                                    {suggestions.map((suggestion, idx) => (
+                                        <TouchableOpacity
+                                            key={idx}
+                                            style={styles.suggestion}
+                                            onPress={() => {
+                                                onChange([...value, suggestion]);
+                                                setSkillInput('');
+                                            }}
+                                        >
+                                            <Text style={styles.suggestionText}>{suggestion}</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            )}
                         </>
                     )}
                 />
                 {errors.requiredSkills && <Text style={styles.error}>{t(errors.requiredSkills.message || '')}</Text>}
 
-                {/* Submit */}
+                <Text style={styles.label}>{t('ui.EditJobScreen.type')} *</Text>
+                <Controller
+                    control={control}
+                    name="type"
+                    render={({ field: { value, onChange } }) => (
+                        <RadioButton.Group onValueChange={onChange} value={value}>
+                            <View style={styles.radioRow}>
+                                <RadioButton value="full-time" />
+                                <Text style={styles.radioLabel}>{t('jobType.FullTime')}</Text>
+                            </View>
+                            <View style={styles.radioRow}>
+                                <RadioButton value="part-time" />
+                                <Text style={styles.radioLabel}>{t('jobType.PartTime')}</Text>
+                            </View>
+                            <View style={styles.radioRow}>
+                                <RadioButton value="contract" />
+                                <Text style={styles.radioLabel}>{t('jobType.Freelance')}</Text>
+                            </View>
+                        </RadioButton.Group>
+                    )}
+                />
+
+                <Text style={styles.label}>{t('ui.EditJobScreen.notifyRadiusKm')} *</Text>
+                <Controller
+                    control={control}
+                    name="notifyRadiusKm"
+                    render={({ field: { value, onChange } }) => (
+                        <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                            <Slider
+                                style={{ width: '100%', height: 40 }}
+                                minimumValue={1}
+                                maximumValue={100}
+                                step={1}
+                                minimumTrackTintColor="#007bff"
+                                maximumTrackTintColor="#d3d3d3"
+                                thumbTintColor="#007bff"
+                                value={value}
+                                onValueChange={onChange}
+                            />
+                            <Text style={styles.radiusValue}>{value} km</Text>
+                        </View>
+                    )}
+                />
+
                 <TouchableOpacity style={styles.button} onPress={handleSubmit(onUpdate)} disabled={isSubmitting}>
                     {isSubmitting ? (
                         <ActivityIndicator color="#fff" />
@@ -194,8 +320,15 @@ export default function EditJobScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { padding: 16, backgroundColor: '#f9f9f9' },
-    label: { fontSize: 14, color: '#333', marginBottom: 6 },
+    container: {
+        padding: 16,
+        backgroundColor: '#f9f9f9',
+    },
+    label: {
+        fontSize: 14,
+        color: '#333',
+        marginBottom: 6,
+    },
     input: {
         backgroundColor: 'white',
         borderWidth: 1,
@@ -216,6 +349,20 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 16,
     },
+    radiusValue: {
+        fontSize: 16,
+        fontWeight: '500',
+        color: '#007bff',
+    },
+    radioRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    radioLabel: {
+        fontSize: 14,
+        color: '#333',
+    },
     skillTagContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -231,7 +378,37 @@ const styles = StyleSheet.create({
         marginRight: 8,
         marginBottom: 8,
     },
-    skillText: { fontSize: 13, color: '#1e40af' },
-    removeSkill: { marginLeft: 6, color: '#1e3a8a', fontWeight: 'bold' },
-    error: { color: 'red', marginBottom: 8, marginTop: -8 },
+    skillText: {
+        fontSize: 13,
+        color: '#1e40af',
+    },
+    removeSkill: {
+        marginLeft: 6,
+        color: '#1e3a8a',
+        fontWeight: 'bold',
+    },
+    error: {
+        color: 'red',
+        marginBottom: 8,
+        marginTop: -8,
+    },
+    suggestionsContainer: {
+        backgroundColor: 'white',
+        borderWidth: 1,
+        borderColor: '#d1d5db',
+        borderRadius: 8,
+        marginTop: 8,
+        maxHeight: 200,
+        overflow: 'hidden',
+        zIndex: 1000,
+    },
+    suggestion: {
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f1f1f1',
+    },
+    suggestionText: {
+        fontSize: 14,
+        color: '#333',
+    },
 });
