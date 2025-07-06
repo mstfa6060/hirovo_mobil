@@ -22,6 +22,7 @@ import { jwtDecode } from 'jwt-decode';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppConfig } from '@config/hirovo-config';
 import * as Device from 'expo-device';
+import i18n from '@config/i18n';
 
 type Job = HirovoAPI.Jobs.All.IResponseModel;
 
@@ -36,6 +37,7 @@ export default function JobsAllScreen() {
   const fetchJobs = async () => {
     try {
       const response = await HirovoAPI.Jobs.All.Request({
+        languageCode: i18n.language,
         sorting: {
           key: 'createdAt',
           direction: HirovoAPI.Enums.XSortingDirection.Descending,

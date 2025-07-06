@@ -69,7 +69,7 @@ export default function EditJobScreen() {
     useEffect(() => {
         if (user?.id) setValue('employerId', user.id);
         if (jobId) {
-            HirovoAPI.Jobs.Detail.Request({ jobId })
+            HirovoAPI.Jobs.Detail.Request({ jobId, languageCode: i18n.language })
                 .then(res => {
                     const typeMap = {
                         [HirovoAPI.Enums.HirovoJobType.FullTime]: 'full-time',
@@ -82,7 +82,7 @@ export default function EditJobScreen() {
                     setValue('salary', res.salary);
                     setValue('type', typeMap[res.type]);
                     setValue('notifyRadiusKm', res.notifyRadiusKm);
-                    setValue('requiredSkills', res.requiredSkills || []); // Adjusted to use correct property
+                    setValue('requiredSkills', res.skills.map(skill => skill.name) || []); // Adjusted to use correct property
                 })
                 .catch(() => {
                     Alert.alert(t('ui.error'), t('ui.EditJobScreen.loadError'));
@@ -104,6 +104,45 @@ export default function EditJobScreen() {
         } catch (error) {
             console.error('Error fetching suggestions:', error); // Log any errors
             Alert.alert(t('ui.error'), t('ui.EditJobScreen.fetchSuggestionsError'));
+        }
+    };
+
+    const handleAddSkill = async (currentSkills: string[], onChange: (val: string[]) => void) => {
+        const trimmed = skillInput.trim();
+        if (!trimmed || currentSkills.includes(trimmed)) return;
+
+        try {
+            const existing = await HirovoAPI.Skills.Pick.Request({
+                keyword: trimmed,
+                selectedIds: [],
+                limit: 1,
+                languageCode: i18n.language,
+            });
+
+            if (existing.length > 0) {
+                onChange([...currentSkills, existing[0].title]);
+            } else {
+                const created = await HirovoAPI.Skills.Create.Request({
+                    key: trimmed.toLowerCase().replace(/\s+/g, '-'),
+                    translatedName: trimmed,
+                    languageCode: i18n.language,
+                });
+
+                if (created?.id) {
+                    onChange([...currentSkills, trimmed]);
+                } else {
+                    Alert.alert(t('ui.error'), t('ui.EditJobScreen.skillCreateError'));
+                }
+            }
+
+            setSkillInput('');
+            setSuggestions([]);
+            setTimeout(() => {
+                skillInputRef.current?.focus();
+            }, 10);
+        } catch (error) {
+            console.error('Error adding skill:', error);
+            Alert.alert(t('ui.error'), t('ui.EditJobScreen.skillAddError'));
         }
     };
 
@@ -229,16 +268,7 @@ export default function EditJobScreen() {
                                         );
                                     }
                                 }}
-                                onSubmitEditing={() => {
-                                    const trimmed = skillInput.trim();
-                                    if (trimmed.length > 0 && !value.includes(trimmed)) {
-                                        onChange([...value, trimmed]);
-                                        setSkillInput('');
-                                        setTimeout(() => {
-                                            skillInputRef.current?.focus();
-                                        }, 10);
-                                    }
-                                }}
+                                onSubmitEditing={() => handleAddSkill(value, onChange)}
                                 returnKeyType="done"
                             />
 

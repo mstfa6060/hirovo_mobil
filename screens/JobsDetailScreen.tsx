@@ -23,6 +23,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AppConfig } from '@config/hirovo-config';
 import Toast from 'react-native-root-toast';
 import * as Clipboard from 'expo-clipboard';
+import i18n from '@config/i18n';
 
 
 type JobsDetailRouteProp = RouteProp<RootStackParamList, 'JobsDetail'>;
@@ -39,7 +40,7 @@ export default function JobsDetailScreen() {
     useEffect(() => {
         const fetchJobDetail = async () => {
             try {
-                const response = await HirovoAPI.Jobs.Detail.Request({ jobId: id });
+                const response = await HirovoAPI.Jobs.Detail.Request({ jobId: id, languageCode: i18n.language });
                 setJob(response);
             } catch (err) {
                 console.error(err);

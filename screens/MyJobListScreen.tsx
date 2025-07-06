@@ -16,6 +16,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from 'navigation/RootNavigator';
 import TopBar from 'components/TopBar';
+import i18n from '@config/i18n';
 
 type Job = HirovoAPI.Jobs.All.IResponseModel;
 
@@ -34,6 +35,7 @@ const MyJobListScreen = () => {
         try {
             setLoading(true);
             const response = await HirovoAPI.Jobs.All.Request({
+                languageCode: i18n.language,
                 sorting: {
                     key: 'createdAt',
                     direction: HirovoAPI.Enums.XSortingDirection.Descending,

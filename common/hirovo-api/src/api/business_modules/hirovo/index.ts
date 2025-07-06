@@ -730,6 +730,7 @@ export namespace HirovoAPI {
 				latitude: Double;
 				longitude: Double;
 				notifyRadiusKm: Double;
+				skillIds: Guid[];
 			}
 			export interface IResponseModel {
 				id: Guid;
