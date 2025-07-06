@@ -137,6 +137,7 @@ export const uiTr = {
         viewLink: 'İlan bağlantısı',
         cannotApplyOwn: "Kendi ilanınıza başvuramazsınız.",
         addSkill: "Beceri Ekle",
+        skillsRequired: "Gerekli Beceriler",
       },
       profile: {
         title: "Profil Düzenle",

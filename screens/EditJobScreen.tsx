@@ -26,6 +26,7 @@ import Slider from '@react-native-community/slider';
 import { RadioButton } from 'react-native-paper';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import TopBar from 'components/TopBar';
+import i18n from '@config/i18n';
 
 const schema = z.object({
     title: z.string().min(1, { message: 'ui.EditJobScreen.jobTitleRequired' }),
@@ -100,7 +101,11 @@ export default function EditJobScreen() {
             // Skill isimlerinden skillId üret
             const skillIds: string[] = [];
             for (const skillName of data.requiredSkills) {
-                const res = await HirovoAPI.Skills.Create.Request({ name: skillName });
+                const res = await HirovoAPI.Skills.Create.Request({
+                    key: skillName.toLowerCase().replace(/\s+/g, '-'),
+                    translatedName: skillName,
+                    languageCode: i18n.language,
+                });
                 skillIds.push(res.id);
             }
 

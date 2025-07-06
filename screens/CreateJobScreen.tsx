@@ -11,7 +11,6 @@ import {
     Platform,
     ScrollView,
     Keyboard,
-    FlatList
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
@@ -24,6 +23,7 @@ import { AppConfig } from '@config/hirovo-config';
 import Slider from '@react-native-community/slider';
 import { RadioButton } from 'react-native-paper';
 import TopBar from '../components/TopBar';
+import i18n from '@config/i18n';
 
 const schema = z.object({
     title: z.string().min(1, { message: 'ui.jobs.jobTitleRequired' }),
@@ -48,12 +48,14 @@ export default function CreateJobScreen() {
     const skillInputRef = useRef<TextInput | null>(null);
     const [skillInput, setSkillInput] = useState('');
     const [suggestions, setSuggestions] = useState<{ id: string; title: string }[]>([]);
+    const scrollRef = useRef<ScrollView | null>(null);
 
     const {
         control,
         handleSubmit,
         formState: { isSubmitting, errors },
         setValue,
+        getValues,
         setFocus,
         reset,
     } = useForm<FormValues>({
@@ -72,11 +74,38 @@ export default function CreateJobScreen() {
 
     const fetchSuggestions = async (keyword: string) => {
         if (!keyword.trim()) return setSuggestions([]);
-        const res = await HirovoAPI.Skills.Pick.Request({ keyword, selectedIds: [], limit: 5 });
+        const res = await HirovoAPI.Skills.Pick.Request({
+            keyword,
+            selectedIds: [],
+            limit: 5,
+            languageCode: i18n.language,
+        });
         setSuggestions(res);
     };
 
+    const handleAddSkill = (currentSkills: string[], onChange: (val: string[]) => void) => {
+        const trimmed = skillInput.trim();
+        if (!trimmed || currentSkills.includes(trimmed)) return;
+
+        onChange([...currentSkills, trimmed]);
+        setSkillInput('');
+        setSuggestions([]);
+        setTimeout(() => {
+            skillInputRef.current?.focus();
+        }, 10);
+    };
+
     const onSubmit = async (data: FormValues) => {
+        data.requiredSkills = data.requiredSkills.map(s => s.trim()).filter(s => s.length > 0);
+
+        const trimmed = skillInput.trim();
+        if (trimmed && !data.requiredSkills.includes(trimmed)) {
+            data.requiredSkills.push(trimmed);
+            setSkillInput('');
+        }
+
+        console.log('🧪 Submitted data:', JSON.stringify(data, null, 2));
+
         try {
             const jobTypeMap = {
                 'full-time': HirovoAPI.Enums.HirovoJobType.FullTime,
@@ -85,10 +114,38 @@ export default function CreateJobScreen() {
             };
 
             const skillIds: string[] = [];
+
             for (const skillName of data.requiredSkills) {
-                const res = await HirovoAPI.Skills.Create.Request({ name: skillName });
-                skillIds.push(res.id);
+                const trimmedName = skillName.trim();
+                const key = trimmedName.toLowerCase().replace(/\s+/g, '-');
+
+                // Önce pick et
+                const existing = await HirovoAPI.Skills.Pick.Request({
+                    keyword: trimmedName,
+                    selectedIds: [],
+                    limit: 1,
+                    languageCode: i18n.language,
+                });
+
+                if (existing.length > 0) {
+                    skillIds.push(existing[0].id); // zaten varsa kullan
+                } else {
+                    // yoksa oluştur
+                    const created = await HirovoAPI.Skills.Create.Request({
+                        key,
+                        translatedName: trimmedName,
+                        languageCode: i18n.language,
+                    });
+
+                    if (!created?.id) {
+                        Alert.alert('Hata', `Skill "${trimmedName}" kaydedilemedi.`);
+                        return;
+                    }
+
+                    skillIds.push(created.id);
+                }
             }
+
 
             const payload = {
                 title: data.title,
@@ -103,6 +160,8 @@ export default function CreateJobScreen() {
                 skillIds,
             };
 
+            console.log('📦 Job payload:', payload);
+
             const response = await HirovoAPI.Jobs.Create.Request(payload);
 
             if ('jobId' in response || 'id' in response) {
@@ -110,7 +169,8 @@ export default function CreateJobScreen() {
                 reset();
                 navigation.goBack();
             }
-        } catch {
+        } catch (e) {
+            console.error('❌ Job create error:', e);
             Alert.alert(t('ui.error'), t('ui.jobs.createError'));
         }
     };
@@ -141,18 +201,6 @@ export default function CreateJobScreen() {
         }
     };
 
-    const handleAddSkill = (currentSkills: string[], onChange: (val: string[]) => void) => {
-        const trimmed = skillInput.trim();
-        if (trimmed && !currentSkills.includes(trimmed)) {
-            onChange([...currentSkills, trimmed]);
-            setSkillInput('');
-            setSuggestions([]);
-            setTimeout(() => {
-                skillInputRef.current?.focus();
-            }, 10);
-        }
-    };
-
     return (
         <View style={{ flex: 1, backgroundColor: '#fff' }}>
             <TopBar title={t('ui.jobs.createJobTitle')} showBackButton />
@@ -161,7 +209,16 @@ export default function CreateJobScreen() {
                 style={{ flex: 1 }}
                 keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
             >
-                <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+                <ScrollView
+                    ref={scrollRef}
+                    style={{ flex: 1 }}
+                    contentContainerStyle={{
+                        padding: 16,
+                        paddingBottom: 80, // buton yüksekliği kadar alan bırak
+                    }}
+                    keyboardShouldPersistTaps="always"
+                    nestedScrollEnabled
+                >
                     {/* Title */}
                     <Text style={styles.label}>{t('ui.jobs.title')} *</Text>
                     <Controller
@@ -218,6 +275,7 @@ export default function CreateJobScreen() {
                     />
                     {errors.description && <Text style={styles.error}>{t(errors.description.message || '')}</Text>}
 
+
                     {/* Required Skills */}
                     <Text style={styles.label}>{t('ui.jobs.requiredSkills')} *</Text>
                     <Controller
@@ -225,59 +283,85 @@ export default function CreateJobScreen() {
                         name="requiredSkills"
                         render={({ field: { value, onChange } }) => (
                             <>
+                                {/* Mevcut skill tag'ları */}
                                 <View style={styles.skillTagContainer}>
                                     {(value || []).map((skill, idx) => (
                                         <View key={idx} style={styles.skillTag}>
                                             <Text style={styles.skillText}>{skill}</Text>
-                                            <TouchableOpacity onPress={() => {
-                                                const updated = value.filter((_, i) => i !== idx);
-                                                onChange(updated);
-                                            }}>
+                                            <TouchableOpacity onPress={() => onChange(value.filter((_, i) => i !== idx))}>
                                                 <Text style={styles.removeSkill}>×</Text>
                                             </TouchableOpacity>
                                         </View>
                                     ))}
                                 </View>
 
-                                <TextInput
-                                    ref={skillInputRef}
-                                    style={styles.input}
-                                    placeholder={t('ui.jobs.addSkill')}
-                                    value={skillInput}
-                                    onChangeText={(text) => {
-                                        setSkillInput(text);
-                                        fetchSuggestions(text);
-                                    }}
-                                    onSubmitEditing={() => handleAddSkill(value, onChange)}
-                                />
-
-                                {suggestions.length > 0 && (
-                                    <View style={styles.suggestionList}>
-                                        {suggestions.map((item) => (
-                                            <TouchableOpacity
-                                                key={item.id}
-                                                style={styles.suggestion}
-                                                onPress={() => {
-                                                    if (!value.includes(item.title)) {
-                                                        onChange([...value, item.title]);
+                                {/* Skill yazma inputu */}
+                                <View style={{ marginBottom: 16 }}>
+                                    <TextInput
+                                        ref={skillInputRef}
+                                        style={styles.input}
+                                        placeholder={t('ui.jobs.addSkill')}
+                                        value={skillInput}
+                                        onChangeText={(text) => {
+                                            setSkillInput(text);
+                                            fetchSuggestions(text);
+                                        }}
+                                        onFocus={() => {
+                                            if (scrollRef.current && skillInputRef.current) {
+                                                skillInputRef.current.measureLayout(
+                                                    scrollRef.current as any,
+                                                    (x, y) => {
+                                                        scrollRef.current?.scrollTo({ x: 0, y: y - 20, animated: true });
+                                                    },
+                                                    () => {
+                                                        console.warn('Measure layout error occurred');
                                                     }
-                                                    setSkillInput('');
-                                                    setSuggestions([]);
-                                                    setTimeout(() => skillInputRef.current?.focus(), 10);
-                                                }}
-                                            >
-                                                <Text>{item.title}</Text>
-                                            </TouchableOpacity>
-                                        ))}
-                                    </View>
-                                )}
+                                                );
+                                            }
+                                        }}
+                                        onSubmitEditing={() => {
+                                            const trimmed = skillInput.trim();
+                                            if (trimmed && !value.includes(trimmed)) {
+                                                handleAddSkill(value, onChange);
+                                            }
+                                        }}
+                                    />
 
+                                    {/* Öneri kutusu input’un hemen altında sabit */}
+                                    {suggestions.length > 0 && (
+                                        <View style={styles.suggestionBoxFixed}>
+                                            <ScrollView
+                                                keyboardShouldPersistTaps="handled"
+                                                nestedScrollEnabled
+                                                style={{ maxHeight: 150 }}
+                                            >
+                                                {suggestions.map((item) => (
+                                                    <TouchableOpacity
+                                                        key={item.id}
+                                                        style={styles.suggestionItem}
+                                                        onPress={() => {
+                                                            if (!value.includes(item.title)) {
+                                                                onChange([...value, item.title]);
+                                                                setSkillInput('');
+                                                                setSuggestions([]);
+                                                            }
+                                                            setTimeout(() => skillInputRef.current?.focus(), 10);
+                                                        }}
+                                                    >
+                                                        <Text style={styles.suggestionText}>{item.title}</Text>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </ScrollView>
+                                        </View>
+                                    )}
+                                </View>
                             </>
                         )}
                     />
                     {errors.requiredSkills && <Text style={styles.error}>{t(errors.requiredSkills.message || '')}</Text>}
 
-                    {/* Type */}
+
+                    {/* Job Type */}
                     <Text style={styles.label}>{t('ui.jobs.type')} *</Text>
                     <Controller
                         control={control}
@@ -327,33 +411,44 @@ export default function CreateJobScreen() {
 
                     <View style={{ height: 80 }} />
                 </ScrollView>
+                <View style={{ marginTop: 24 }}>
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={() => {
+                            const values = getValues();
+                            const trimmed = skillInput.trim();
+                            if (trimmed && !values.requiredSkills.includes(trimmed)) {
+                                const updated = [...values.requiredSkills, trimmed];
+                                setValue('requiredSkills', updated, { shouldValidate: true });
+                                setSkillInput('');
+                                setSuggestions([]);
+                                setTimeout(() => {
+                                    handleSubmit(onSubmit, onInvalid)();
+                                }, 0);
+                            } else {
+                                handleSubmit(onSubmit, onInvalid)();
+                            }
+                        }}
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? (
+                            <ActivityIndicator color="#fff" />
+                        ) : (
+                            <Text style={styles.buttonText}>{t('ui.jobs.submitJob')}</Text>
+                        )}
+                    </TouchableOpacity>
+                </View>
+
             </KeyboardAvoidingView>
 
-            <View style={styles.bottomButtonContainer}>
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={handleSubmit(onSubmit, onInvalid)}
-                    disabled={isSubmitting}
-                >
-                    {isSubmitting
-                        ? <ActivityIndicator color="#fff" />
-                        : <Text style={styles.buttonText}>{t('ui.jobs.submitJob')}</Text>}
-                </TouchableOpacity>
-            </View>
+
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    scrollContent: {
-        padding: 16,
-        backgroundColor: '#f9f9f9',
-    },
-    label: {
-        fontSize: 14,
-        color: '#333',
-        marginBottom: 6,
-    },
+    scrollContent: { padding: 16, backgroundColor: '#f9f9f9' },
+    label: { fontSize: 14, color: '#333', marginBottom: 6 },
     input: {
         backgroundColor: 'white',
         borderWidth: 1,
@@ -362,47 +457,23 @@ const styles = StyleSheet.create({
         padding: 10,
         marginBottom: 12,
     },
-    error: {
-        color: 'red',
-        marginBottom: 8,
-        marginTop: -8,
-    },
+    error: { color: 'red', marginBottom: 8, marginTop: -8 },
     button: {
         backgroundColor: '#007bff',
         padding: 14,
         borderRadius: 9999,
         alignItems: 'center',
     },
-    buttonText: {
-        color: 'white',
-        fontWeight: 'bold',
-        fontSize: 16,
-    },
-    radiusValue: {
-        fontSize: 16,
-        fontWeight: '500',
-        color: '#007bff',
-    },
+    buttonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
     bottomButtonContainer: {
         padding: 16,
         backgroundColor: '#fff',
         borderTopWidth: 1,
         borderColor: '#e5e7eb',
     },
-    radioRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    radioLabel: {
-        fontSize: 14,
-        color: '#333',
-    },
-    skillTagContainer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        marginBottom: 8,
-    },
+    radioRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+    radioLabel: { fontSize: 14, color: '#333' },
+    skillTagContainer: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 8 },
     skillTag: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -413,21 +484,10 @@ const styles = StyleSheet.create({
         marginRight: 8,
         marginBottom: 8,
     },
-    skillText: {
-        fontSize: 13,
-        color: '#1e40af',
-    },
-    removeSkill: {
-        marginLeft: 6,
-        color: '#1e3a8a',
-        fontWeight: 'bold',
-    },
-    suggestion: {
-        padding: 10,
-        backgroundColor: '#f1f5f9',
-        borderBottomWidth: 1,
-        borderColor: '#e5e7eb',
-    }, suggestionList: {
+    skillText: { fontSize: 13, color: '#1e40af' },
+    removeSkill: { marginLeft: 6, color: '#1e3a8a', fontWeight: 'bold' },
+    radiusValue: { fontSize: 16, fontWeight: '500', color: '#007bff' },
+    suggestionList: {
         borderWidth: 1,
         borderColor: '#d1d5db',
         borderRadius: 6,
@@ -435,5 +495,62 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         overflow: 'hidden',
     },
+    absoluteSuggestionBox: {
+        position: 'absolute',
+        top: '100%',
+        left: 0,
+        right: 0,
+        zIndex: 999,
+        backgroundColor: 'white',
+        borderWidth: 1,
+        borderColor: '#d1d5db',
+        borderRadius: 6,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    suggestion: {
+        padding: 10,
+        borderBottomWidth: 1,
+        borderColor: '#eee',
+    },
+    suggestionBox: {
+        position: 'absolute',
+        top: 58, // Input'un altında olsun (input yüksekliği + margin)
+        left: 0,
+        right: 0,
+        backgroundColor: '#fff',
+        borderColor: '#ddd',
+        borderWidth: 1,
+        borderRadius: 6,
+        maxHeight: 150,
+        zIndex: 100,
+        elevation: 10,
+    },
+
+    suggestionItem: {
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        borderBottomWidth: 1,
+        borderColor: '#f1f1f1',
+    },
+
+    suggestionText: {
+        fontSize: 14,
+        color: '#333',
+    },
+    suggestionBoxFixed: {
+        marginTop: -8,
+        borderColor: '#ddd',
+        borderWidth: 1,
+        borderRadius: 6,
+        backgroundColor: '#fff',
+        zIndex: 10,
+        elevation: 5,
+    }
+
+
 
 });
