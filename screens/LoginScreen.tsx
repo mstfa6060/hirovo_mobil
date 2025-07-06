@@ -29,6 +29,7 @@ import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { LanguageSelectorDropdown } from '../components/LanguageSelector';
 
+
 const schema = z.object({
   username: z.string().min(3, 'Kullanıcı adı en az 3 karakter olmalı'),
   password: z.string().min(8, 'Şifre en az 8 karakter olmalı'),

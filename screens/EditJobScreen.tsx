@@ -154,6 +154,30 @@ export default function EditJobScreen() {
                 'contract': HirovoAPI.Enums.HirovoJobType.Freelance,
             };
 
+            const skillIds = await Promise.all(
+                data.requiredSkills.map(async (skillName) => {
+                    const trimmedName = skillName.trim();
+                    const existing = await HirovoAPI.Skills.Pick.Request({
+                        keyword: trimmedName,
+                        selectedIds: [],
+                        limit: 1,
+                        languageCode: i18n.language,
+                    });
+
+                    if (existing.length > 0) {
+                        return existing[0].id;
+                    } else {
+                        const created = await HirovoAPI.Skills.Create.Request({
+                            key: trimmedName.toLowerCase().replace(/\s+/g, '-'),
+                            translatedName: trimmedName,
+                            languageCode: i18n.language,
+                        });
+
+                        return created?.id || null;
+                    }
+                })
+            );
+
             const payload = {
                 jobId,
                 title: data.title,
@@ -164,7 +188,7 @@ export default function EditJobScreen() {
                 latitude: 41.015137,
                 longitude: 28.97953,
                 notifyRadiusKm: data.notifyRadiusKm,
-                requiredSkills: data.requiredSkills,
+                skillIds: skillIds.filter((id) => id !== null),
             };
 
             await HirovoAPI.Jobs.Update.Request(payload);
