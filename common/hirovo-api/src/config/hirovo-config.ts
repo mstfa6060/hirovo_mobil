@@ -28,10 +28,11 @@ export const AppConfig = {
   HirovoUrl: 'https://api.hirovo.com/hirovo',
   IAMUrl: 'https://api.hirovo.com/iam',
   FileProviderUrl: 'https://api.hirovo.com/fileprovider',
-  GoogleIosClientId: '',
+  GoogleIosClientId: '842035070407-dfa9ck6rf0vg8pi4o9meen616gsmkkds.apps.googleusercontent.com',
   GoogleAndroidClientIdDev: '1053973213164-p9j88c7th2uma4u6lftfi5durebts0dn.apps.googleusercontent.com',
-  GoogleAndroidClientIdProd: '1053973213164-vj9stnat1m31lf9j4nhbge6vg2h537ns.apps.googleusercontent.com',
-  GoogleExpoClientId: '1053973213164-41a19hj800bf21j5btnaeffvqbni8ibk.apps.googleusercontent.com',
+  // GoogleWebClientId: '842035070407-sgc4mteltb0p41e6cghfcqeh8k0flo55.apps.googleusercontent.com',
+  GoogleAndroidClientId: '88926208060-grg2h3ium7g5jaqbvugr4bq64hs6e5q3.apps.googleusercontent.com',
+  GoogleWebClientId: '88926208060-9mrke9kitb6qfms46had13830ma1kr7l.apps.googleusercontent.com',
   DefaultCompanyId: 'c9d8c846-10fc-466d-8f45-a4fa4e856abd',
 };
 

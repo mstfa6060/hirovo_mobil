@@ -21,14 +21,13 @@ import { AppConfig } from '@config/hirovo-config';
 import { IAMAPI } from '@api/base_modules/iam';
 import { RootStackParamList } from '../navigation/RootNavigator';
 
-import * as Google from 'expo-auth-session/providers/google';
 import * as AppleAuthentication from 'expo-apple-authentication';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 import '@config/i18n';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { LanguageSelectorDropdown } from '../components/LanguageSelector';
-
 
 const schema = z.object({
   username: z.string().min(3, 'Kullanıcı adı en az 3 karakter olmalı'),
@@ -38,7 +37,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 const LoginScreen = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
@@ -51,37 +50,61 @@ const LoginScreen = () => {
     mode: 'onChange',
   });
 
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: AppConfig.GoogleAndroidClientIdDev,
-    iosClientId: AppConfig.GoogleIosClientId,
-    androidClientId: AppConfig.GoogleAndroidClientIdProd,
-  });
-
   useEffect(() => {
-    if (response?.type === 'success') {
-      const { authentication } = response;
-      IAMAPI.Auth.Login.Request({
+    GoogleSignin.configure({
+      webClientId: AppConfig.GoogleWebClientId, // Web tipi client ID
+      offlineAccess: true,
+      forceCodeForRefreshToken: true,
+    });
+  }, []);
+
+  const onGoogleLogin = async () => {
+    try {
+      try {
+        await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      } catch (error) {
+        console.log('Google Play Services not available', error);
+      }
+
+      try {
+        const userInfo = await GoogleSignin.signIn();
+        console.log('Google Sign-In successful', userInfo);
+      } catch (error) {
+        console.log('Google Sign-In failed', error);
+      }
+      return;
+      const userInfo = await GoogleSignin.signIn();
+
+      const idToken = userInfo?.data?.idToken;
+      const userEmail = userInfo?.data?.user?.email || userInfo?.data?.user?.name || 'Unknown';
+
+      if (!idToken) {
+        throw new Error(t('error.GOOGLE_LOGIN_FAILED'));
+      }
+
+      const res = await IAMAPI.Auth.Login.Request({
         provider: 'Google',
-        userName: '',
+        userName: userEmail,
         password: '',
-        token: authentication?.accessToken ?? '',
+        token: idToken!,
         platform: IAMAPI.Enums.ClientPlatforms.Mobile,
         isCompanyHolding: false,
         companyId: AppConfig.DefaultCompanyId,
-      })
-        .then(async res => {
-          await AsyncStorage.setItem('jwt', res.jwt);
-          await AsyncStorage.setItem('refreshToken', res.refreshToken);
-          navigation.reset({
-            index: 0,
-            routes: [{ name: 'Drawer', params: { screen: 'HomeTabs' } }],
-          });
-        })
-        .catch(err => {
-          Alert.alert(t('error.LOGIN_FAILED_TITLE'), err?.message ?? t('error.DEFAULT_ERROR'));
-        });
+      });
+
+      await AsyncStorage.setItem('jwt', res.jwt);
+      await AsyncStorage.setItem('refreshToken', res.refreshToken);
+
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Drawer', params: { screen: 'HomeTabs' } }],
+      });
+    } catch (err: any) {
+      const errorMessage = err?.message || t('error.GOOGLE_LOGIN_FAILED');
+      Alert.alert(t('error.LOGIN_FAILED_TITLE'), errorMessage);
     }
-  }, [response]);
+  };
+
 
   const onAppleLogin = async () => {
     try {
@@ -104,6 +127,7 @@ const LoginScreen = () => {
 
       await AsyncStorage.setItem('jwt', res.jwt);
       await AsyncStorage.setItem('refreshToken', res.refreshToken);
+
       navigation.reset({
         index: 0,
         routes: [{ name: 'Drawer', params: { screen: 'HomeTabs' } }],
@@ -127,12 +151,13 @@ const LoginScreen = () => {
 
       await AsyncStorage.setItem('jwt', response.jwt);
       await AsyncStorage.setItem('refreshToken', response.refreshToken);
+
       navigation.reset({
         index: 0,
         routes: [{ name: 'Drawer', params: { screen: 'HomeTabs' } }],
       });
     } catch (err: any) {
-      // Alert.alert(t('error.LOGIN_FAILED_TITLE'), err?.message ?? t('error.DEFAULT_ERROR'));
+      Alert.alert(t('error.LOGIN_FAILED_TITLE'), err?.message ?? t('error.DEFAULT_ERROR'));
     }
   };
 
@@ -208,6 +233,20 @@ const LoginScreen = () => {
           <Text style={styles.buttonText}>{t('ui.login.submit')}</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity style={styles.googleButton} onPress={onGoogleLogin}>
+          <Text style={styles.buttonText}>Google ile Giriş Yap</Text>
+        </TouchableOpacity>
+
+        {Platform.OS === 'ios' && (
+          <AppleAuthentication.AppleAuthenticationButton
+            buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+            cornerRadius={5}
+            style={{ height: 44, marginTop: 12 }}
+            onPress={onAppleLogin}
+          />
+        )}
+
         <TouchableOpacity
           style={styles.secondaryButton}
           onPress={() => navigation.navigate('Register')}
@@ -230,6 +269,7 @@ const styles = StyleSheet.create({
   button: { backgroundColor: '#007bff', padding: 14, borderRadius: 8, alignItems: 'center', marginTop: 12 },
   buttonDisabled: { backgroundColor: '#ccc' },
   buttonText: { color: '#fff', fontWeight: 'bold' },
+  googleButton: { backgroundColor: '#db4437', padding: 14, borderRadius: 8, alignItems: 'center', marginTop: 10 },
   secondaryButton: { marginTop: 12, padding: 12, borderRadius: 8, borderColor: '#ccc', borderWidth: 1, alignItems: 'center' },
   secondaryText: { color: '#333' },
   link: { alignItems: 'flex-end', marginVertical: 8 },

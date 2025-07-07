@@ -16,7 +16,7 @@
     "android": {
       "package": "com.madentechnology.hirovomobilapp",
       "versionCode": 1,
-      "googleServicesFile": "./google-services.json",
+      "googleServicesFile": "./android/app/google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/hirovo-logo-icon-gradient-1024.png",
         "backgroundColor": "#ffffff"
@@ -78,6 +78,8 @@
     },
     "extra": {
       "oneSignalAppId": "d22118fa-f46c-496a-8ac9-34f2a8de29a1",
+      "googleAndroidClientId": "88926208060-grg2h3ium7g5jaqbvugr4bq64hs6e5q3.apps.googleusercontent.com",
+      "googleWebClientId": "88926208060-9mrke9kitb6qfms46had13830ma1kr7l.apps.googleusercontent.com",
       "eas": {
         "projectId": "2122db4d-ba6e-4881-9d43-a8ee5d32a8e3"
       }
@@ -89,7 +91,17 @@
           "mode": "development"
         }
       ],
-      "expo-localization"
-    ]
+      "expo-localization",
+      "expo-web-browser"
+    ],
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": [
+          "react-native-phone-number-input",
+          "jwt-decode"
+        ],
+        "listUnknownPackages": false
+      }
+    }
   }
 }
