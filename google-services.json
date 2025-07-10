@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "88926208060",
+    "project_id": "hirovo-firabase",
+    "storage_bucket": "hirovo-firabase.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:88926208060:android:31be74ceab224a024f4339",
+        "android_client_info": {
+          "package_name": "com.madentechnology.hirovomobilapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "88926208060-grg2h3ium7g5jaqbvugr4bq64hs6e5q3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.madentechnology.hirovomobilapp",
+            "certificate_hash": "65ea7d48166976b2472052229b1e6316c859279d"
+          }
+        },
+        {
+          "client_id": "88926208060-9mrke9kitb6qfms46had13830ma1kr7l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKxxAAHLTNd6B9uDNHhF_5510AOaRlL5E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "88926208060-9mrke9kitb6qfms46had13830ma1kr7l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
