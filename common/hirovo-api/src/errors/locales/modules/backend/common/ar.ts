@@ -31,6 +31,9 @@ export default {
       VERIFICATION_MERKEZ_BIRLIGI_USER_CAN_LOGIN: "",
       TENANT_ID_IS_NOT_GUID_EMPTY: "",
       REFRESH_TOKEN_NOT_FOUND: "",
+      PHONE_NUMBER_REQUIRED: "",
+      PHONE_NUMBER_INVALID: "",
+      PHONE_NUMBER_VALID: "",
       ERROR_TITLE: "",
       LOCATION_ID_NOT_VALID: "",
       DEPARTMAN_ID_NOT_VALID: "",
@@ -59,6 +62,8 @@ export default {
       ID_REQUIRED: "",
       NOT_FOUND: "",
       PICK_LIMIT_INVALID: "",
+      COMPANY_ID_REQUIRED: "",
+      LANGUAGE_REQUIRED: "",
       SYSTEM_ADMIN_NOT_EXIST: "",
       USER_ALREADY_REGISTERED_AS_SYSTEM_ADMIN: "",
       ONLY_SYSTEM_ADMIN_PERMITTED: "",
@@ -120,6 +125,10 @@ export default {
       PROVIDER_REQUIRED: "Giriş sağlayıcısı gereklidir.",
       INVALID_CREDENTIALS: "Geçersiz kimlik bilgileri.",
       USER_ID_NOT_FOUND: "Kullanıcı ID si bulunamadı.",
+      PHONE_NUMBER_REQUIRED: "Telefon numarası gereklidir.",
+      PHONE_NUMBER_INVALID: "Telefon numarası formatı geçersiz.",
+      MESSAGE_REQUIRED: "Mesaj gereklidir.",
+      LANGUAGE_REQUIRED: "Dil gereklidir.",
     }
   }
 };

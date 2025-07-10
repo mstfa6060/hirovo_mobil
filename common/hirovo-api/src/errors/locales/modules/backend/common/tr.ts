@@ -31,6 +31,9 @@ export default {
       VERIFICATION_MERKEZ_BIRLIGI_USER_CAN_LOGIN: "Merkez Birliği kullanıcıları giriş yapabilir.",
       TENANT_ID_IS_NOT_GUID_EMPTY: "Kiracı ID'si boş olamaz.",
       REFRESH_TOKEN_NOT_FOUND: "Yenileme token'ı bulunamadı.",
+      PHONE_NUMBER_REQUIRED: "",
+      PHONE_NUMBER_INVALID: "",
+      PHONE_NUMBER_VALID: "",
       ERROR_TITLE: "Hata",
       LOCATION_ID_NOT_VALID: "Konum ID'si geçersiz.",
       DEPARTMAN_ID_NOT_VALID: "Departman ID'si geçersiz.",
@@ -59,6 +62,8 @@ export default {
       ID_REQUIRED: "ID gereklidir.",
       NOT_FOUND: "Bulunamadı.",
       PICK_LIMIT_INVALID: "Seçim limiti geçersiz.",
+      COMPANY_ID_REQUIRED: "",
+      LANGUAGE_REQUIRED: "",
       SYSTEM_ADMIN_NOT_EXIST: "Sistem yöneticisi mevcut değil.",
       USER_ALREADY_REGISTERED_AS_SYSTEM_ADMIN: "Kullanıcı zaten sistem yöneticisi olarak kayıtlı.",
       ONLY_SYSTEM_ADMIN_PERMITTED: "Yalnızca sistem yöneticisi yetkilidir.",
@@ -120,6 +125,10 @@ export default {
       PROVIDER_REQUIRED: "Giriş sağlayıcısı gereklidir.",
       INVALID_CREDENTIALS: "Geçersiz kimlik bilgileri.",
       USER_ID_NOT_FOUND: "Kullanıcı ID si bulunamadı.",
+      PHONE_NUMBER_REQUIRED: "Telefon numarası gereklidir.",
+      PHONE_NUMBER_INVALID: "Telefon numarası formatı geçersiz.",
+      MESSAGE_REQUIRED: "Mesaj gereklidir.",
+      LANGUAGE_REQUIRED: "Dil gereklidir.",
     }
   }
 };

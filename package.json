@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo/config-plugins": "~10.1.1",
     "@expo/metro-runtime": "~5.0.4",
     "@expo/vector-icons": "^14.1.0",
     "@hookform/resolvers": "^5.1.0",
@@ -69,8 +70,7 @@
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "^0.20.0",
     "react-use": "^17.6.0",
-    "zod": "^3.25.56",
-    "@expo/config-plugins": "~10.1.1"
+    "zod": "^3.25.56"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

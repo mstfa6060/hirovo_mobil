@@ -51,6 +51,8 @@ const LoginScreen = () => {
   });
 
   useEffect(() => {
+    console.log('Initializing Google Sign-In');
+
     GoogleSignin.configure({
       webClientId: AppConfig.GoogleWebClientId, // Web tipi client ID
       offlineAccess: true,
@@ -67,16 +69,18 @@ const LoginScreen = () => {
       }
 
       try {
-        const userInfo = await GoogleSignin.signIn();
+        const userInfo = await GoogleSignin.signInSilently();
         console.log('Google Sign-In successful', userInfo);
       } catch (error) {
         console.log('Google Sign-In failed', error);
       }
-      return;
       const userInfo = await GoogleSignin.signIn();
 
       const idToken = userInfo?.data?.idToken;
       const userEmail = userInfo?.data?.user?.email || userInfo?.data?.user?.name || 'Unknown';
+
+      console.log('Google User Info:', userInfo);
+
 
       if (!idToken) {
         throw new Error(t('error.GOOGLE_LOGIN_FAILED'));
