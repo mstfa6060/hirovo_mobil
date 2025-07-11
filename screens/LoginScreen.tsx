@@ -21,23 +21,22 @@ import { AppConfig } from '@config/hirovo-config';
 import { IAMAPI } from '@api/base_modules/iam';
 import { RootStackParamList } from '../navigation/RootNavigator';
 
-import * as AppleAuthentication from 'expo-apple-authentication';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
-
-import '@config/i18n';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { LanguageSelectorDropdown } from '../components/LanguageSelector';
+
+WebBrowser.maybeCompleteAuthSession();
 
 const schema = z.object({
   username: z.string().min(3, 'Kullanıcı adı en az 3 karakter olmalı'),
   password: z.string().min(8, 'Şifre en az 8 karakter olmalı'),
 });
-
 type FormData = z.infer<typeof schema>;
 
 const LoginScreen = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
@@ -50,47 +49,33 @@ const LoginScreen = () => {
     mode: 'onChange',
   });
 
+  const redirectUri = 'https://auth.expo.io/@mstfa6060/hirovo-mobil';
+
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    androidClientId: AppConfig.GoogleAndroidClientId,
+    iosClientId: AppConfig.GoogleIosClientId,
+    scopes: ['openid', 'profile', 'email'],
+  });
+
+
+
   useEffect(() => {
-    console.log('Initializing Google Sign-In');
+    if (response?.type === 'success') {
+      const idToken = response.params?.id_token;
+      console.log('Google idToken:', idToken);
+      if (idToken) {
+        handleGoogleLogin(idToken);
+      }
+    }
+  }, [response]);
 
-    GoogleSignin.configure({
-      webClientId: AppConfig.GoogleWebClientId, // Web tipi client ID
-      offlineAccess: true,
-      forceCodeForRefreshToken: true,
-    });
-  }, []);
-
-  const onGoogleLogin = async () => {
+  const handleGoogleLogin = async (idToken: string) => {
     try {
-      try {
-        await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-      } catch (error) {
-        console.log('Google Play Services not available', error);
-      }
-
-      try {
-        const userInfo = await GoogleSignin.signInSilently();
-        console.log('Google Sign-In successful', userInfo);
-      } catch (error) {
-        console.log('Google Sign-In failed', error);
-      }
-      const userInfo = await GoogleSignin.signIn();
-
-      const idToken = userInfo?.data?.idToken;
-      const userEmail = userInfo?.data?.user?.email || userInfo?.data?.user?.name || 'Unknown';
-
-      console.log('Google User Info:', userInfo);
-
-
-      if (!idToken) {
-        throw new Error(t('error.GOOGLE_LOGIN_FAILED'));
-      }
-
       const res = await IAMAPI.Auth.Login.Request({
         provider: 'Google',
-        userName: userEmail,
+        userName: '',
         password: '',
-        token: idToken!,
+        token: idToken,
         platform: IAMAPI.Enums.ClientPlatforms.Mobile,
         isCompanyHolding: false,
         companyId: AppConfig.DefaultCompanyId,
@@ -104,40 +89,7 @@ const LoginScreen = () => {
         routes: [{ name: 'Drawer', params: { screen: 'HomeTabs' } }],
       });
     } catch (err: any) {
-      const errorMessage = err?.message || t('error.GOOGLE_LOGIN_FAILED');
-      Alert.alert(t('error.LOGIN_FAILED_TITLE'), errorMessage);
-    }
-  };
-
-
-  const onAppleLogin = async () => {
-    try {
-      const credential = await AppleAuthentication.signInAsync({
-        requestedScopes: [
-          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-          AppleAuthentication.AppleAuthenticationScope.EMAIL,
-        ],
-      });
-
-      const res = await IAMAPI.Auth.Login.Request({
-        provider: 'Apple',
-        userName: credential.email ?? '',
-        password: '',
-        token: credential.identityToken ?? '',
-        platform: IAMAPI.Enums.ClientPlatforms.Mobile,
-        isCompanyHolding: false,
-        companyId: AppConfig.DefaultCompanyId,
-      });
-
-      await AsyncStorage.setItem('jwt', res.jwt);
-      await AsyncStorage.setItem('refreshToken', res.refreshToken);
-
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Drawer', params: { screen: 'HomeTabs' } }],
-      });
-    } catch (err: any) {
-      Alert.alert('Apple Login Failed', err?.message ?? 'Error');
+      Alert.alert(t('error.LOGIN_FAILED_TITLE'), err?.message ?? t('error.DEFAULT_ERROR'));
     }
   };
 
@@ -237,19 +189,13 @@ const LoginScreen = () => {
           <Text style={styles.buttonText}>{t('ui.login.submit')}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.googleButton} onPress={onGoogleLogin}>
+        <TouchableOpacity
+          style={styles.googleButton}
+          onPress={() => promptAsync()}
+          disabled={!request}
+        >
           <Text style={styles.buttonText}>Google ile Giriş Yap</Text>
         </TouchableOpacity>
-
-        {Platform.OS === 'ios' && (
-          <AppleAuthentication.AppleAuthenticationButton
-            buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-            cornerRadius={5}
-            style={{ height: 44, marginTop: 12 }}
-            onPress={onAppleLogin}
-          />
-        )}
 
         <TouchableOpacity
           style={styles.secondaryButton}

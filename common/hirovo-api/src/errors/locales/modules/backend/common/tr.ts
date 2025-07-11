@@ -125,10 +125,10 @@ export default {
       PROVIDER_REQUIRED: "Giriş sağlayıcısı gereklidir.",
       INVALID_CREDENTIALS: "Geçersiz kimlik bilgileri.",
       USER_ID_NOT_FOUND: "Kullanıcı ID si bulunamadı.",
-      PHONE_NUMBER_REQUIRED: "Telefon numarası gereklidir.",
-      PHONE_NUMBER_INVALID: "Telefon numarası formatı geçersiz.",
+      PHONE_NUMBER_REQUIRED: "",
+      PHONE_NUMBER_INVALID: "",
       MESSAGE_REQUIRED: "Mesaj gereklidir.",
-      LANGUAGE_REQUIRED: "Dil gereklidir.",
+      LANGUAGE_REQUIRED: "",
     }
   }
 };

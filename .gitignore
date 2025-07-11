@@ -39,3 +39,5 @@ yarn-error.*
 # react native
 /android
 /ios
+ 
+# google-services.json

@@ -12,6 +12,7 @@ import ResetPasswordScreen from 'screens/ResetPasswordScreen';
 import JobApplicationsScreen from 'screens/JobApplicationsScreen';
 import EditJobScreen from 'screens/EditJobScreen';
 import ChangePasswordScreen from 'screens/ChangePasswordScreen';
+import RegisterWithPhoneScreen from 'screens/RegisterWithPhoneScreen';
 
 
 export type RootStackParamList = {
@@ -31,6 +32,8 @@ export type RootStackParamList = {
     handleMyJobList: undefined;
     EditJobScreen: { jobId: string };
     JobApplicationsScreen: { jobId: string };
+    OtpVerificationScreen: { phoneNumber: string };
+    RegisterWithPhone: undefined;
 };
 
 
@@ -38,8 +41,9 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 
 type RootNavigatorProps = {
-    initialRoute: 'Login' | 'Drawer';
+    initialRoute: 'Login' | 'Drawer' | 'RegisterWithPhone';
 };
+
 
 const RootNavigator = ({ initialRoute }: RootNavigatorProps) => {
     return (
@@ -54,6 +58,8 @@ const RootNavigator = ({ initialRoute }: RootNavigatorProps) => {
             <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
             <Stack.Screen name="JobApplicationsScreen" component={JobApplicationsScreen} />
             <Stack.Screen name="EditJobScreen" component={EditJobScreen} />
+            <Stack.Screen name="RegisterWithPhone" component={RegisterWithPhoneScreen} />
+            <Stack.Screen name="OtpVerificationScreen" component={OtpVerificationScreen} />
 
         </Stack.Navigator>
     );

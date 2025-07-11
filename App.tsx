@@ -19,7 +19,7 @@ import { navigationRef, navigate } from './src/navigation/navigationRef';
 
 export default function App() {
   const [isAppReady, setIsAppReady] = useState(false);
-  const [initialRoute, setInitialRoute] = useState<'Login' | 'Drawer' | null>(null);
+  const [initialRoute, setInitialRoute] = useState<'Login' | 'Drawer' | 'RegisterWithPhone' | null>(null);
 
   const linking = {
     prefixes: ['hirovo://', 'https://hirovo.page.link'],
@@ -96,7 +96,8 @@ export default function App() {
         }
 
         const token = await AsyncStorage.getItem('jwt');
-        setInitialRoute(token ? 'Drawer' : 'Login');
+        setInitialRoute(token ? 'Drawer' : 'RegisterWithPhone');
+
 
         if (token) {
           try {

@@ -7,17 +7,17 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:88926208060:android:31be74ceab224a024f4339",
+        "mobilesdk_app_id": "1:88926208060:android:ab4a9121c9d384b44f4339",
         "android_client_info": {
-          "package_name": "com.madentechnology.hirovomobilapp"
+          "package_name": "com.madentechnology.hirovomobilappv2"
         }
       },
       "oauth_client": [
         {
-          "client_id": "88926208060-grg2h3ium7g5jaqbvugr4bq64hs6e5q3.apps.googleusercontent.com",
+          "client_id": "88926208060-28vh2t7bbj1mb7km1gakj6lrcg30in7a.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.madentechnology.hirovomobilapp",
+            "package_name": "com.madentechnology.hirovomobilappv2",
             "certificate_hash": "65ea7d48166976b2472052229b1e6316c859279d"
           }
         },
