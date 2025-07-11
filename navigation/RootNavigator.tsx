@@ -13,6 +13,7 @@ import JobApplicationsScreen from 'screens/JobApplicationsScreen';
 import EditJobScreen from 'screens/EditJobScreen';
 import ChangePasswordScreen from 'screens/ChangePasswordScreen';
 import RegisterWithPhoneScreen from 'screens/RegisterWithPhoneScreen';
+import OtpVerificationScreen from 'screens/OtpVerificationScreen';
 
 
 export type RootStackParamList = {
