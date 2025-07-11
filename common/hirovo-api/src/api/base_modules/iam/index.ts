@@ -371,6 +371,20 @@ export namespace IAMAPI {
 
 	export namespace Auth {
 
+		export namespace VerifyOtp {
+			export const RequestPath = AppConfig.IAMUrl + '/Auth/VerifyOtp';
+			export const Request = (data: IRequestModel) => ApiService.call<IResponseModel>(axios.post(RequestPath,{...data}));
+			export interface IRequestModel {
+				phoneNumber: string;
+				companyId: Guid;
+				otpCode: string;
+			}
+			export interface IResponseModel {
+				accessToken: string;
+				expiresAt: Date;
+			}
+		}
+
 		export namespace SendOtp {
 			export const RequestPath = AppConfig.IAMUrl + '/Auth/SendOtp';
 			export const Request = (data: IRequestModel) => ApiService.call<IResponseModel>(axios.post(RequestPath,{...data}));
