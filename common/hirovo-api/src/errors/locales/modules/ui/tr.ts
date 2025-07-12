@@ -341,6 +341,17 @@ export const uiTr = {
         savePassword: "Şifreyi Kaydet",
         passwordChangedSuccess: "Şifreniz başarıyla değiştirildi",
       },
+      registerWithPhone: {
+        title: "Telefon ile Kayıt",
+        phonePlaceholder: "Telefon numarası",
+        send: "OTP Gönder",
+        sending: "Gönderiliyor...",
+        sendSuccess: "OTP başarıyla gönderildi.",
+        sendFail: "OTP gönderilemedi. Lütfen tekrar deneyin.",
+        invalidPhone: "Geçerli bir telefon numarası giriniz",
+        error: "OTP gönderilemedi",
+      },
+
     },
     error: {
       DEFAULT_ERROR: "Bir hata oluştu. Lütfen tekrar deneyin.",

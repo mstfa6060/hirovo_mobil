@@ -33,7 +33,7 @@ export type RootStackParamList = {
     handleMyJobList: undefined;
     EditJobScreen: { jobId: string };
     JobApplicationsScreen: { jobId: string };
-    OtpVerificationScreen: { phoneNumber: string };
+    OtpVerificationScreen: { phoneNumber: string; otpCode: string };
     RegisterWithPhone: undefined;
 };
 

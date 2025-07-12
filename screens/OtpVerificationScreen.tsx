@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -17,11 +17,24 @@ import { RootStackParamList } from '../navigation/RootNavigator';
 
 export default function OtpVerificationScreen() {
     const route = useRoute();
-    const { phoneNumber } = route.params as { phoneNumber: string };
+    const { phoneNumber, otpCode } = route.params as { phoneNumber: string, otpCode: string };
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
     const [otpInput, setOtpInput] = useState('');
     const [loading, setLoading] = useState(false);
+
+    // OTP ilk açılışta inputa yazılsın ve 5 saniye sonra silinsin
+    useEffect(() => {
+        if (otpCode) {
+            setOtpInput(otpCode);
+
+            const timer = setTimeout(() => {
+                setOtpInput('');
+            }, 5000); // 5 saniye sonra temizle
+
+            return () => clearTimeout(timer);
+        }
+    }, [otpCode]);
 
     const handleVerify = async () => {
         setLoading(true);

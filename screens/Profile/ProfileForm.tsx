@@ -94,7 +94,11 @@ export default function ProfileForm() {
         try {
             await HirovoAPI.UpdateProfile.Update.Request({
                 userId: user.id,
+                firstName: "user.firstName",
+                lastName: "user.surname",
+                email: user.email,
                 phoneNumber: data.phoneNumber,
+
                 city: data.city,
                 district: data.district,
                 description: data.description ?? '',
