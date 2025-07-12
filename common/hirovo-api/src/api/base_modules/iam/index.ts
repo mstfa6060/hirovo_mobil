@@ -394,9 +394,8 @@ export namespace IAMAPI {
 				language: string;
 			}
 			export interface IResponseModel {
-				accessToken: string;
-				refreshToken: string;
-				expiresAt: Date;
+				isSuccess: boolean;
+				otpCode: string;
 			}
 		}
 

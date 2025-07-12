@@ -66,9 +66,7 @@ export default function RegisterWithPhoneScreen() {
                     />
                 )}
             />
-            {errors.phoneNumber && (
-                <Text style={styles.error}>{errors.phoneNumber.message}</Text>
-            )}
+            {errors.phoneNumber && <Text style={styles.error}>{errors.phoneNumber.message}</Text>}
 
             <Button title="OTP Gönder" onPress={handleSubmit(onSubmit)} />
         </View>

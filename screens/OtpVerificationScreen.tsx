@@ -11,6 +11,8 @@ import {
 import { useRoute, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { IAMAPI } from '@api/base_modules/iam';
+import { AppConfig } from '@config/hirovo-config';
 import { RootStackParamList } from '../navigation/RootNavigator';
 
 export default function OtpVerificationScreen() {
@@ -25,21 +27,28 @@ export default function OtpVerificationScreen() {
         setLoading(true);
         Keyboard.dismiss();
 
-        // (isteğe bağlı) gelen otp burada AsyncStorage’da tutulmuş olabilir
-        // Biz şu an gerçek doğrulama yapmıyoruz çünkü JWT zaten hazır
-        if (otpInput.length === 6) {
-            const jwt = await AsyncStorage.getItem('jwt');
-            if (jwt) {
-                navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'Drawer' }],
-                });
-            } else {
-                Alert.alert('Hata', 'JWT bulunamadı, yeniden giriş yapınız.');
-                navigation.navigate('RegisterWithPhone');
-            }
-        } else {
-            Alert.alert('Hata', 'Geçerli bir doğrulama kodu giriniz');
+        if (otpInput.length !== 6) {
+            Alert.alert('Hata', '6 haneli doğrulama kodunu giriniz');
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const response = await IAMAPI.Auth.VerifyOtp.Request({
+                phoneNumber,
+                companyId: AppConfig.DefaultCompanyId,
+                otpCode: otpInput,
+            });
+
+            await AsyncStorage.setItem('jwt', response.accessToken);
+            Alert.alert('✅', 'Giriş başarılı');
+
+            navigation.reset({
+                index: 0,
+                routes: [{ name: 'Drawer' }],
+            });
+        } catch (error: any) {
+            Alert.alert('Hata', error?.response?.data?.message || 'OTP doğrulama başarısız');
         }
 
         setLoading(false);
